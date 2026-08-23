@@ -12,7 +12,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.38.3</quarkus.platform.version>
+        <quarkus.platform.version>3.33.2</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.6</surefire-plugin.version>
     </properties>
@@ -54,20 +54,51 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
-        <!-- AI: Ollama via LangChain4j -->
-        <dependency>
-            <groupId>io.quarkiverse.langchain4j</groupId>
-            <artifactId>quarkus-langchain4j-ollama</artifactId>
-            <version>0.24.0</version>
-        </dependency>
+        <!-- AI: Ollama via LangChain4j
+             NOTE: Deferred to Phase 3 — quarkus-langchain4j 1.x has a known ChatMemoryProcessor
+             deployment-time regression on Quarkus 3.33+. Add back when a compatible release is
+             available (track: https://github.com/quarkiverse/quarkus-langchain4j/issues).
+             Planned dependency:
+             <dependency>
+                 <groupId>io.quarkiverse.langchain4j</groupId>
+                 <artifactId>quarkus-langchain4j-ollama</artifactId>
+                 <version>TBD-compatible</version>
+             </dependency>
+        -->
         <!-- Auth: OIDC (Auth0 JWT validation) -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-oidc</artifactId>
         </dependency>
+        <!-- JWT bean provider — enables @Inject JsonWebToken in both prod (via OIDC) and test -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- In-memory DB for tests — avoids needing Docker/Dev Services in CI -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-security-jwt</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
