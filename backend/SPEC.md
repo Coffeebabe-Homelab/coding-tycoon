@@ -9,7 +9,7 @@
 
 | Concern | Choice |
 |---------|--------|
-| Language | Java 21 (target: Java 25 when available) |
+| Language | Java 25 |
 | Framework | Quarkus 3.x |
 | API style | JAX-RS (RESTEasy Reactive) + Jackson |
 | ORM | Hibernate ORM with Panache (Active Record) |
