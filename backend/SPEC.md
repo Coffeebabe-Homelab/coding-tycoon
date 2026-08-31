@@ -124,11 +124,21 @@ User
 
 PlayerProfile
   id         BIGINT PK
-  user_id    BIGINT FK → User
+  user_id    BIGINT FK → User  UNIQUE
   language   VARCHAR          -- "Java"
   framework  VARCHAR          -- "Spring Boot"
   seniority  VARCHAR          -- "Junior"
-  topics     TEXT[]
+  -- topics stored via join table (see below)
+
+Topic
+  id   BIGINT PK
+  name VARCHAR UNIQUE         -- "REST APIs", "CRUD", "OOP", "Clean Code", "Git Workflow"
+  slug VARCHAR UNIQUE         -- "rest-apis", "crud", "oop", "clean-code", "git-workflow"
+
+PlayerProfileTopic             -- join table (many-to-many)
+  profile_id BIGINT FK → PlayerProfile
+  topic_id   BIGINT FK → Topic
+  PRIMARY KEY (profile_id, topic_id)
 
 Task
   id                BIGINT PK
