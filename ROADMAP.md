@@ -26,18 +26,18 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Skeleton repos, local dev environment running, CI green on empty project.
 
 ### Tasks
-- [ ] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
-- [ ] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
-- [ ] Add `quarkus-langchain4j-ollama` extension to backend
-- [ ] Docker Compose for local: PostgreSQL + Ollama
-- [ ] Auth0 tenant setup (dev application, callback URLs)
-- [ ] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)
-- [ ] Configure Quarkus OIDC to validate Auth0 JWTs
-- [ ] Basic CI pipeline (GitHub Actions): lint + build frontend, build backend
-- [ ] `README.md` with local dev setup instructions
-- [ ] `docs/DEVELOPMENT_GUIDELINES.md` — architecture decisions, coding patterns, minimum test coverage (unit + integration), documentation standards, Git branching strategy, PR checklist
-- [ ] `backend/SPEC.md` — backend architecture, module structure, REST API conventions, data model overview, AI integration patterns, error handling, security model, observability
-- [ ] `frontend/SPEC.md` — frontend architecture, component structure, state management approach, routing, design system usage (Tailwind conventions, component naming), Monaco integration guidelines, accessibility baseline
+- [x] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
+- [x] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
+- [ ] Add `quarkus-langchain4j-ollama` extension to backend *(deferred — version compatibility regression on Quarkus 3.33+; revisit in Phase 2/3)*
+- [x] Docker Compose for local: PostgreSQL + Ollama
+- [x] Auth0 tenant setup (dev application, callback URLs)
+- [x] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)
+- [x] Configure Quarkus OIDC to validate Auth0 JWTs
+- [x] Basic CI pipeline (GitHub Actions): lint + build frontend, build backend
+- [x] `README.md` with local dev setup instructions
+- [x] `docs/DEVELOPMENT_GUIDELINES.md` — architecture decisions, coding patterns, minimum test coverage (unit + integration), documentation standards, Git branching strategy, PR checklist
+- [x] `backend/SPEC.md` — backend architecture, module structure, REST API conventions, data model overview, AI integration patterns, error handling, security model, observability
+- [x] `frontend/SPEC.md` — frontend architecture, component structure, state management approach, routing, design system usage (Tailwind conventions, component naming), Monaco integration guidelines, accessibility baseline
 
 ### Exit Criteria
 - `npm run dev` starts the frontend (blank page, no errors)
@@ -256,4 +256,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-08-22 | Status: draft — iterating*
+*Last updated: 2026-08-31 | Status: Phase 0 complete (11/12 tasks) — moving to Phase 1*

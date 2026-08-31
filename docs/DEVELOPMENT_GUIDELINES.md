@@ -5,6 +5,15 @@
 
 ---
 
+## A Note on Frontend Work
+
+The frontend owner is using this project to **learn frontend design and development**. This has two practical consequences:
+
+1. Before implementing any frontend piece, I (Kiro) will explain **what we are building, why we are making that choice, and what the alternatives are** — so you can make an informed decision rather than just accepting a default.
+2. Frontend decisions (component structure, state management patterns, styling choices) will be explained step by step as we go. If something is unclear, ask — explaining it is part of the job.
+
+---
+
 ## Architecture Overview
 
 ```
@@ -22,30 +31,131 @@ The backend validates the JWT against Auth0's JWKS endpoint automatically via Qu
 
 ---
 
+## Architecture Decision: DDD Package Structure + Light Hexagonal Boundaries
+
+**Decision date:** 2026-08-31
+
+### What we chose and why
+
+We combine two complementary patterns at a pragmatic level:
+
+- **Domain-Driven Design (DDD) package structure** — packages are named after business concepts (`task/`, `review/`, `profile/`), not technical layers (`controllers/`, `repositories/`). This keeps related code together and mirrors the real domain.
+
+- **Light Hexagonal Architecture (Ports & Adapters) at external boundaries** — we apply explicit port interfaces only where the external dependency is likely to change or needs to be mocked cleanly in tests. For this project, that means the **AI boundary** (Ollama will eventually be swapped for a cloud provider) and optionally persistence.
+
+We deliberately avoid full tactical DDD (aggregate roots, domain events, value objects throughout) and full Hexagonal everywhere. The overhead is not justified for a solo project at MVP stage.
+
+### What this looks like in practice
+
+**Ports** are interfaces defined in the domain package, pointing outward:
+
+```java
+// review/ReviewAiPort.java  — the domain defines what it needs
+public interface ReviewAiPort {
+    ReviewResult review(String taskSpec, String submission, String guidelines);
+}
+```
+
+**Adapters** implement those ports using the actual infrastructure:
+
+```java
+// review/OllamaReviewAdapter.java  — an adapter plugs in the real implementation
+@ApplicationScoped
+public class OllamaReviewAdapter implements ReviewAiPort {
+    // LangChain4j / Ollama code lives here, not in ReviewService
+}
+```
+
+The **Service** only depends on the port interface — it never imports LangChain4j or Panache directly:
+
+```java
+// review/ReviewService.java
+@ApplicationScoped
+public class ReviewService {
+    @Inject ReviewAiPort aiPort;          // port — not the Ollama adapter directly
+    @Inject ReviewRepository repository;  // port — not a Panache class directly
+}
+```
+
+In tests, you swap the adapter for a mock without touching the service.
+
+### Where we apply Hexagonal (and where we don't)
+
+| Boundary | Use Hexagonal? | Reason |
+|---|---|---|
+| AI services (Ollama) | ✅ Yes — `*AiPort` interface | Will change; needs mocking in tests |
+| Persistence (Panache) | ✅ Yes — `*Repository` interface | Panache already encourages this pattern |
+| HTTP (JAX-RS resources) | ❌ No port needed | HTTP is the entry point, not a replaceable dependency |
+| Internal service calls | ❌ No port needed | Ports are for external systems only |
+
+---
+
 ## Backend Guidelines
 
 ### Layering
 
-Every feature follows a strict three-layer structure:
+Every feature follows this structure, with dependency direction flowing inward:
 
 ```
-Resource  (JAX-RS)   — HTTP boundary: request parsing, response building, status codes
-  └─▶ Service        — Business logic: orchestration, validation, AI calls
-        └─▶ Repository (Panache) — Data access: queries, persistence
+Resource  (JAX-RS adapter — HTTP in)
+  └─▶ Service (domain/application core — pure business logic)
+        ├─▶ *AiPort (interface — AI out)
+        │     └─▶ *AiAdapter (Ollama / LangChain4j implementation)
+        └─▶ *Repository (interface — DB out)
+              └─▶ Panache implementation
 ```
 
-Never call a `Repository` from a `Resource`. Never put HTTP concerns in a `Service`.
+Rules:
+- Never call a `Repository` directly from a `Resource`.
+- Never put HTTP concerns (`Response`, `@QueryParam`) in a `Service`.
+- Services import only domain classes, port interfaces, and standard Java — never framework types.
 
 ### Package Structure
 
 ```
 dev.codingtycoon/
-├── task/        TaskResource, TaskService, TaskRepository, Task (entity)
-├── review/      ReviewResource, ReviewService, ReviewRepository, Review (entity)
-├── profile/     ProfileResource, ProfileService, PlayerProfile (entity), SkillProfile (entity)
-├── user/        UserResource, UserService, User (entity)
-├── vcs/         VcsResource, VcsService, Submission (entity)
-└── ai/          Shared AI service interfaces and prompt holders
+├── task/
+│   ├── Task.java                   Entity
+│   ├── TaskRepository.java         Port (interface)
+│   ├── JpaTaskRepository.java      Adapter (Panache implementation)
+│   ├── TaskService.java            Domain/application core
+│   └── TaskResource.java           Adapter (JAX-RS / HTTP)
+│
+├── review/
+│   ├── Review.java
+│   ├── ReviewRepository.java       Port
+│   ├── JpaReviewRepository.java    Adapter
+│   ├── ReviewAiPort.java           Port (AI boundary — key isolation point)
+│   ├── OllamaReviewAdapter.java    Adapter (LangChain4j implementation)
+│   ├── ReviewService.java          Domain/application core
+│   └── ReviewResource.java         Adapter (JAX-RS)
+│
+├── profile/
+│   ├── PlayerProfile.java
+│   ├── SkillProfile.java
+│   ├── ProfileRepository.java      Port
+│   ├── JpaProfileRepository.java   Adapter
+│   ├── SkillAiPort.java            Port (AI boundary)
+│   ├── OllamaSkillAdapter.java     Adapter
+│   ├── ProfileService.java         Domain/application core
+│   └── ProfileResource.java        Adapter (JAX-RS)
+│
+├── user/
+│   ├── User.java
+│   ├── UserRepository.java         Port
+│   ├── JpaUserRepository.java      Adapter
+│   ├── UserService.java
+│   └── UserResource.java
+│
+├── vcs/
+│   ├── Submission.java
+│   ├── SubmissionRepository.java   Port
+│   ├── JpaSubmissionRepository.java Adapter
+│   ├── VcsService.java
+│   └── VcsResource.java
+│
+└── ai/
+    └── (shared prompt constants — no business logic here)
 ```
 
 ### Naming Conventions
@@ -55,6 +165,8 @@ dev.codingtycoon/
 - REST resources: plural nouns (`/api/tasks`, `/api/reviews`)
 - Entity fields: `camelCase` mapped to `snake_case` columns via Panache defaults
 - Constants: `SCREAMING_SNAKE_CASE`
+- Port interfaces: name by what they do, not how (`ReviewAiPort`, not `OllamaService`)
+- Adapters: name by technology + what they adapt (`OllamaReviewAdapter`, `JpaTaskRepository`)
 
 ### REST API Standards
 
@@ -80,6 +192,8 @@ All `public` methods on `Resource` and `Service` classes must have Javadoc.
 ---
 
 ## Frontend Guidelines
+
+> Remember: every frontend decision will be explained before implementation. You will always know what we're building and why before we write any code.
 
 ### Component Structure
 
@@ -139,8 +253,16 @@ All exported TypeScript functions in `lib/` and `hooks/` must have JSDoc comment
 | Resource layer | Quarkus `@QuarkusTest` + REST Assured | Happy path + 401 per endpoint |
 | Integration | `@QuarkusTest` with Dev Services | DB round-trips for critical paths |
 
-AI service interfaces must be **mocked** in all tests. Never call real Ollama in CI.
-Use `@InjectMock` or a test `@Alternative` CDI bean to substitute the AI interface.
+AI port implementations must be **mocked** in all tests — use `@InjectMock` to substitute the port interface.
+Never call real Ollama in CI.
+
+```java
+@InjectMock
+ReviewAiPort reviewAiPort;
+
+// In test:
+when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
+```
 
 ### Frontend
 
@@ -149,12 +271,12 @@ Use `@InjectMock` or a test `@Alternative` CDI bean to substitute the AI interfa
 | Hooks and utilities | Vitest | ≥ 70% on business logic |
 | Components | React Testing Library | Render, interaction, accessibility |
 
-Do not test implementation details (internal state, private functions). Test behaviour.
+Do not test implementation details. Test behaviour.
 
 ### AI Quality (separate from unit/integration tests)
 
 Prompt quality is evaluated via standalone scripts in `ai/evals/` — not in the main test suite.
-CI only runs deterministic tests. AI eval runs are manual or triggered separately.
+CI only runs deterministic tests.
 
 ---
 

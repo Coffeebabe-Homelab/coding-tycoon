@@ -5,6 +5,18 @@
 
 ---
 
+## Learning Context
+
+The frontend is being built by someone learning frontend design and development from the ground up. This shapes how we work:
+
+- Every frontend decision will be explained **before** implementation: what we're building, why this approach, and what the trade-offs are versus alternatives.
+- Patterns (component structure, state placement, styling choices) will be introduced step by step with context.
+- You are expected to make the final call on design decisions — the explanations are there to make those calls informed, not to have them made for you.
+
+If anything is unclear at any point, ask. Explaining is part of the process.
+
+---
+
 ## Tech Stack
 
 | Concern | Choice |
