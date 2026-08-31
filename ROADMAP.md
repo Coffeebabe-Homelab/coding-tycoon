@@ -53,17 +53,22 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Player can log in, complete onboarding, and have a persisted profile.
 
 ### Tasks
-- [ ] Auth0 login/logout flow in frontend (protected routes)
-- [ ] Onboarding wizard UI: language (Java), framework (Spring Boot), seniority (Junior), topics
-- [ ] `POST /api/profile` — create profile on first login
-- [ ] `GET /api/profile` — retrieve profile
-- [ ] Profile page UI: display onboarding settings (editable)
-- [ ] Backend: `User` + `PlayerProfile` entities, PostgreSQL migration (Flyway/Liquibase)
-- [ ] JWT user identity wired to profile (Auth0 `sub` claim)
+- [ ] `User` entity, `UserRepository` port/adapter, Flyway `V1__create_user_table.sql` (P1-01)
+- [ ] `Topic` entity, `PlayerProfile` entity, join table `player_profile_topics`, Flyway migrations V2–V5 including seed data (P1-02)
+- [ ] `GET /api/topics` — public endpoint returning available topics for the onboarding wizard (P1-03)
+- [ ] `POST /api/profile` — create profile on first login; also creates `User` record if new; topics referenced by ID (P1-03)
+- [ ] `GET /api/profile` — retrieve profile with topics resolved to full objects (P1-03)
+- [ ] `PUT /api/profile` — update seniority and topics (P1-03)
+- [ ] Auth0 login/logout flow in frontend — extract pages into `pages/`, clean up routing, remove dev token logging (P1-04)
+- [ ] Onboarding wizard UI: 3-step form; topics loaded from `GET /api/topics`, not hardcoded (P1-05)
+- [ ] Profile page UI: display onboarding settings; inline edit mode; topics as badge chips (P1-06)
+- [ ] JWT user identity wired to profile via Auth0 `sub` claim (P1-01, P1-03)
+- [ ] Integration verification: full new-user and returning-user flows, security checks, coverage thresholds (P1-07)
 
 ### Exit Criteria
-- New user logs in → onboarding wizard → profile saved
-- Returning user logs in → lands on profile page with correct data
+- New user logs in → onboarding wizard (topics from API) → profile saved
+- Returning user logs in → lands on room, profile page shows correct data
+- Profile edit saves changes; topics reflect the normalised `topics` table
 - Backend rejects unauthenticated requests with 401
 
 ---
