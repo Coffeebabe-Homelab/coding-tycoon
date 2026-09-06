@@ -1,7 +1,7 @@
 # P1-05 — Onboarding Wizard UI
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P1-04 (routing in place), P1-03 (POST /api/profile and GET /api/topics exist)  
 
 ---

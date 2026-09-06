@@ -53,17 +53,17 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Player can log in, complete onboarding, and have a persisted profile.
 
 ### Tasks
-- [ ] `User` entity, `UserRepository` port/adapter, Flyway `V1__create_user_table.sql` (P1-01)
-- [ ] `Topic` entity, `PlayerProfile` entity, join table `player_profile_topics`, Flyway migrations V2–V5 including seed data (P1-02)
-- [ ] `GET /api/topics` — public endpoint returning available topics for the onboarding wizard (P1-03)
-- [ ] `POST /api/profile` — create profile on first login; also creates `User` record if new; topics referenced by ID (P1-03)
-- [ ] `GET /api/profile` — retrieve profile with topics resolved to full objects (P1-03)
-- [ ] `PUT /api/profile` — update seniority and topics (P1-03)
-- [ ] Auth0 login/logout flow in frontend — extract pages into `pages/`, clean up routing, remove dev token logging (P1-04)
-- [ ] Onboarding wizard UI: 3-step form; topics loaded from `GET /api/topics`, not hardcoded (P1-05)
-- [ ] Profile page UI: display onboarding settings; inline edit mode; topics as badge chips (P1-06)
-- [ ] JWT user identity wired to profile via Auth0 `sub` claim (P1-01, P1-03)
-- [ ] Integration verification: full new-user and returning-user flows, security checks, coverage thresholds (P1-07)
+- [x] `User` entity, `UserRepository` port/adapter, Flyway `V1__create_user_table.sql` (P1-01)
+- [x] `Topic` entity, `PlayerProfile` entity, join table `player_profile_topics`, Flyway migrations V2–V5 including seed data (P1-02)
+- [x] `GET /api/topics` — public endpoint returning available topics for the onboarding wizard (P1-03)
+- [x] `POST /api/profile` — create profile on first login; also creates `User` record if new; topics referenced by ID (P1-03)
+- [x] `GET /api/profile` — retrieve profile with topics resolved to full objects (P1-03)
+- [x] `PUT /api/profile` — update seniority and topics (P1-03)
+- [x] Auth0 login/logout flow in frontend — extract pages into `pages/`, clean up routing, remove dev token logging (P1-04)
+- [x] Onboarding wizard UI: 3-step form; topics loaded from `GET /api/topics`, not hardcoded (P1-05)
+- [x] Profile page UI: display onboarding settings; inline edit mode; topics as badge chips (P1-06)
+- [x] JWT user identity wired to profile via Auth0 `sub` claim (P1-01, P1-03)
+- [x] Integration verification: full new-user and returning-user flows, security checks, coverage thresholds (P1-07)
 
 ### Exit Criteria
 - New user logs in → onboarding wizard (topics from API) → profile saved
@@ -261,4 +261,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-08-31 | Status: Phase 0 complete (11/12 tasks) — moving to Phase 1*
+*Last updated: 2026-09-06 | Status: Phase 1 complete — moving to Phase 2*

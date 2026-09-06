@@ -1,7 +1,7 @@
 # P1-01 — User Entity, Repository & Flyway Migration
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-02 (backend initialised), P0-07 (Auth0 JWT wired)  
 
 ---

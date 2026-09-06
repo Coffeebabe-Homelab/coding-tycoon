@@ -1,7 +1,7 @@
 # P1-04 — Frontend Auth Flow: Login, Logout & Protected Routes
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-06 (Auth0 SDK configured in frontend)  
 
 ---

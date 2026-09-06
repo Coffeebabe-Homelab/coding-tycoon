@@ -1,7 +1,7 @@
 # P1-03 — Profile & Topics API Endpoints
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P1-01, P1-02  
 
 ---

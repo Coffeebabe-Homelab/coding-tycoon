@@ -1,77 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
-import { useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
-
-/** Placeholder page — replaced in Phase 7 with the isometric room scene */
-const GameRoomPage = () => {
-  const { user, logout, getAccessTokenSilently } = useAuth0()
-
-  // DEV ONLY: log the access token so we can verify it against the backend.
-  // Remove before Phase 1 ships.
-  useEffect(() => {
-    getAccessTokenSilently()
-      .then((token) => {
-        console.debug('[dev] access token:', token)
-      })
-      .catch(console.error)
-  }, [getAccessTokenSilently])
-
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-base text-text-primary">
-      <h1 className="text-2xl font-semibold">Coding Tycoon</h1>
-      <p className="text-text-muted">Welcome, {user?.email}</p>
-      <button
-        className="rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
-        onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-      >
-        Log out
-      </button>
-    </div>
-  )
-}
-
-/** Handles the Auth0 redirect callback — just navigate home, Auth0Provider processes the code */
-const CallbackPage = () => {
-  const { isLoading } = useAuth0()
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-base text-text-muted">
-        Completing login…
-      </div>
-    )
-  }
-
-  return <Navigate to="/room" replace />
-}
-
-const LoginPage = () => {
-  const { loginWithRedirect } = useAuth0()
-
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-base text-text-primary">
-      <h1 className="text-2xl font-semibold">Coding Tycoon</h1>
-      <button
-        className="rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
-        onClick={() => loginWithRedirect()}
-      >
-        Log in
-      </button>
-    </div>
-  )
-}
+import { LoadingScreen } from './components/LoadingScreen'
+import LoginPage from './pages/LoginPage'
+import CallbackPage from './pages/CallbackPage'
+import GameRoomPage from './pages/GameRoomPage'
+import OnboardingPage from './pages/OnboardingPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0()
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-base text-text-muted">
-        Loading…
-      </div>
-    )
-  }
+  if (isLoading) return <LoadingScreen />
 
   return (
     <Routes>
@@ -82,6 +22,22 @@ function App() {
         element={
           <ProtectedRoute>
             <GameRoomPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <OnboardingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

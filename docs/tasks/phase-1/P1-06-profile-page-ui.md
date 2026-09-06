@@ -1,7 +1,7 @@
 # P1-06 — Profile Page UI
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P1-04 (routing), P1-05 (types defined), P1-03 (GET /api/profile and PUT /api/profile exist)  
 
 ---

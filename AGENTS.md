@@ -26,6 +26,8 @@ Guidelines for AI agents and humans working on this codebase.
   - Single concern per edit; keep diffs small and reviewable, commit if necessary.
 - Human Changes Precedence:
   - Respect human edits unless they contradict tests/specs. If reverting, justify briefly.
+- Development process:
+  - Before starting development run tests, ensure everything is working, make a brief summary of the current state of the application
 
 ## Daily Workflow
 
