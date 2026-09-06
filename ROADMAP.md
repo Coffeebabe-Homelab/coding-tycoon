@@ -87,9 +87,9 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 - [x] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
 
 ### Exit Criteria
-- Player logs in → Task Board shows a relevant Java/Junior task
-- Task was either AI-generated or drawn from seed data
-- Task persists across page refresh
+- Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
+- Task was either AI-generated or drawn from seed data (seed is always the fallback)
+- "Start task" transitions status to `IN_PROGRESS` and persists across page refresh
 
 ---
 
