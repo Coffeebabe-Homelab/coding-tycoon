@@ -1,4 +1,4 @@
-package dev.codingtycoon;
+package dev.codingtycoon.user;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -13,11 +13,11 @@ import java.util.Map;
 
 /**
  * Returns the authenticated user's identity from the Auth0 JWT.
- * Used by the frontend to confirm the token is valid and to retrieve the user's sub claim.
+ * Used by the frontend to confirm the token is valid and retrieve the user's sub claim.
  */
 @Path("/api/me")
 @Authenticated
-public class MeResource {
+public class UserResource {
 
     @Inject
     JsonWebToken jwt;
@@ -25,6 +25,8 @@ public class MeResource {
     /**
      * Returns the Auth0 sub claim of the authenticated user.
      * Returns 401 if the request carries no token or an invalid/expired token.
+     *
+     * @return 200 with {"sub": "..."}, or 401 if unauthenticated
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)

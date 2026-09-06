@@ -1,7 +1,7 @@
 # P1-02 — Topic Entity, PlayerProfile Entity & Migrations
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P1-01 (User entity and migration in place)  
 
 ---
