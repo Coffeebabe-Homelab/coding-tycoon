@@ -78,18 +78,20 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** AI generates a daily task appropriate for the player profile; player sees it on the Task Board.
 
 ### Tasks
-- [ ] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
-- [ ] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
-- [ ] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
-- [ ] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
-- [ ] `GET /api/tasks/today` — returns today's active task for the player
-- [ ] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
-- [ ] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [ ] `Task` entity, `TaskStatus` enum, `TaskRepository` port/adapter, Flyway `V6__create_tasks_table.sql` (P2-01)
+- [ ] 10 hand-crafted seed tasks covering all 5 topics; `SeedTaskService` with topic-matched selection (P2-02)
+- [ ] `GET /api/tasks/today` — returns or creates today's task from seed data (P2-03)
+- [ ] `PATCH /api/tasks/{id}/status` — state machine transitions: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED` (P2-03)
+- [ ] Task Board UI at `/room/task`: title, description, acceptance criteria, difficulty badge, tags, "Start task" button (P2-04)
+- [ ] `useTask` hook: fetch today's task, `startTask()` transition (P2-04)
+- [ ] `TaskAiPort` interface + `OllamaTaskAdapter` (or stub); `POST /api/tasks/generate` with seed fallback on AI failure (P2-05)
+- [ ] Prompt template `task-generator.txt` for personalised AI task generation (P2-05)
+- [ ] Integration verification: full loop tested manually and via automated tests (P2-06)
 
 ### Exit Criteria
-- Player logs in → Task Board shows a relevant Java/Junior task
-- Task was either AI-generated or drawn from seed data
-- Task persists across page refresh
+- Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
+- Task was either AI-generated or drawn from seed data (seed is always the fallback)
+- "Start task" transitions status to `IN_PROGRESS` and persists across page refresh
 
 ---
 
