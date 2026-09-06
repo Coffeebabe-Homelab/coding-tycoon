@@ -78,13 +78,13 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** AI generates a daily task appropriate for the player profile; player sees it on the Task Board.
 
 ### Tasks
-- [ ] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
-- [ ] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
-- [ ] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
-- [ ] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
-- [ ] `GET /api/tasks/today` — returns today's active task for the player
-- [ ] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
-- [ ] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [x] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
+- [x] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
+- [x] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
+- [x] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
+- [x] `GET /api/tasks/today` — returns today's active task for the player
+- [x] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
+- [x] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
 
 ### Exit Criteria
 - Player logs in → Task Board shows a relevant Java/Junior task
@@ -261,4 +261,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-09-06 | Status: Phase 1 complete — moving to Phase 2*
+*Last updated: 2026-09-06 | Status: Phase 2 complete — moving to Phase 3*
