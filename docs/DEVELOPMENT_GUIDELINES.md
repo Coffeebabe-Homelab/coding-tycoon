@@ -194,6 +194,8 @@ All `public` methods on `Resource` and `Service` classes must have Javadoc.
 ## Frontend Guidelines
 
 > Remember: every frontend decision will be explained before implementation. You will always know what we're building and why before we write any code.
+>
+> For the full set of Tailwind, component, and accessibility rules, see [`CONVENTIONS.md`](../CONVENTIONS.md) at the repo root.
 
 ### Component Structure
 

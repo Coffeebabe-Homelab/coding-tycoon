@@ -48,6 +48,8 @@ frontend/src/
 ├── store/         Zustand stores
 │   ├── gameStore.ts   Session state, current room mode
 │   └── profileStore.ts Player profile cache
+├── styles/
+│   └── tokens.css     Design tokens — colours, fonts. THE only file to change when rebranding.
 ├── types/         Shared TypeScript interfaces and enums
 └── assets/        Static files (images, SVGs, fonts)
 ```
@@ -117,28 +119,60 @@ const token = await getAccessTokenSilently()
 
 ---
 
-## Tailwind CSS Conventions
+## Design Tokens & Theming
 
-The game palette maps to Tailwind's built-in slate/gray/purple classes:
+**Branding is not defined yet.** Token values below are placeholders. When branding is finalised, only `src/styles/tokens.css` needs changing — no component files.
 
-| Role | Class |
+For the full rules on how to use tokens (what's forbidden, componentisation rules, responsive conventions, accessibility requirements), see [`CONVENTIONS.md`](../CONVENTIONS.md).
+
+### Token file — `src/styles/tokens.css`
+
+```css
+@theme {
+  /* Backgrounds */
+  --color-bg-base:       #030712;   /* page / room background */
+  --color-bg-surface:    #111827;   /* panels, cards */
+  --color-bg-elevated:   #1f2937;   /* inputs, hover surfaces */
+
+  /* Borders */
+  --color-border:        #374151;
+
+  /* Accent */
+  --color-accent:        #9333ea;   /* primary interactive */
+  --color-accent-hover:  #a855f7;
+  --color-accent-subtle: #581c87;   /* badge / chip backgrounds */
+
+  /* States */
+  --color-success:       #4ade80;
+  --color-warning:       #facc15;
+  --color-danger:        #f87171;
+
+  /* Text */
+  --color-text-primary:  #f3f4f6;
+  --color-text-muted:    #9ca3af;
+
+  /* Typography — swap here only */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+```
+
+### Common component patterns
+
+| Component | Class pattern |
 |---|---|
-| Background (room) | `bg-gray-950` |
-| Panel background | `bg-gray-900` |
-| Panel border | `border-gray-700` |
-| Primary accent | `text-purple-400` / `bg-purple-600` |
-| Success | `text-green-400` |
-| Warning | `text-yellow-400` |
-| Danger | `text-red-400` |
-| Body text | `text-gray-200` |
-| Muted text | `text-gray-400` |
+| Page background | `bg-bg-base` |
+| Panel / card | `rounded-xl border border-border bg-bg-surface p-4` |
+| Primary button | `rounded-lg bg-accent px-4 py-2 text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent` |
+| Badge / chip (selected) | `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-hover` |
+| Badge / chip (unselected) | `rounded-full bg-bg-elevated px-2 py-0.5 text-xs text-text-muted` |
+| Body text | `text-text-primary` |
+| Muted text | `text-text-muted` |
+| Success state | `text-success` |
+| Warning state | `text-warning` |
+| Danger / error state | `text-danger` |
 
-Spacing: use the 4-point scale (`p-4`, `gap-4`, `m-2`) consistently. Avoid arbitrary values (`p-[13px]`) unless strictly necessary.
-
-Component class patterns:
-- Panels: `rounded-xl border border-gray-700 bg-gray-900 p-4`
-- Primary button: `rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-500`
-- Badge: `rounded-full bg-purple-900/50 px-2 py-0.5 text-xs text-purple-300`
+Spacing: 4-point scale (`p-4`, `gap-4`, `m-2`). Avoid arbitrary values.
 
 ---
 

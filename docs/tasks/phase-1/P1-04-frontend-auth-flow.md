@@ -85,12 +85,12 @@ function App() {
 export default function LoginPage() {
   const { loginWithRedirect } = useAuth0()
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950">
-      <div className="flex flex-col items-center gap-6 rounded-xl border border-gray-700 bg-gray-900 p-10">
-        <h1 className="text-3xl font-bold text-white">Coding Tycoon</h1>
-        <p className="text-sm text-gray-400">Learn real developer skills. One day at a time.</p>
+    <div className="flex min-h-screen items-center justify-center bg-bg-base">
+      <div className="flex flex-col items-center gap-6 rounded-xl border border-border bg-bg-surface p-10">
+        <h1 className="text-3xl font-bold text-text-primary">Coding Tycoon</h1>
+        <p className="text-sm text-text-muted">Learn real developer skills. One day at a time.</p>
         <button
-          className="rounded-lg bg-purple-600 px-6 py-2 text-white hover:bg-purple-500"
+          className="rounded-lg bg-accent px-6 py-2 text-white hover:bg-accent-hover"
           onClick={() => loginWithRedirect()}
         >
           Log in

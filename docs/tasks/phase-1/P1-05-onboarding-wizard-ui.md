@@ -152,7 +152,7 @@ const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>([])
 const { topics, isLoading: topicsLoading } = useTopics()
 
 {topicsLoading ? (
-  <p className="text-gray-400">Loading topics…</p>
+  <p className="text-text-muted">Loading topics…</p>
 ) : (
   topics.map((topic) => (
     <button
@@ -166,8 +166,8 @@ const { topics, isLoading: topicsLoading } = useTopics()
       }
       className={`rounded-full px-3 py-1 text-sm transition-colors ${
         selectedTopicIds.includes(topic.id)
-          ? 'bg-purple-600 text-white'
-          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+          ? 'bg-accent text-white'
+          : 'bg-bg-elevated text-text-muted hover:bg-bg-elevated/80'
       }`}
     >
       {topic.name}

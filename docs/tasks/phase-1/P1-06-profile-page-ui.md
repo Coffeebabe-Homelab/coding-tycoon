@@ -135,7 +135,7 @@ export function useUpdateProfile() {
 └─────────────────────────────────────────┘
 ```
 
-Topics displayed as `rounded-full bg-purple-900/50 px-2 py-0.5 text-xs text-purple-300` badges.
+Topics displayed as `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-hover` badges.
 
 ### Edit mode pattern
 
