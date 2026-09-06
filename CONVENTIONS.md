@@ -84,26 +84,19 @@ Example — readable left-to-right cascade:
 
 ---
 
-## Tailwind: Responsive — Mobile-First Always
+## Tailwind: Responsive — Desktop-First
 
-Write the base (unprefixed) class for mobile, then layer up with `sm:`, `md:`, `lg:` for larger screens. Never invert this.
+The game targets desktop browsers at a minimum width of 1280px. A full-screen warning is shown on smaller viewports (handled once at layout level in Phase 8 — not per component).
 
-❌ **Bad** — desktop-first:
+Write base (unprefixed) classes for desktop. Use `lg:` and `xl:` sparingly for wider layout adjustments only. Do not add `sm:` or `md:` prefixes to individual components — they serve a mobile audience this product does not support.
+
 ```tsx
-<div className="lg:flex-row flex-col">
-```
+// ✅ correct — desktop base, one optional wider variant
+<div className="flex flex-row gap-6 xl:gap-8">
 
-✅ **Good** — mobile-first:
-```tsx
-<div className="flex-col lg:flex-row">
+// ❌ unnecessary — mobile breakpoints for a desktop-only game
+<div className="flex flex-col gap-2 sm:flex-row md:gap-4 lg:flex-row">
 ```
-
-Group breakpoint variants next to their base utility so the progression reads clearly:
-```tsx
-<p className="text-sm md:text-base lg:text-lg">
-```
-
-Do not nest more than 2 responsive breakpoints per element unless genuinely necessary. If a single element needs `sm: md: lg: xl:` all four, it is usually a layout problem — use a grid or split into layout variants instead.
 
 ---
 
