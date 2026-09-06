@@ -42,9 +42,11 @@ At onboarding, the player sets:
 | **Language** | Java (MVP only) |
 | **Framework** | Spring Boot (MVP only) |
 | **Seniority** | Junior (MVP only) |
-| **Topics** | REST APIs, CRUD, OOP, Clean Code, Git workflow |
+| **Topics** | Seeded list: REST APIs, CRUD, OOP, Clean Code, Git Workflow — player selects any combination |
 
-The AI task generator uses this profile to create contextually appropriate daily tasks. A Junior Java developer might get: *"Implement a REST controller for the Users resource."*
+Topics are stored in a normalised `topics` table (not as free-text strings). The onboarding wizard and profile edit page load the available topics from `GET /api/topics`, so the list is driven from the database rather than hardcoded in the frontend. This enables future analytics (most-selected topics across players) and makes adding new topics a data change, not a code change.
+
+The AI task generator uses this profile to create contextually appropriate daily tasks. A Junior Java developer who selected REST APIs and CRUD might get: *"Implement a REST controller for the Users resource."*
 
 ---
 

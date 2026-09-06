@@ -18,11 +18,11 @@ const GameRoomPage = () => {
   }, [getAccessTokenSilently])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-950 text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-base text-text-primary">
       <h1 className="text-2xl font-semibold">Coding Tycoon</h1>
-      <p className="text-gray-400">Welcome, {user?.email}</p>
+      <p className="text-text-muted">Welcome, {user?.email}</p>
       <button
-        className="rounded-lg bg-purple-600 px-4 py-2 text-sm hover:bg-purple-500"
+        className="rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
         onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
       >
         Log out
@@ -37,7 +37,7 @@ const CallbackPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-gray-400">
+      <div className="flex min-h-screen items-center justify-center bg-bg-base text-text-muted">
         Completing login…
       </div>
     )
@@ -50,10 +50,10 @@ const LoginPage = () => {
   const { loginWithRedirect } = useAuth0()
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-950 text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-base text-text-primary">
       <h1 className="text-2xl font-semibold">Coding Tycoon</h1>
       <button
-        className="rounded-lg bg-purple-600 px-4 py-2 text-sm hover:bg-purple-500"
+        className="rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
         onClick={() => loginWithRedirect()}
       >
         Log in
@@ -67,7 +67,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-gray-400">
+      <div className="flex min-h-screen items-center justify-center bg-bg-base text-text-muted">
         Loading…
       </div>
     )

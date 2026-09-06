@@ -1,0 +1,39 @@
+/*
+ * Design Tokens — Coding Tycoon
+ *
+ * THIS IS THE ONLY FILE TO EDIT WHEN REBRANDING.
+ * All colours and fonts are defined here as CSS custom properties via Tailwind's @theme.
+ * Components reference semantic token names (bg-bg-surface, text-text-primary, etc.)
+ * — never raw palette values (bg-gray-900, text-white, etc.).
+ *
+ * When branding is finalised: update the values below. No component files need changing.
+ */
+
+@theme {
+  /* --- Backgrounds --- */
+  --color-bg-base: #030712; /* page / room background */
+  --color-bg-surface: #111827; /* panels, cards */
+  --color-bg-elevated: #1f2937; /* inputs, hover surfaces */
+
+  /* --- Borders --- */
+  --color-border: #374151;
+
+  /* --- Accent (primary interactive colour) --- */
+  --color-accent: #9333ea;
+  --color-accent-hover: #a855f7;
+  --color-accent-subtle: #581c87; /* accent backgrounds: badges, selected chips */
+
+  /* --- Semantic states --- */
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-danger: #f87171;
+
+  /* --- Text --- */
+  --color-text-primary: #f3f4f6;
+  --color-text-muted: #9ca3af;
+
+  /* --- Typography --- */
+  /* Swap font families here only — no component changes needed */
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
