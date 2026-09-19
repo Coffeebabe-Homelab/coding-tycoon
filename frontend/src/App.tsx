@@ -7,6 +7,7 @@ import CallbackPage from './pages/CallbackPage'
 import GameRoomPage from './pages/GameRoomPage'
 import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
+import TaskBoardPage from './pages/TaskBoardPage'
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -38,6 +39,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/room/task"
+        element={
+          <ProtectedRoute>
+            <TaskBoardPage />
           </ProtectedRoute>
         }
       />
