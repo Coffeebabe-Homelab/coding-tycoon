@@ -11,6 +11,7 @@
 Phase 0 — Foundation          Project setup, tooling, CI skeleton
 Phase 1 — Auth & Profile      Login, onboarding, player profile
 Phase 2 — Task Engine         AI task generation, Task Board UI
+Phase 2.1 — Staging Deploy    Minimal Docker Compose deploy slice
 Phase 3 — Codebase Explorer   Synthetic codebase, file tree browser
 Phase 4 — Code Editor         Monaco editor, VCS panel, commit/push
 Phase 5 — AI Review Engine    Code review, feedback, iteration loop
@@ -91,6 +92,28 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 - Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
 - Task was either AI-generated or drawn from seed data (seed is always the fallback)
 - "Start task" transitions status to `IN_PROGRESS` and persists across page refresh
+
+---
+
+## Phase 2.1 — Staging Deploy Slice
+
+**Goal:** Create the smallest deployable version of the application for a staging host using Docker Compose and the existing Jenkinsfile.
+
+This phase is intentionally infrastructure-only. It does not add gameplay features. The deployable slice should run the Phase 2 app with Auth0 login, profile onboarding, task board, seed task fallback, and persisted PostgreSQL data.
+
+### Tasks
+- [ ] Compose app stack: `frontend`, `backend`, and `postgres` services build and run from the repo root (P2.1-01)
+- [ ] Backend staging configuration: database, Auth0, CORS, HTTP host/port, and health endpoint are environment-driven (P2.1-02)
+- [ ] Frontend production container: Vite build served as static files with staging Auth0/API configuration (P2.1-03)
+- [ ] Staging deployment docs and smoke checks: environment contract, Jenkins assumptions, rollback notes, and health verification (P2.1-04)
+
+### Exit Criteria
+- Jenkins can deploy the `staging` branch by running `docker compose up -d --build --remove-orphans` on the staging host
+- Staging exposes the frontend over HTTP/HTTPS and routes API calls to the backend
+- Backend connects to the Compose PostgreSQL service and runs Flyway migrations at startup
+- Auth0 staging callback/logout/web origins are documented and match the deployed frontend URL
+- A smoke test verifies: health endpoint responds, frontend loads, login redirects correctly, and `GET /api/tasks/today` works after authentication
+- Ollama is optional for this phase; seed task fallback keeps staging playable without an AI service
 
 ---
 
