@@ -2,9 +2,9 @@ package dev.codingtycoon.task.seed;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 /**
  * Provides pre-defined coding tasks used as a fallback when AI generation is unavailable.
@@ -164,7 +164,7 @@ public class SeedTaskService {
     }
 
     /**
-     * Returns the first seed task whose tags contain any of the provided topic slugs.
+     * Returns a random seed task whose tags contain any of the provided topic slugs.
      * Falls back to a random task if no match is found.
      *
      * @param topicSlugs the list of topic slugs to match against task tags
@@ -174,10 +174,17 @@ public class SeedTaskService {
         if (topicSlugs == null || topicSlugs.isEmpty()) {
             return getRandom();
         }
-        return SEEDS.stream()
-                .filter(seed -> Arrays.stream(seed.tags())
+
+        var matchingSeeds = SEEDS.stream()
+                .filter(seed -> Stream.of(seed.tags())
                         .anyMatch(topicSlugs::contains))
-                .findFirst()
-                .orElseGet(this::getRandom);
+                .toList();
+
+        if (matchingSeeds.isEmpty()) {
+            return getRandom();
+        }
+
+        int index = ThreadLocalRandom.current().nextInt(matchingSeeds.size());
+        return matchingSeeds.get(index);
     }
 }

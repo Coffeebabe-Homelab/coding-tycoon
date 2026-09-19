@@ -18,7 +18,7 @@ Build the Task Board page where the player sees their daily task, and wire up th
 - [x] `useTask` hook: fetches `GET /api/tasks/today` via `fetchWithAuth`; exposes `{ task, isLoading, error, startTask }`
 - [x] `startTask()` calls `PATCH /api/tasks/{id}/status` and updates local state on success
 - [x] `TaskBoardPage` displays: title, difficulty badge, tags as chips, description, acceptance criteria bullet list
-- [x] "Start task" button shown when `status === ASSIGNED`; "In progress" indicator when `IN_PROGRESS`
+- [x] "Start task" button shown when `status === ASSIGNED`; "Continue" button shown when `IN_PROGRESS`
 - [x] Loading state (spinner) while fetching
 - [x] Error state rendered with `text-danger` class
 - [x] `GameRoomPage` has a prominent "View today's task" link to `/room/task`

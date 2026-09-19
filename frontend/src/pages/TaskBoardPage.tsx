@@ -105,7 +105,13 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       )}
 
       {task.status === 'IN_PROGRESS' && (
-        <p className="text-sm font-medium text-success">In progress — keep going!</p>
+        <button
+          type="button"
+          disabled
+          className="rounded-lg bg-bg-elevated px-6 py-2 text-sm font-medium text-success focus:outline-none disabled:cursor-not-allowed"
+        >
+          Continue
+        </button>
       )}
     </div>
   )

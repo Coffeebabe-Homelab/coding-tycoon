@@ -85,6 +85,7 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 - [x] `GET /api/tasks/today` — returns today's active task for the player
 - [x] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
 - [x] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [x] Integration verification: task loop, seed fallback, security checks, backend verify, frontend build/lint (P2-06)
 
 ### Exit Criteria
 - Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
