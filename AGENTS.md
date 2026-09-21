@@ -4,6 +4,9 @@ Guidelines for AI agents and humans working on this codebase.
 
 ## At a Glance
 
+- The project context is in north_star.md, ROADMAP.md and README.md
+- Always follow CONVENTIONS.md
+- Development tasks should be looked up, added and edit in /docs/tasks
 - Ask rather than guess; clarify before coding.
 - One focused change at for each commit (< 100 lines).
 - Minimal code; comments explain why, not what.

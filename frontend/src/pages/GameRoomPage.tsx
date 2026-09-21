@@ -38,6 +38,13 @@ export default function GameRoomPage() {
       <p className="text-text-muted">Logged in as {user?.email}</p>
 
       <Link
+        to="/room/task"
+        className="rounded-lg bg-accent px-6 py-3 text-base font-semibold text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+      >
+        View today's task
+      </Link>
+
+      <Link
         to="/profile"
         className="text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
       >

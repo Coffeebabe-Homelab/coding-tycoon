@@ -1,35 +1,83 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: codingtycoon
-      POSTGRES_USER: ${DB_USER:-codingtycoon}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-codingtycoon}
+      POSTGRES_DB: ${DB_NAME:-codingtycoon}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-codingtycoon}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-codingtycoon}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  ollama:
-    image: ollama/ollama:latest
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      QUARKUS_PROFILE: prod
+      DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-codingtycoon}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN:?AUTH0_DOMAIN is required}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:?AUTH0_AUDIENCE is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
     ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    # Pulls DeepSeek-Coder 6.7B Q4_K_M on first start
-    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 10 && ollama pull deepseek-coder:6.7b-instruct-q4_K_M && wait"]
+      - "${BACKEND_PORT:-8081}:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health/ready >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 45s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN:?VITE_AUTH0_DOMAIN is required}
+        VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID:?VITE_AUTH0_CLIENT_ID is required}
+        VITE_AUTH0_AUDIENCE: ${VITE_AUTH0_AUDIENCE:?VITE_AUTH0_AUDIENCE is required}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ollama:
+  #     image: ollama/ollama:latest
+  #     ports:
+  #       - "11434:11434"
+  #     volumes:
+  #       - ollama_data:/root/.ollama
+  #     # Pulls DeepSeek-Coder 6.7B Q4_K_M on first start
+  #     entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 10 && ollama pull deepseek-coder:6.7b-instruct-q4_K_M && wait"]
+  #     healthcheck:
+  #       test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+  #       interval: 30s
+  #       timeout: 10s
+  #       retries: 5
+  #       start_period: 60s
 
 volumes:
   postgres_data:
-  ollama_data:
+  # ollama_data:
+

@@ -11,6 +11,7 @@
 Phase 0 — Foundation          Project setup, tooling, CI skeleton
 Phase 1 — Auth & Profile      Login, onboarding, player profile
 Phase 2 — Task Engine         AI task generation, Task Board UI
+Phase 2.1 — Staging Deploy    Minimal Docker Compose deploy slice
 Phase 3 — Codebase Explorer   Synthetic codebase, file tree browser
 Phase 4 — Code Editor         Monaco editor, VCS panel, commit/push
 Phase 5 — AI Review Engine    Code review, feedback, iteration loop
@@ -78,20 +79,41 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** AI generates a daily task appropriate for the player profile; player sees it on the Task Board.
 
 ### Tasks
-- [ ] `Task` entity, `TaskStatus` enum, `TaskRepository` port/adapter, Flyway `V6__create_tasks_table.sql` (P2-01)
-- [ ] 10 hand-crafted seed tasks covering all 5 topics; `SeedTaskService` with topic-matched selection (P2-02)
-- [ ] `GET /api/tasks/today` — returns or creates today's task from seed data (P2-03)
-- [ ] `PATCH /api/tasks/{id}/status` — state machine transitions: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED` (P2-03)
-- [ ] Task Board UI at `/room/task`: title, description, acceptance criteria, difficulty badge, tags, "Start task" button (P2-04)
-- [ ] `useTask` hook: fetch today's task, `startTask()` transition (P2-04)
-- [ ] `TaskAiPort` interface + `OllamaTaskAdapter` (or stub); `POST /api/tasks/generate` with seed fallback on AI failure (P2-05)
-- [ ] Prompt template `task-generator.txt` for personalised AI task generation (P2-05)
-- [ ] Integration verification: full loop tested manually and via automated tests (P2-06)
+- [x] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
+- [x] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
+- [x] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
+- [x] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
+- [x] `GET /api/tasks/today` — returns today's active task for the player
+- [x] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
+- [x] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [x] Integration verification: task loop, seed fallback, security checks, backend verify, frontend build/lint (P2-06)
 
 ### Exit Criteria
 - Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
 - Task was either AI-generated or drawn from seed data (seed is always the fallback)
 - "Start task" transitions status to `IN_PROGRESS` and persists across page refresh
+
+---
+
+## Phase 2.1 — Staging Deploy Slice
+
+**Goal:** Create the smallest deployable version of the application for a staging host using Docker Compose and the existing Jenkinsfile.
+
+This phase is intentionally infrastructure-only. It does not add gameplay features. The deployable slice should run the Phase 2 app with Auth0 login, profile onboarding, task board, seed task fallback, and persisted PostgreSQL data.
+
+### Tasks
+- [ ] Compose app stack: `frontend`, `backend`, and `postgres` services build and run from the repo root (P2.1-01)
+- [ ] Backend staging configuration: database, Auth0, CORS, HTTP host/port, and health endpoint are environment-driven (P2.1-02)
+- [ ] Frontend production container: Vite build served as static files with staging Auth0/API configuration (P2.1-03)
+- [ ] Staging deployment docs and smoke checks: environment contract, Jenkins assumptions, rollback notes, and health verification (P2.1-04)
+
+### Exit Criteria
+- Jenkins can deploy the `staging` branch by running `docker compose up -d --build --remove-orphans` on the staging host
+- Staging exposes the frontend over HTTP/HTTPS and routes API calls to the backend
+- Backend connects to the Compose PostgreSQL service and runs Flyway migrations at startup
+- Auth0 staging callback/logout/web origins are documented and match the deployed frontend URL
+- A smoke test verifies: health endpoint responds, frontend loads, login redirects correctly, and `GET /api/tasks/today` works after authentication
+- Ollama is optional for this phase; seed task fallback keeps staging playable without an AI service
 
 ---
 
@@ -263,4 +285,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-09-06 | Status: Phase 1 complete — moving to Phase 2*
+*Last updated: 2026-09-06 | Status: Phase 2 complete — moving to Phase 3*

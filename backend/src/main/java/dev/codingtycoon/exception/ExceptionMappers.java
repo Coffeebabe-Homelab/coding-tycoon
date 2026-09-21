@@ -43,6 +43,22 @@ public class ExceptionMappers {
     }
 
     /**
+     * Maps UnprocessableException to 422 Unprocessable Entity.
+     * Used for semantic errors such as invalid state machine transitions.
+     */
+    @ServerExceptionMapper
+    public Response mapUnprocessable(UnprocessableException e) {
+        LOG.warn("Unprocessable: " + e.getMessage());
+        return Response.status(422)
+                .entity(Map.of(
+                        "error", "UnprocessableException",
+                        "message", e.getMessage() != null ? e.getMessage() : "",
+                        "status", 422
+                ))
+                .build();
+    }
+
+    /**
      * Maps ConflictException to 409 Conflict.
      */
     @ServerExceptionMapper
