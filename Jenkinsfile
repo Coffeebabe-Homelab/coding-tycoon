@@ -24,6 +24,9 @@ pipeline {
 
         stage('Build images') {
             steps {
+                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                    sh "scp \$ENVFILE ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                }
                 sh "docker compose -f ${COMPOSE_FILE} build"
             }
         }
