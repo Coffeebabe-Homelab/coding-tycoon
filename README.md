@@ -35,14 +35,13 @@ git clone git@github.com:Pedro-Appel/codign-tycoon.git
 cd codign-tycoon
 ```
 
-### 2. Start infrastructure
+### 2. Start the container stack
 
 ```bash
 docker compose up -d
 ```
 
-This starts PostgreSQL on `:5432` and Ollama on `:11434`.
-On first run, Ollama will pull **DeepSeek-Coder 6.7B Q4_K_M** (~4 GB) — this takes a few minutes.
+This starts PostgreSQL, the backend, and the frontend through Docker Compose. Ollama is optional at this stage because the task engine falls back to seed data.
 
 ### 3. Configure Auth0
 
@@ -155,5 +154,6 @@ Backend tests use Quarkus Dev Services — Docker must be running. AI services a
 | [north_star.md](./north_star.md) | Vision, gameplay loop, architecture decisions |
 | [ROADMAP.md](./ROADMAP.md) | Phase-by-phase delivery plan |
 | [docs/DEVELOPMENT_GUIDELINES.md](./docs/DEVELOPMENT_GUIDELINES.md) | Coding patterns, testing strategy, Git workflow |
+| [docs/STAGING_DEPLOY.md](./docs/STAGING_DEPLOY.md) | Staging Docker Compose deploy runbook |
 | [backend/SPEC.md](./backend/SPEC.md) | Backend architecture, API conventions, data model |
 | [frontend/SPEC.md](./frontend/SPEC.md) | Frontend architecture, component structure, state management |
