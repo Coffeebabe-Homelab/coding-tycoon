@@ -43,6 +43,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                    sh "scp \$ENVFILE ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                }
                 sshagent(credentials: ['staging-ssh-key']) {
                     sh """
                         ssh ${DEPLOY_HOST} '\
