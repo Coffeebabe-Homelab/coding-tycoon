@@ -6,8 +6,6 @@ services:
       POSTGRES_DB: ${DB_NAME:-codingtycoon}
       POSTGRES_USER: ${DB_USER:?DB_USER is required}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,8 +30,6 @@ services:
       AUTH0_DOMAIN: ${AUTH0_DOMAIN:?AUTH0_DOMAIN is required}
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:?AUTH0_AUDIENCE is required}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
-    ports:
-      - "${BACKEND_PORT:-8081}:8080"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health/ready >/dev/null 2>&1 || exit 1"]
       interval: 30s
@@ -55,7 +51,7 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-5173}:80"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
