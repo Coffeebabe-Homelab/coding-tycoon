@@ -14,13 +14,70 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout dev') {
             steps {
-                git branch: 'staging',
+                git branch: 'dev',
                     url: 'git@github.com:Pedro-Appel/codign-tycoon.git',
                     credentialsId: 'git-checkout-key'
             }
         }
+
+        stage('Validate') {
+            parallel {
+                stage('Frontend') {
+                    steps {
+                        dir('frontend') {
+                            sh 'npm ci'
+                            sh 'npm run lint'
+                            sh 'npm test'
+                        }
+                    }
+                }
+                stage('Backend') {
+                    steps {
+                        dir('backend') {
+                            sh './mvnw -B test'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Await approval to merge into staging') {
+            options {
+                timeout(time: 24, unit: 'HOURS')
+            }
+            steps {
+                input message: "Validations passed for dev @ ${env.GIT_COMMIT?.take(7)}. Merge into staging and deploy?",
+                      ok: 'Merge & Deploy'
+                      // submitter: 'youruser'   // uncomment + set to restrict who can approve
+            }
+        }
+
+        stage('Merge dev into staging') {
+            steps {
+                sshagent(credentials: ['git-checkout-key']) {
+                    sh """
+                        git config user.email "jenkins@mecha-rat"
+                        git config user.name  "Jenkins"
+                        git fetch origin staging
+                        git checkout staging
+                        git pull origin staging
+                        git merge --no-ff origin/dev -m "Merge dev into staging (build #${env.BUILD_NUMBER})"
+                        git push origin staging
+                    """
+                }
+            }
+        }
+
+        stage('Prepare environment file') {
+            steps {
+                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                    sh 'cp "$ENVFILE" .env'
+                }
+            }
+        }
+
 
         stage('Build images') {
             steps {
@@ -69,10 +126,13 @@ pipeline {
 
     post {
         success {
-            echo "Staging deploy succeeded: build #${env.BUILD_NUMBER}"
+            echo "dev validated, merged into staging, and deployed (build #${env.BUILD_NUMBER})"
+        }
+        aborted {
+            echo "Merge/deploy was declined, or the approval window timed out. Nothing was merged or deployed."
         }
         failure {
-            echo "Staging deploy FAILED — check console log."
+            echo "Pipeline FAILED — check which stage: validation, merge, build, or deploy."
         }
     }
 }
