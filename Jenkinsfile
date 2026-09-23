@@ -7,6 +7,14 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
+    parameters {
+        booleanParam(
+            name: 'DEPLOY_ONLY',
+            defaultValue: false,
+            description: 'Skip validate/approval/merge — check out staging as-is and just build + deploy'
+        )
+    }
+
     environment {
         DEPLOY_HOST = 'staging-deploy'          // SSH alias, see step 5
         DEPLOY_PATH = '~/staging/myapp'
@@ -15,6 +23,7 @@ pipeline {
 
     stages {
         stage('Checkout dev') {
+            when { expression { !params.DEPLOY_ONLY } }
             steps {
                 git branch: 'dev',
                     url: 'git@github.com:Pedro-Appel/codign-tycoon.git',
@@ -23,6 +32,7 @@ pipeline {
         }
 
         stage('Validate') {
+            when { expression { !params.DEPLOY_ONLY } }
             parallel {
                 stage('Frontend') {
                     steps {
@@ -44,6 +54,7 @@ pipeline {
         }
 
         stage('Await approval to merge into staging') {
+            when { expression { !params.DEPLOY_ONLY } }
             options {
                 timeout(time: 24, unit: 'HOURS')
             }
@@ -55,6 +66,7 @@ pipeline {
         }
 
         stage('Merge dev into staging') {
+            when { expression { !params.DEPLOY_ONLY } }
             steps {
                 sshagent(credentials: ['git-checkout-key']) {
                     sh """
@@ -67,6 +79,15 @@ pipeline {
                         git push origin staging
                     """
                 }
+            }
+        }
+
+        stage('Checkout staging (deploy-only)') {
+            when { expression { params.DEPLOY_ONLY } }
+            steps {
+                git branch: 'staging',
+                    url: 'git@github.com:Pedro-Appel/codign-tycoon.git',
+                    credentialsId: 'git-checkout-key'
             }
         }
 
@@ -133,13 +154,23 @@ pipeline {
 
     post {
         success {
-            echo "dev validated, merged into staging, and deployed (build #${env.BUILD_NUMBER})"
+            echo params.DEPLOY_ONLY
+                ? "staging redeployed as-is (build #${env.BUILD_NUMBER}, no merge)"
+                : "dev validated, merged into staging, and deployed (build #${env.BUILD_NUMBER})"
         }
         aborted {
             echo "Merge/deploy was declined, or the approval window timed out. Nothing was merged or deployed."
         }
         failure {
             echo "Pipeline FAILED — check which stage: validation, merge, build, or deploy."
+        }
+        cleanup {
+            // Runs last, after whichever of the above fired, regardless of
+            // outcome — wipes node_modules, Maven target/, and (importantly)
+            // the .env file containing secrets, so none of it lingers under
+            // $JENKINS_HOME/workspace between runs. Built into Pipeline:
+            // Basic Steps, already available — no extra plugin needed.
+            deleteDir()
         }
     }
 }
