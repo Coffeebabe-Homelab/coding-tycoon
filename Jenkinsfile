@@ -74,6 +74,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
                     sh 'cp "$ENVFILE" .env'
+                    sh 'chmod 600 .env'
                 }
             }
         }
