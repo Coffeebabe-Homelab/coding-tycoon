@@ -37,7 +37,7 @@ pipeline {
                 stage('Frontend') {
                     steps {
                         dir('frontend') {
-                            // sh 'npm ci'
+                            sh 'npm ci'
                             sh 'npm run lint'
                             // sh 'npm test'
                         }
