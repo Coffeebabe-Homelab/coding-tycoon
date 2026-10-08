@@ -19,6 +19,7 @@ pipeline {
         DEPLOY_HOST = 'staging-deploy'          // SSH alias, see step 5
         DEPLOY_PATH = '~/staging/myapp'
         COMPOSE_FILE = 'docker-compose.yml'
+        REPOSITORY = 'git@github.com:Pedro-Appel/coding-tycoon.git'
     }
 
     stages {
@@ -26,8 +27,8 @@ pipeline {
             when { expression { !params.DEPLOY_ONLY } }
             steps {
                 git branch: 'dev',
-                    url: 'git@github.com:Pedro-Appel/codign-tycoon.git',
-                    credentialsId: 'git-checkout-key'
+                url: env.REPOSITORY,
+                credentialsId: 'git-checkout-key'
             }
         }
 
@@ -39,7 +40,6 @@ pipeline {
                         dir('frontend') {
                             sh 'npm ci'
                             sh 'npm run lint'
-                            // sh 'npm test'
                         }
                     }
                 }
@@ -86,14 +86,14 @@ pipeline {
             when { expression { params.DEPLOY_ONLY } }
             steps {
                 git branch: 'staging',
-                    url: 'git@github.com:Pedro-Appel/codign-tycoon.git',
+                    url: env.REPOSITORY,
                     credentialsId: 'git-checkout-key'
             }
         }
 
         stage('Prepare environment file') {
             steps {
-                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                withCredentials([file(credentialsId: 'coding-tycoon-env-file', variable: 'ENVFILE')]) {
                     sh 'cp "$ENVFILE" .env'
                     sh 'chmod 600 .env'
                 }
