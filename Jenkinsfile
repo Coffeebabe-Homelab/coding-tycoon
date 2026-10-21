@@ -27,8 +27,20 @@ pipeline {
             when { expression { !params.DEPLOY_ONLY } }
             steps {
                 git branch: 'dev',
-                url: env.REPOSITORY,
-                credentialsId: 'git-checkout-key'
+                    url: env.REPOSITORY,
+                    credentialsId: 'git-checkout-key'
+        
+                sh '''
+                    git config --global pull.rebase false
+                    git config --global user.email "jenkins@mecha-rat"
+                    git config --global user.name "Jenkins"
+                    git fetch origin --prune
+                    git fetch origin dev --prune
+                    git fetch origin staging --prune
+                    git checkout -B dev origin/dev
+                    git branch --track staging origin/staging || true
+                    git branch --list
+                '''
             }
         }
 
@@ -64,20 +76,22 @@ pipeline {
                       // submitter: 'youruser'   // uncomment + set to restrict who can approve
             }
         }
-
+        
         stage('Merge dev into staging') {
             when { expression { !params.DEPLOY_ONLY } }
             steps {
                 sshagent(credentials: ['git-checkout-key']) {
-                    sh """
-                        git config user.email "jenkins@mecha-rat"
-                        git config user.name  "Jenkins"
-                        git fetch origin staging
-                        git checkout -b staging
-                        git pull origin staging
-                        git merge --no-ff origin/dev -m "Merge dev into staging (build #${env.BUILD_NUMBER})"
+                    sh '''
+                        git config --global pull.rebase false
+                        git config --global user.email "jenkins@mecha-rat"
+                        git config --global user.name "Jenkins"
+                        git fetch origin --prune
+                        git fetch origin dev --prune
+                        git fetch origin staging --prune
+                        git checkout -B staging origin/staging
+                        git merge --no-ff origin/dev -m "Merge dev into staging (build #${BUILD_NUMBER})"
                         git push origin staging
-                    """
+                    '''
                 }
             }
         }
@@ -88,6 +102,16 @@ pipeline {
                 git branch: 'staging',
                     url: env.REPOSITORY,
                     credentialsId: 'git-checkout-key'
+        
+                sh '''
+                    git config --global pull.rebase false
+                    git config --global user.email "jenkins@mecha-rat"
+                    git config --global user.name "Jenkins"
+                    git fetch origin --prune
+                    git fetch origin staging --prune
+                    git checkout -B staging origin/staging
+                    git branch --list
+                '''
             }
         }
 
