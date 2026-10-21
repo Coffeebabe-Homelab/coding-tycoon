@@ -19,7 +19,7 @@ pipeline {
         DEPLOY_HOST = 'staging-deploy'          // SSH alias, see step 5
         DEPLOY_PATH = '~/staging/myapp'
         COMPOSE_FILE = 'docker-compose.yml'
-        REPOSITORY = 'git@github.com:Pedro-Appel/coding-tycoon.git'
+        REPOSITORY = 'git@github.com:Coffeebabe-Homelab/coding-tycoon.git'
     }
 
     stages {
