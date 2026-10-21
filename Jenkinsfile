@@ -73,7 +73,7 @@ pipeline {
                         git config user.email "jenkins@mecha-rat"
                         git config user.name  "Jenkins"
                         git fetch origin staging
-                        git checkout staging
+                        git checkout -b staging
                         git pull origin staging
                         git merge --no-ff origin/dev -m "Merge dev into staging (build #${env.BUILD_NUMBER})"
                         git push origin staging
