@@ -292,6 +292,7 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 - Stdout logging remains enabled. The test profile disables the telemetry SDK.
 - Local LGTM stores telemetry in `lgtm-data:/data`; Grafana requires credentials and all published telemetry ports bind to loopback. See [operating notes](../observability/README.md).
 - Browser telemetry is deferred; React/Vite is unchanged.
+- Importable Grafana starter dashboard: [`coding-tycoon-backend.json`](../observability/dashboards/coding-tycoon-backend.json), covering HTTP rates/latency, JVM memory/GC, logs, and traces with service/environment filters. Import instructions and metric assumptions are in the [operating notes](../observability/README.md#import-the-starter-dashboard).
 - Structured log records via JBoss LogManager (Quarkus default)
 - Log levels: `INFO` globally, `DEBUG` for `dev.codingtycoon.*`
 - Health endpoints: `/q/health` (SmallRye aggregated), `/api/health` (custom)
