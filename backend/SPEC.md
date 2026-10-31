@@ -286,7 +286,13 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 
 ## Observability
 
-- Structured logging via JBoss LogManager (Quarkus default)
+- `quarkus-opentelemetry` exports HTTP traces, ordinary application logs, and metrics via OTLP HTTP/protobuf; logs and metrics are enabled at build time (Quarkus 3.33.2).
+- Service identity: `OTEL_SERVICE_NAME` (default `coding-tycoon-backend`); resource `deployment.environment` from `DEPLOYMENT_ENVIRONMENT`.
+- Endpoint: `OTEL_EXPORTER_OTLP_ENDPOINT`, default `http://127.0.0.1:4318` for host execution; Compose supplies `http://lgtm:4318` on its existing default network.
+- Stdout logging remains enabled. The test profile disables the telemetry SDK.
+- Local LGTM stores telemetry in `lgtm-data:/data`; Grafana requires credentials and all published telemetry ports bind to loopback. See [operating notes](../observability/README.md).
+- Browser telemetry is deferred; React/Vite is unchanged.
+- Structured log records via JBoss LogManager (Quarkus default)
 - Log levels: `INFO` globally, `DEBUG` for `dev.codingtycoon.*`
 - Health endpoints: `/q/health` (SmallRye aggregated), `/api/health` (custom)
 - Log AI requests/responses in dev mode (`quarkus.langchain4j.ollama.log-requests=true`)
