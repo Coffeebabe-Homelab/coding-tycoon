@@ -22,6 +22,35 @@ The backend uses `OTEL_SERVICE_NAME=coding-tycoon-backend` and `DEPLOYMENT_ENVIR
 
 ## Verify
 
+### Import the starter dashboard
+
+In Grafana, open **Dashboards → New → Import**, upload
+[`dashboards/coding-tycoon-backend.json`](dashboards/coding-tycoon-backend.json),
+and select the existing **Prometheus**, **Loki**, and **Tempo** data sources when prompted.
+Click **Import**. No additional plugins or credentials are included in the file.
+
+The dashboard shows HTTP request and 5xx rates, p95 latency, traffic by route/status,
+JVM memory and GC, recent logs, and traces. Select `coding-tycoon-backend` and your
+environment. Environment defaults to **All** because Compose defaults to `homelab`.
+It opens the last hour and refreshes every 30 seconds; allow 60 seconds for export
+and at least two metric samples for rates. These are observation panels, not service controls or alerts.
+
+Metric queries use Prometheus-translated OpenTelemetry names such as
+`http_server_request_duration_seconds_count`, `_bucket`, `jvm_memory_used_bytes`,
+and `jvm_gc_duration_seconds_sum`. Resource filtering joins `target_info` on
+`job` and `instance`; it does not require resource attributes on every metric.
+If a panel is empty, check the metric names/labels in Explore and the time range.
+Missing telemetry is not shown as healthy or silently replaced with zero.
+Only absent 5xx series are shown as zero when request-rate data exists.
+The logs filter uses Loki's `deployment_environment` resource metadata.
+Trace search depends on Tempo indexing; trace-ID lookup remains the fallback.
+
+The JSON structure and backend baseline were checked locally; visual import and
+queries against staging remain manual checks. Importing again with the same UID
+can replace the existing dashboard, so export local customizations first.
+
+### Check telemetry
+
 Start LGTM, then the backend. Its startup INFO log supplies a known log. Load the task board or request a public API through the frontend proxy, for example:
 
 ```sh

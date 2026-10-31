@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add an importable Grafana backend overview dashboard for HTTP traffic, errors, latency, JVM metrics, logs, and traces, with service/environment filters.
+
 - Add local-only LGTM observability, persistent storage, and Quarkus OTLP logs, traces, and metrics; document operation and pending runtime validation.
 
 - Restore `npm ci` before frontend linting in Jenkins so the local `oxlint` binary is installed in clean workspaces.
