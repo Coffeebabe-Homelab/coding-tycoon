@@ -7,7 +7,8 @@
 - Fix: JAX-RS exceptions such as 405 Method Not Allowed keep their status code instead of being mapped to 500.
 - Frontend: add a shared, lazy-loaded Monaco `CodeEditor` (bundled locally, pinned `@monaco-editor/react` 4.7.0 and `monaco-editor` 0.57.0) and the `/room/codebase` explorer (collapsible `FileTree`, `?file=` deep links). The Task Board links focus files and the explorer, and the room links to the explorer.
 - Process: AGENTS.md now requires checking the Trello board before every change. Create or extend cards, avoid duplicates, move cards to `BLOCKED` while a PR waits for review, and to `DONE` once merged.
-
+- Add XP and streaks (P7-03, P7-04): `xp_event` ledger (Flyway V8), 100 XP awarded once per task when it reaches `APPROVED`, and `GET /api/progress` returning `totalXp`, `xpToday`, `currentStreak`, `longestStreak` (UTC days, streak counted on days with an approved task).
+- Add `quarkus-jacoco` (test scope) so `./mvnw verify` writes a coverage report to `backend/target/jacoco-report`.
 - Docs: close Phase 0, P1-07 and Phase 2.1 task records to match delivered work. P0-03 (LangChain4j Ollama) is marked deferred. Rewrite the Phase 2.1 smoke criterion to the unauthenticated `401` check.
 - Docs: fix stale `.env.example` references (README, staging runbook, observability README), the Java 25 prerequisite, backend env vars, and the frontend/backend SPEC stack tables.
 - Docs: add Phase 3 (Codebase Explorer, Monaco `CodeEditor` shared with Phase 4) and Phase 7 (Game Shell) task specs, which can be worked on in parallel. Reserve Flyway versions V7 (P3-03) and V8 (P7-03). Record the decisions: Monaco bundled locally, overlays driven by nested routes, 100 XP plus a 50 XP first-attempt bonus, UTC days, streak counted on approved-task days.
