@@ -106,7 +106,9 @@ class TaskResourceTest {
                 .statusCode(201)
                 .body("id", notNullValue())
                 .body("title", notNullValue())
-                .body("status", is("ASSIGNED"));
+                .body("status", is("ASSIGNED"))
+                .body("codebaseKey", is("shopfront"))
+                .body("focusFiles", notNullValue());
     }
 
     @Test

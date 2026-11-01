@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 @Table(name = "tasks")
 public class Task extends PanacheEntityBase {
 
+    /** The only synthetic codebase in the MVP; also the DB column default (V7). */
+    public static final String DEFAULT_CODEBASE_KEY = "shopfront";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
@@ -46,6 +49,14 @@ public class Task extends PanacheEntityBase {
      */
     @Column(nullable = false)
     public String tags = "";
+
+    /** Key of the synthetic codebase under resources/codebases/ this task belongs to. */
+    @Column(name = "codebase_key", nullable = false)
+    public String codebaseKey = DEFAULT_CODEBASE_KEY;
+
+    /** Comma-separated codebase-relative paths the task is about (same convention as tags). */
+    @Column(name = "focus_files", nullable = false, columnDefinition = "TEXT")
+    public String focusFiles = "";
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
