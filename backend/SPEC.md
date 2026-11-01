@@ -14,7 +14,8 @@
 | API style | JAX-RS (RESTEasy Reactive) + Jackson |
 | ORM | Hibernate ORM with Panache (Active Record) |
 | Database | PostgreSQL 16 |
-| AI | Quarkus LangChain4j + Ollama — DeepSeek-Coder 6.7B Q4_K_M |
+| AI | Quarkus LangChain4j + Ollama with DeepSeek-Coder 6.7B Q4_K_M (planned; currently `StubTaskAdapter` with seed fallback, see ROADMAP P0-03) |
+| Observability | Quarkus OpenTelemetry: OTLP logs, traces and metrics to LGTM (`observability/README.md`) |
 | Auth | Auth0 OIDC (JWT validation via `quarkus-oidc`) |
 | Validation | Hibernate Validator (`@Valid`, `@NotNull`, etc.) |
 | Health | SmallRye Health (`/q/health`) |
@@ -44,7 +45,8 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── TaskRepository.java          Port (interface) — persistence boundary
 │   ├── JpaTaskRepository.java       Adapter — Panache implementation
 │   ├── TaskAiPort.java              Port (interface) — AI boundary
-│   ├── OllamaTaskAdapter.java       Adapter — LangChain4j implementation
+│   ├── StubTaskAdapter.java         Adapter (current): returns empty, so TaskService uses seed tasks
+│   ├── OllamaTaskAdapter.java       Adapter (planned): LangChain4j implementation
 │   ├── TaskService.java             Domain core: business logic, orchestration
 │   └── TaskResource.java            Adapter (HTTP in): POST /api/tasks/generate, GET /api/tasks/today
 │
@@ -80,6 +82,17 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── JpaSubmissionRepository.java Adapter — Panache
 │   ├── VcsService.java              Domain core
 │   └── VcsResource.java             Adapter (HTTP in): POST /api/submissions, GET /api/submissions/template
+│
+├── codebase/                        (Phase 3)
+│   ├── CodebaseRepository.java      Port (interface): list files / read file for a codebase key
+│   ├── ClasspathCodebaseRepository.java  Adapter: static files under resources/codebases/<key>/
+│   ├── CodebaseService.java         Domain core: resolves the player's active task to its codebase
+│   └── CodebaseResource.java        Adapter (HTTP in): GET /api/codebase/files, GET /api/codebase/files/{path}
+│
+├── progress/                        (Phase 7)
+│   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt)
+│   ├── ProgressService.java         Domain core: awards XP on approval, computes totals and streak
+│   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
 │
 └── ai/
     └── (shared prompt string constants — no business logic)
@@ -281,6 +294,18 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 - Naming: `V{n}__{description}.sql` (e.g. `V1__create_user_table.sql`)
 - Dev mode: `quarkus.hibernate-orm.database.generation=drop-and-create` (no migration run)
 - Prod mode: `quarkus.hibernate-orm.database.generation=validate` + Flyway runs on startup
+
+### Reserved Versions
+
+Phases worked in parallel reserve their version numbers up front so branches don't collide. Never edit a migration that has already been deployed; add a new one instead.
+
+| Version | File | Task | Status |
+|---|---|---|---|
+| V1–V6 | user, topics, player profile, profile topics, topic seed, tasks | Phases 1–2 | Applied |
+| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Reserved |
+| V8 | `V8__create_xp_event_table.sql` | P7-03 | Reserved |
+
+Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 
 ---
 
