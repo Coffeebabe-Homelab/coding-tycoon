@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Integration tests for XP awarding and progress totals. */
@@ -67,6 +68,7 @@ class ProgressServiceTest {
         assertEquals(0, progress.xpToday());
         assertEquals(0, progress.currentStreak());
         assertEquals(0, progress.longestStreak());
+        assertNull(progress.approvedTodayTaskTitle());
     }
 
     @Test
@@ -79,6 +81,17 @@ class ProgressServiceTest {
 
         assertEquals(2 * ProgressService.XP_PER_APPROVED_TASK, progress.totalXp());
         assertEquals(ProgressService.XP_PER_APPROVED_TASK, progress.xpToday());
+    }
+
+    @Test
+    void getProgressReturnsTitleOfTaskApprovedTodayOnly() {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        testData.createEvent(profileId, testData.createTask(profileId, "Yesterday's task"), now.minusDays(1));
+        assertNull(progressService.getProgress(TEST_SUB).approvedTodayTaskTitle());
+
+        testData.createEvent(profileId, testData.createTask(profileId, "Today's task"), now);
+
+        assertEquals("Today's task", progressService.getProgress(TEST_SUB).approvedTodayTaskTitle());
     }
 
     @Test

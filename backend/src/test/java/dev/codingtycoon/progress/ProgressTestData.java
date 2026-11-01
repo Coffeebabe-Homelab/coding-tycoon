@@ -66,11 +66,15 @@ public class ProgressTestData {
         return user;
     }
 
-    @Transactional
     public Task createTask(Long profileId) {
+        return createTask(profileId, "Fixture task");
+    }
+
+    @Transactional
+    public Task createTask(Long profileId, String title) {
         Task task = new Task();
         task.playerProfileId = profileId;
-        task.title = "Fixture task";
+        task.title = title;
         task.description = "Fixture";
         task.acceptanceCriteria = "Fixture";
         task.difficulty = "Easy";

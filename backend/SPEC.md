@@ -99,7 +99,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
 │   ├── Streak.java                  Value: current, longest
 │   ├── ProgressService.java         Domain core: awards XP on approval (called by TaskService), computes totals and streak
-│   ├── ProgressResponse.java        JSON: totalXp, xpToday, currentStreak, longestStreak
+│   ├── ProgressResponse.java        JSON: totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
 │   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
 │
 └── ai/
@@ -124,12 +124,13 @@ backend/src/main/java/dev/codingtycoon/
 `GET /api/progress` (authenticated) → `200`
 
 ```json
-{ "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3 }
+{ "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
 ```
 
 - XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
+- `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
 - `401` without a token, `404` if the player has no profile.
 
 ### HTTP Status Codes
