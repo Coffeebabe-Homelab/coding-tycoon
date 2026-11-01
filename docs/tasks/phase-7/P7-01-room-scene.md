@@ -1,7 +1,7 @@
 # P7-01 — Static Room Scene & Avatar Placeholder
 
 **Phase:** 7 — Game Shell  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P2-04  
 
 ---
@@ -14,16 +14,16 @@ Replace the plain "Welcome to the Game Room" page with a static isometric develo
 
 ## Acceptance Criteria
 
-- [ ] `game/RoomScene.tsx`: inline SVG isometric room (floor, two walls, desk, monitor, chair, a wall-mounted kanban board, a door)
-- [ ] Avatar placeholder (simple SVG figure) seated at the desk
-- [ ] Hotspots are real `<button>`s (or SVG elements with `role="button"`, `tabIndex`, `aria-label`) with a visible hover/focus state:
+- [x] `game/RoomScene.tsx`: inline SVG isometric room (floor, two walls, desk, monitor, chair, a wall-mounted kanban board, a door)
+- [x] Avatar placeholder (simple SVG figure) seated at the desk
+- [x] Hotspots are real `<button>`s (or SVG elements with `role="button"`, `tabIndex`, `aria-label`) with a visible hover/focus state:
   - Kanban board → Task Board
   - Monitor → Codebase Explorer (Phase 3) / Editor (Phase 4)
   - Door → End of Day (P7-05)
-- [ ] A slim HUD strip shows the player's email/profile link and log out (moved from the current page)
-- [ ] Room colours are new semantic tokens in `styles/tokens.css` (e.g. `--color-room-floor`, `--color-room-wall`); no raw palette values in components
-- [ ] `GameRoomPage` keeps its existing "no profile → onboarding" redirect
-- [ ] Hotspots for panels that don't exist yet are hidden or disabled with a tooltip, never broken links
+- [x] A slim HUD strip shows the player's email/profile link and log out (moved from the current page)
+- [x] Room colours are new semantic tokens in `styles/tokens.css` (e.g. `--color-room-floor`, `--color-room-wall`); no raw palette values in components
+- [x] `GameRoomPage` keeps its existing "no profile → onboarding" redirect
+- [x] Hotspots for panels that don't exist yet are hidden or disabled with a tooltip, never broken links
 
 ---
 
