@@ -30,7 +30,7 @@ Required values:
 | `DB_PASSWORD` | PostgreSQL password |
 | `AUTH0_DOMAIN` | Auth0 tenant domain for backend JWT validation |
 | `AUTH0_AUDIENCE` | Auth0 API identifier |
-| `CORS_ORIGINS` | Comma-separated allowed frontend origins |
+| `CORS_ORIGINS` | Comma-separated allowed frontend origins; must include the public URL (`https://coding-tycoon-stg.tail028aa9.ts.net`) or every POST/PUT/PATCH returns 403 |
 | `VITE_AUTH0_DOMAIN` | Auth0 tenant domain baked into the frontend build |
 | `VITE_AUTH0_CLIENT_ID` | Auth0 SPA client ID |
 | `VITE_AUTH0_AUDIENCE` | Auth0 API identifier baked into the frontend build |
@@ -38,11 +38,11 @@ Required values:
 
 ## Auth0 Staging URLs
 
-For a frontend hosted at `https://staging.codingtycoon.dev`, configure the Auth0 SPA application with:
+Staging is served over Tailscale at `https://coding-tycoon-stg.tail028aa9.ts.net`. Configure the Auth0 SPA application with:
 
-- Allowed Callback URLs: `https://staging.codingtycoon.dev/callback`
-- Allowed Logout URLs: `https://staging.codingtycoon.dev`
-- Allowed Web Origins: `https://staging.codingtycoon.dev`
+- Allowed Callback URLs: `https://coding-tycoon-stg.tail028aa9.ts.net/callback`
+- Allowed Logout URLs: `https://coding-tycoon-stg.tail028aa9.ts.net`
+- Allowed Web Origins: `https://coding-tycoon-stg.tail028aa9.ts.net`
 
 If staging uses a port during early setup, add that exact origin too, for example `http://staging-host:8080`.
 
@@ -77,6 +77,8 @@ sh scripts/smoke-staging.sh
 It checks backend readiness, then goes through the frontend nginx proxy:
 `/` → 200, `/api/topics` → 200 (proxy reaches backend, path intact),
 `/api/tasks/today` without a token → 401 (backend answered, auth enforced).
+When `PUBLIC_ORIGIN` is set (Jenkins sets it), `POST /api/profile` with that
+`Origin` → 401 (CORS accepts the public URL; 403 means fix `CORS_ORIGINS`).
 A 502 here usually means nginx cannot reach the backend container.
 
 Manual authenticated check:

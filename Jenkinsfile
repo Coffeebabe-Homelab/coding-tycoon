@@ -19,6 +19,7 @@ pipeline {
         DEPLOY_HOST = 'staging-deploy'          // SSH alias, see step 5
         DEPLOY_PATH = '~/staging/myapp'
         COMPOSE_FILE = 'docker-compose.yml'
+        PUBLIC_ORIGIN = 'https://coding-tycoon-stg.tail028aa9.ts.net'   // must be listed in CORS_ORIGINS
         REPOSITORY = 'git@github.com:Coffeebabe-Homelab/coding-tycoon.git'
     }
 
@@ -169,7 +170,7 @@ pipeline {
                 sshagent(credentials: ['staging-ssh-key']) {
                     sh """
                         ssh ${DEPLOY_HOST} 'docker compose -f ${DEPLOY_PATH}/${COMPOSE_FILE} ps'
-                        ssh ${DEPLOY_HOST} 'cd ${DEPLOY_PATH} && COMPOSE_FILE=${COMPOSE_FILE} sh scripts/smoke-staging.sh'
+                        ssh ${DEPLOY_HOST} 'cd ${DEPLOY_PATH} && COMPOSE_FILE=${COMPOSE_FILE} PUBLIC_ORIGIN=${PUBLIC_ORIGIN} sh scripts/smoke-staging.sh'
                     """
                 }
             }
