@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a coding task assigned to a player profile.
@@ -64,4 +66,20 @@ public class Task extends PanacheEntityBase {
 
     @Column(name = "created_at", nullable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * Returns the focus files as a list.
+     *
+     * @return codebase-relative paths, empty if the task has none
+     */
+    public List<String> focusFileList() {
+        return splitCsv(focusFiles);
+    }
+
+    static List<String> splitCsv(String csv) {
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+    }
 }

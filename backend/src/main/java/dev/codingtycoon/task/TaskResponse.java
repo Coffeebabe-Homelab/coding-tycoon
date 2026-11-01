@@ -1,6 +1,5 @@
 package dev.codingtycoon.task;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -33,18 +32,11 @@ public record TaskResponse(
                 task.description,
                 task.acceptanceCriteria,
                 task.difficulty,
-                splitCsv(task.tags),
+                Task.splitCsv(task.tags),
                 task.codebaseKey,
-                splitCsv(task.focusFiles),
+                task.focusFileList(),
                 task.status.name(),
                 task.createdAt.toString()
         );
-    }
-
-    private static List<String> splitCsv(String csv) {
-        return Arrays.stream(csv.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isBlank())
-                .toList();
     }
 }
