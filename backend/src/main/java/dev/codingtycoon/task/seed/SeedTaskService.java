@@ -1,5 +1,6 @@
 package dev.codingtycoon.task.seed;
 
+import dev.codingtycoon.task.Task;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
@@ -13,19 +14,29 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class SeedTaskService {
 
+    private static final String[] NO_FOCUS_FILES = {};
+
     private static final List<SeedTask> SEEDS = List.of(
             new SeedTask(
                     "Build a REST endpoint to list all users",
-                    "Create a GET /api/users endpoint that returns a paginated list of all registered users. "
-                            + "Each user object should include id, email, and createdAt. "
+                    "Shopfront's UserController has no way to list users yet. Add a GET /api/users endpoint "
+                            + "to UserController, backed by a new UserService method, that returns a paginated list "
+                            + "of all registered users. UserRepository already extends JpaRepository, so paging support "
+                            + "is available. Each user object should include id, email, name and createdAt. "
                             + "The endpoint must accept optional query parameters: page (default 0) and size (default 20, max 100).",
                     "- GET /api/users returns 200 with a JSON array of user objects\n"
-                            + "- Each object contains id (Long), email (String), createdAt (ISO 8601)\n"
+                            + "- Each object contains id (Long), email (String), name (String), createdAt (ISO 8601)\n"
                             + "- page and size query params control pagination\n"
-                            + "- size > 100 returns 422\n"
-                            + "- Unauthenticated request returns 401",
+                            + "- size > 100 returns 400 through GlobalExceptionHandler\n"
+                            + "- UserService has unit tests for the new method",
                     "Junior",
-                    new String[]{"rest-apis", "crud", "java"}
+                    new String[]{"rest-apis", "crud", "java"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    new String[]{
+                            "src/main/java/com/shopfront/user/UserController.java",
+                            "src/main/java/com/shopfront/user/UserService.java",
+                            "src/main/java/com/shopfront/user/UserRepository.java"
+                    }
             ),
             new SeedTask(
                     "Implement a CRUD service for a Note entity",
@@ -38,7 +49,9 @@ public class SeedTaskService {
                             + "- deleteNote(Long id, String requesterId) deletes the note; throws 403 if requesterId != ownerId\n"
                             + "- All methods have unit tests with ≥ 90% branch coverage",
                     "Junior",
-                    new String[]{"crud", "java", "oop"}
+                    new String[]{"crud", "java", "oop"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Refactor a God Class into focused services",
@@ -52,32 +65,47 @@ public class SeedTaskService {
                             + "- No class exceeds 150 lines\n"
                             + "- All existing tests still pass after refactoring",
                     "Mid",
-                    new String[]{"oop", "clean-code", "java"}
+                    new String[]{"oop", "clean-code", "java"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Add input validation to an existing REST API",
-                    "The /api/orders endpoint currently accepts any JSON body without validation. "
-                            + "Add Jakarta Bean Validation annotations so invalid requests are rejected with a 422 response "
-                            + "and a clear error message listing which fields failed.",
-                    "- @NotNull, @NotBlank, @Min, @Max annotations are applied to all Order fields\n"
-                            + "- Invalid request body returns 422 with JSON: {\"error\": \"ValidationError\", \"fields\": [...]}\n"
+                    "Shopfront's ProductController accepts any JSON body without validation, so negative prices "
+                            + "and blank names end up in the catalogue. Add Jakarta Bean Validation annotations to the "
+                            + "request records in ProductController so invalid requests are rejected. "
+                            + "GlobalExceptionHandler already turns validation failures into a 400 response.",
+                    "- @NotBlank, @NotNull, @PositiveOrZero annotations are applied to CreateProductRequest and UpdatePriceRequest\n"
+                            + "- Request bodies are annotated with @Valid in ProductController\n"
+                            + "- Invalid request body returns 400 with JSON: {\"error\": \"<field> <reason>\"}\n"
                             + "- Valid request still returns 201\n"
-                            + "- Tests cover: missing required field, negative quantity, blank productId",
+                            + "- Tests cover: missing name, negative price, blank category",
                     "Junior",
-                    new String[]{"rest-apis", "java", "clean-code"}
+                    new String[]{"rest-apis", "java", "clean-code"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    new String[]{
+                            "src/main/java/com/shopfront/product/ProductController.java",
+                            "src/main/java/com/shopfront/common/GlobalExceptionHandler.java"
+                    }
             ),
             new SeedTask(
-                    "Implement the Repository pattern for a Product entity",
-                    "Replace direct EntityManager calls scattered across the codebase with a clean ProductRepository "
-                            + "interface and a JpaProductRepository implementation. The interface should be a plain Java "
-                            + "interface with no Panache or JPA imports.",
-                    "- ProductRepository interface defines: findById, findByCategory, save, delete\n"
-                            + "- JpaProductRepository implements the interface using Panache\n"
-                            + "- ProductService depends only on ProductRepository (not the Panache class)\n"
-                            + "- Integration test verifies round-trip: save → findById → delete\n"
-                            + "- No direct EntityManager usage remains outside the adapter",
+                    "Add a low-stock query to the product catalogue",
+                    "The shop needs to know which products are about to run out. Add a derived query to "
+                            + "ProductRepository, expose it through ProductService, and add a GET /api/products/low-stock "
+                            + "endpoint to ProductController that lists products whose stock is below a threshold.",
+                    "- ProductRepository declares findByStockLessThan(int threshold)\n"
+                            + "- ProductService.listLowStock(int threshold) delegates to the repository\n"
+                            + "- GET /api/products/low-stock?threshold=5 returns 200 with matching products (default threshold 5)\n"
+                            + "- A negative threshold returns 400\n"
+                            + "- ProductService has unit tests for the new method",
                     "Mid",
-                    new String[]{"oop", "crud", "java"}
+                    new String[]{"oop", "crud", "java"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    new String[]{
+                            "src/main/java/com/shopfront/product/ProductRepository.java",
+                            "src/main/java/com/shopfront/product/ProductService.java",
+                            "src/main/java/com/shopfront/product/ProductController.java"
+                    }
             ),
             new SeedTask(
                     "Write a Git commit message convention linter",
@@ -89,7 +117,9 @@ public class SeedTaskService {
                             + "- Accepted types: feat, fix, chore, docs, refactor, test, style\n"
                             + "- Unit tests cover each violation type and valid messages",
                     "Junior",
-                    new String[]{"git-workflow", "clean-code", "java"}
+                    new String[]{"git-workflow", "clean-code", "java"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Design an OOP class hierarchy for a game inventory system",
@@ -102,7 +132,9 @@ public class SeedTaskService {
                             + "- Prefer composition for item effects where applicable\n"
                             + "- Unit tests cover: add, remove, total weight, use() for each item type",
                     "Junior",
-                    new String[]{"oop", "java", "clean-code"}
+                    new String[]{"oop", "java", "clean-code"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Implement optimistic locking for a shared counter",
@@ -115,7 +147,9 @@ public class SeedTaskService {
                             + "the other throws OptimisticLockException\n"
                             + "- Counter value after both attempts equals initialValue + 1",
                     "Senior",
-                    new String[]{"java", "crud", "oop"}
+                    new String[]{"java", "crud", "oop"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Apply Clean Code naming and extraction to a legacy method",
@@ -128,7 +162,9 @@ public class SeedTaskService {
                             + "- The original processData method is ≤ 30 lines after refactoring\n"
                             + "- All existing unit tests still pass",
                     "Mid",
-                    new String[]{"clean-code", "java", "oop"}
+                    new String[]{"clean-code", "java", "oop"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             ),
             new SeedTask(
                     "Set up a feature branch workflow with squash merging",
@@ -140,7 +176,9 @@ public class SeedTaskService {
                             + "- Script fails with a clear message if the branch already exists\n"
                             + "- Script validates that description is non-empty and ticket-id matches pattern [A-Z]+-[0-9]+",
                     "Junior",
-                    new String[]{"git-workflow", "clean-code"}
+                    new String[]{"git-workflow", "clean-code"},
+                    Task.DEFAULT_CODEBASE_KEY,
+                    NO_FOCUS_FILES
             )
     );
 
