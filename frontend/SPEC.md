@@ -46,6 +46,8 @@ frontend/src/
 ├── lib/           Pure utilities
 │   ├── api.ts         fetchWithAuth helper
 │   ├── auth.ts        Auth0 helpers
+│   ├── fileTree.ts    buildFileTree(paths): flat paths → nested tree, folders first (Phase 3)
+│   ├── language.ts    languageForPath(path): file extension → Monaco language id (Phase 3)
 │   └── diff.ts        Diff computation utilities
 ├── styles/
 │   └── tokens.css     Design tokens — colours, fonts. THE only file to change when rebranding.
@@ -178,30 +180,43 @@ Spacing: 4-point scale (`p-4`, `gap-4`, `m-2`). Avoid arbitrary values.
 
 ## Monaco Editor Integration
 
-```tsx
-import Editor from '@monaco-editor/react'
+Pinned exactly: `@monaco-editor/react` 4.7.0, `monaco-editor` 0.57.0.
 
-<Editor
-  height="100%"
-  language="java"
-  theme="vs-dark"
+```tsx
+import { LazyCodeEditor } from '../components/LazyCodeEditor'
+import { languageForPath } from '../lib/language'
+
+<LazyCodeEditor
   value={code}
-  onChange={(val) => setCode(val ?? '')}
-  options={{
-    minimap: { enabled: false },
-    fontSize: 14,
-    wordWrap: 'on',
-    scrollBeyondLastLine: false,
-    readOnly: false,   // true for codebase explorer
-  }}
+  language={languageForPath(path)}
+  readOnly={false}                 // true for the codebase explorer
+  onChange={setCode}
+  ariaLabel={`Editing ${path}`}
 />
 ```
 
-Wrap Monaco once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else.
+Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else. That file holds all Monaco wiring:
+
+- `loader.config({ monaco })` so the editor comes from the bundle, not jsDelivr
+- `self.MonacoEnvironment.getWorker` with Vite `?worker` imports (editor worker, JSON worker)
+- the `coding-tycoon-dark` theme, built on `vs-dark` from the `tokens.css` colour variables
+- options: no minimap, font size 14, word wrap, `scrollBeyondLastLine: false`
+
+Pages render `LazyCodeEditor` (`React.lazy` + `Suspense` with a "Loading editor…" message), which keeps Monaco in its own build chunks.
 
 For the **Codebase Explorer** (Phase 3, read-only): `readOnly` sets `readOnly: true` and `domReadOnly: true`.
 For the **Editor panel** (Phase 4): allow edits, bind value to component state, surface changes via `onChange`.
-Load `CodeEditor` lazily (`React.lazy`) so Monaco stays out of the initial bundle. Monaco is **bundled locally** (`monaco-editor` + `loader.config({ monaco })`), never loaded from a CDN, so it works on the Tailscale-only staging and offline (P3-04).
+Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tailscale-only staging and offline (P3-04).
+
+### Codebase Explorer (Phase 3)
+
+`pages/CodebaseExplorerPage.tsx` at `/room/codebase`: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
+
+- `hooks/useCodebase.ts` loads `GET /api/codebase/files` once and exposes `{ files, focusFiles, openFile, current, isLoading, error, noActiveTask }`. `openFile(path)` fetches `GET /api/codebase/files/{path}` and ignores stale responses.
+- The open file lives in the URL (`?file=<path>`), so refresh, deep links and Back keep it. Without `?file`, the first focus file opens (else the first file).
+- `components/FileTree.tsx`: collapsible folders built from native buttons (Tab/Enter/Space), text glyphs per file type, focus files in `text-warning`, folders leading to focus files start expanded.
+- 404 on the file list shows "no task yet" with a link to the Task Board. The Task Board lists the task's `focusFiles` as explorer deep links plus an "Explore codebase" link.
+- `components/TextLink.tsx`: the shared inline accent link (paired hover/focus).
 
 ---
 
