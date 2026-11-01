@@ -5,11 +5,13 @@ import { buildFileTree } from '../lib/fileTree'
 import { languageForPath } from '../lib/language'
 import { FileTree } from '../components/FileTree'
 import { LazyCodeEditor } from '../components/LazyCodeEditor'
-import { LoadingScreen } from '../components/LoadingScreen'
+import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 
+const TITLE = 'Codebase Explorer'
+
 /**
- * Read-only browser for the active task's codebase.
+ * Read-only browser for the active task's codebase, shown as an overlay over the room.
  * The open file lives in `?file=` so refreshes, deep links and the back button keep it.
  */
 export default function CodebaseExplorerPage() {
@@ -22,27 +24,30 @@ export default function CodebaseExplorerPage() {
     if (selectedPath) void openFile(selectedPath)
   }, [selectedPath, openFile])
 
-  if (isLoading) return <LoadingScreen message="Loading codebase…" />
-
-  if (noActiveTask) {
+  if (isLoading || noActiveTask) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-base">
-        <p className="text-text-primary">There's no codebase to explore until you have a task.</p>
-        <TextLink to="/room/task">Go to the task board</TextLink>
-      </div>
+      <Overlay title={TITLE}>
+        {isLoading ? (
+          <p className="text-text-muted">Loading codebase…</p>
+        ) : (
+          <div className="flex flex-col items-start gap-4">
+            <p className="text-text-primary">There's no codebase to explore until you have a task.</p>
+            <TextLink to="/room/task">Go to the task board</TextLink>
+          </div>
+        )}
+      </Overlay>
     )
   }
 
   return (
-    <div className="flex h-screen flex-col bg-bg-base">
-      <header className="flex items-center gap-6 border-b border-border px-6 py-3">
-        <TextLink to="/room">← Back to room</TextLink>
+    <Overlay title={TITLE} wide>
+      <div className="flex items-center gap-6 border-b border-border px-6 py-2">
         <TextLink to="/room/task">Task board</TextLink>
         <span className="ml-auto text-xs text-text-muted">Read-only</span>
-      </header>
+      </div>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-72 shrink-0 overflow-auto border-r border-border bg-bg-surface p-3">
+        <aside className="w-72 shrink-0 overflow-auto border-r border-border bg-bg-base p-3">
           <FileTree
             nodes={tree}
             selectedPath={selectedPath}
@@ -51,7 +56,7 @@ export default function CodebaseExplorerPage() {
           />
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col">
+        <section className="flex min-w-0 flex-1 flex-col" aria-label="File content">
           <p className="border-b border-border px-4 py-2 font-mono text-sm text-text-muted">
             {current?.path ?? selectedPath}
           </p>
@@ -66,8 +71,8 @@ export default function CodebaseExplorerPage() {
               />
             )}
           </div>
-        </main>
+        </section>
       </div>
-    </div>
+    </Overlay>
   )
 }

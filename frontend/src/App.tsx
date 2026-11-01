@@ -32,6 +32,7 @@ function App() {
         <Route path="task" element={<TaskBoardPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="end-of-day" element={<EndOfDayPage />} />
+        <Route path="codebase" element={<CodebaseExplorerPage />} />
       </Route>
       <Route
         path="/onboarding"
@@ -42,14 +43,6 @@ function App() {
         }
       />
       <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
-      <Route
-        path="/room/codebase"
-        element={
-          <ProtectedRoute>
-            <CodebaseExplorerPage />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/"
         element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />}
