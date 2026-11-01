@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useProfile } from '../hooks/useProfile'
 import { useUpdateProfile } from '../hooks/useUpdateProfile'
 import { useTopics } from '../hooks/useTopics'
 import { SelectionCard } from '../components/SelectionCard'
 import { TopicChip } from '../components/TopicChip'
-import { LoadingScreen } from '../components/LoadingScreen'
+import { Overlay } from '../components/Overlay'
 
 const SENIORITY_LEVELS = ['Junior', 'Mid', 'Senior']
 
@@ -31,9 +30,7 @@ export default function ProfilePage() {
   }
 
   const toggleEditTopic = (id: number) => {
-    setEditTopicIds((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
-    )
+    setEditTopicIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
   }
 
   const handleSave = async () => {
@@ -50,30 +47,18 @@ export default function ProfilePage() {
     }
   }
 
-  if (isLoading) return <LoadingScreen message="Loading profile…" />
-
-  if (error) {
+  if (isLoading || error || !profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-base">
-        <p className="text-danger">{error}</p>
-      </div>
+      <Overlay title="Player Profile">
+        {isLoading && <p className="text-text-muted">Loading profile…</p>}
+        {!isLoading && error && <p className="text-danger">{error}</p>}
+      </Overlay>
     )
   }
 
-  if (!profile) return null
-
   return (
-    <div className="flex min-h-screen flex-col items-start bg-bg-base px-10 py-8">
-      <Link
-        to="/room"
-        className="mb-8 text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
-      >
-        ← Back to room
-      </Link>
-
-      <div className="w-full max-w-lg rounded-xl border border-border bg-bg-surface p-8">
-        <h1 className="mb-6 text-2xl font-semibold text-text-primary">Player Profile</h1>
-
+    <Overlay title="Player Profile">
+      <div>
         {/* View mode */}
         {!isEditing && (
           <>
@@ -168,7 +153,7 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-    </div>
+    </Overlay>
   )
 }
 

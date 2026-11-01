@@ -19,6 +19,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/callback" element={<CallbackPage />} />
+      {/* Panels are nested routes: they render as overlays inside the room's outlet. */}
       <Route
         path="/room"
         element={
@@ -26,7 +27,10 @@ function App() {
             <GameRoomPage />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="task" element={<TaskBoardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+      </Route>
       <Route
         path="/onboarding"
         element={
@@ -35,22 +39,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/room/task"
-        element={
-          <ProtectedRoute>
-            <TaskBoardPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
       <Route
         path="/room/codebase"
         element={
