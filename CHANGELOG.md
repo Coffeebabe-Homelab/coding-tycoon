@@ -6,6 +6,7 @@
 - Flyway `V7__add_task_codebase_scope.sql`: tasks gain `codebase_key` (default `shopfront`) and `focus_files`. Task responses include `codebaseKey` and `focusFiles`. Three seed tasks now point at real `shopfront` files.
 - Fix: JAX-RS exceptions such as 405 Method Not Allowed keep their status code instead of being mapped to 500.
 - Frontend: add a shared, lazy-loaded Monaco `CodeEditor` (bundled locally, pinned `@monaco-editor/react` 4.7.0 and `monaco-editor` 0.57.0) and the `/room/codebase` explorer (collapsible `FileTree`, `?file=` deep links). The Task Board links focus files and the explorer, and the room links to the explorer.
+- Process: AGENTS.md now requires checking the Trello board before every change. Create or extend cards, avoid duplicates, move cards to `BLOCKED` while a PR waits for review, and to `DONE` once merged.
 
 - Docs: close Phase 0, P1-07 and Phase 2.1 task records to match delivered work. P0-03 (LangChain4j Ollama) is marked deferred. Rewrite the Phase 2.1 smoke criterion to the unauthenticated `401` check.
 - Docs: fix stale `.env.example` references (README, staging runbook, observability README), the Java 25 prerequisite, backend env vars, and the frontend/backend SPEC stack tables.
