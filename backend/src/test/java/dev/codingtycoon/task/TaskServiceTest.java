@@ -5,6 +5,7 @@ import dev.codingtycoon.profile.ProfileRepository;
 import dev.codingtycoon.task.seed.SeedTaskService;
 import dev.codingtycoon.user.User;
 import dev.codingtycoon.user.UserRepository;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -25,12 +27,13 @@ class TaskServiceTest {
     private final InMemoryTaskRepository taskRepository = new InMemoryTaskRepository();
     private final TaskService taskService = new TaskService();
     private Optional<GeneratedTask> generated = Optional.empty();
+    private PlayerProfile profile;
 
     @BeforeEach
     void setUp() {
         User user = new User();
         user.id = 1L;
-        PlayerProfile profile = new PlayerProfile();
+        profile = new PlayerProfile();
         profile.id = 2L;
         profile.userId = user.id;
 
@@ -45,7 +48,7 @@ class TaskServiceTest {
         };
         taskService.profileRepository = new ProfileRepository() {
             public Optional<PlayerProfile> findByUserId(Long userId) {
-                return Optional.of(profile);
+                return Optional.ofNullable(profile);
             }
 
             public PlayerProfile save(PlayerProfile p) {
@@ -86,6 +89,18 @@ class TaskServiceTest {
         Task created = taskService.generateTask(SUB);
 
         assertEquals(Optional.of(created), taskService.findActiveTask(SUB));
+    }
+
+    @Test
+    void unknownUserIsNotFound() {
+        assertThrows(NotFoundException.class, () -> taskService.findActiveTask("auth0|nobody"));
+    }
+
+    @Test
+    void missingProfileIsNotFound() {
+        profile = null;
+
+        assertThrows(NotFoundException.class, () -> taskService.findActiveTask(SUB));
     }
 
     @Test
