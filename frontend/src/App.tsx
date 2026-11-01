@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { LoadingScreen } from './components/LoadingScreen'
 import LoginPage from './pages/LoginPage'
 import CallbackPage from './pages/CallbackPage'
+import EndOfDayPage from './pages/EndOfDayPage'
 import GameRoomPage from './pages/GameRoomPage'
 import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
@@ -30,6 +31,7 @@ function App() {
       >
         <Route path="task" element={<TaskBoardPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="end-of-day" element={<EndOfDayPage />} />
       </Route>
       <Route
         path="/onboarding"
