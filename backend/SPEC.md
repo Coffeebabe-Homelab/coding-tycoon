@@ -86,7 +86,9 @@ backend/src/main/java/dev/codingtycoon/
 ├── codebase/                        (Phase 3)
 │   ├── CodebaseRepository.java      Port (interface): list files / read file for a codebase key
 │   ├── ClasspathCodebaseRepository.java  Adapter: static files under resources/codebases/<key>/
-│   ├── CodebaseService.java         Domain core: resolves the player's active task to its codebase
+│   ├── CodebaseService.java         Domain core: resolves the player's active task to its codebase; index allow-list
+│   ├── CodebaseFilesResponse.java   Response: { codebase, focusFiles, files }
+│   ├── CodebaseFileResponse.java    Response: { path, content }
 │   └── CodebaseResource.java        Adapter (HTTP in): GET /api/codebase/files, GET /api/codebase/files/{path}
 │
 ├── progress/                        (Phase 7)
@@ -123,6 +125,17 @@ backend/src/main/java/dev/codingtycoon/
 | 404 | Resource not found |
 | 422 | Request understood but fails validation |
 | 500 | Unexpected server error |
+
+### Codebase API (Phase 3)
+
+Read-only. Both endpoints require a Bearer token and resolve the codebase from the player's active (non-`APPROVED`) task. Any other HTTP method returns `405`.
+
+| Method | Path | Response | Errors |
+|---|---|---|---|
+| GET | `/api/codebase/files` | `{ "codebase": "shopfront", "focusFiles": ["src/..."], "files": ["README.md", ...] }` (flat, sorted) | 401; 404 no active task / unknown codebase |
+| GET | `/api/codebase/files/{path: .+}` | `{ "path": "...", "content": "..." }` (UTF-8 text) | 401; 404 path not in `index.txt` (includes `../`, absolute and URL-encoded traversal) |
+
+Codebases live in `src/main/resources/codebases/<key>/` with an `index.txt` listing every file (one relative path per line, sorted). The index is the allow-list: only listed paths are ever read, and `CodebaseIndexTest` keeps it in sync with the files. Task responses (`/api/tasks/*`) include `codebaseKey` and `focusFiles`.
 
 ---
 
@@ -161,6 +174,8 @@ Task
   acceptance_criteria TEXT
   difficulty        VARCHAR
   tags              TEXT[]
+  codebase_key      VARCHAR    -- default 'shopfront' (V7)
+  focus_files       TEXT       -- comma-separated codebase paths, default '' (V7)
   status            VARCHAR    -- ASSIGNED | IN_PROGRESS | SUBMITTED | APPROVED | CHANGES_REQUESTED
   created_at        TIMESTAMP
 
@@ -281,6 +296,7 @@ Exception mappers in `dev.codingtycoon.exception`:
 | `ConstraintViolationException` | 422 |
 | `NotFoundException` | 404 |
 | `UnauthorizedException` | 401 |
+| Other `WebApplicationException` (e.g. `NotAllowedException`) | its own status (e.g. 405) |
 | `RuntimeException` (fallback) | 500 |
 
 All mappers emit the standard error JSON format. Log unexpected errors at `ERROR` level with full stack traces.
@@ -302,7 +318,7 @@ Phases worked in parallel reserve their version numbers up front so branches don
 | Version | File | Task | Status |
 |---|---|---|---|
 | V1–V6 | user, topics, player profile, profile topics, topic seed, tasks | Phases 1–2 | Applied |
-| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Reserved |
+| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Implemented (Phase 3 PR) |
 | V8 | `V8__create_xp_event_table.sql` | P7-03 | Reserved |
 
 Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
