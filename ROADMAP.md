@@ -123,11 +123,11 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 **Goal:** Player can browse a synthetic Java codebase to understand the context for their task.
 
 ### Tasks
-- [ ] Synthetic codebase `shopfront` (small Java Spring Boot app: Users + Products) stored as static files in backend resources; no generation in MVP (P3-01)
-- [ ] `codebase` domain: `GET /api/codebase/files` (file tree for the player's current task) and `GET /api/codebase/files/{path}` (read-only content), safe against path traversal (P3-02)
-- [ ] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
-- [ ] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
-- [ ] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
+- [x] Synthetic codebase `shopfront` (small Java Spring Boot app: Users + Products) stored as static files in backend resources; no generation in MVP (P3-01)
+- [x] `codebase` domain: `GET /api/codebase/files` (file tree for the player's current task) and `GET /api/codebase/files/{path}` (read-only content), safe against path traversal (P3-02)
+- [x] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
+- [x] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
+- [x] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
 - [ ] Integration verification (P3-06)
 
 ### Exit Criteria
