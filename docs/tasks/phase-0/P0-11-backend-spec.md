@@ -1,7 +1,7 @@
 # P0-11 — Backend SPEC.md
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-02, P0-10  
 
 ---
@@ -14,15 +14,15 @@ Write `backend/SPEC.md` — the authoritative technical specification for the ba
 
 ## Acceptance Criteria
 
-- [ ] `backend/SPEC.md` exists
-- [ ] Module structure documented (all planned packages: `task`, `review`, `profile`, `user`, `vcs`)
-- [ ] REST API conventions defined (base path, versioning, response envelope, error format)
-- [ ] Data model overview: entity list with key fields and relationships (ER-style, text or diagram)
-- [ ] AI integration pattern documented: how `@RegisterAiService` services are structured, how prompts are organised, how AI calls are tested
-- [ ] Authentication model: how Auth0 JWTs are validated, how `sub` claim maps to users, which endpoints are public vs protected
-- [ ] Error handling strategy: exception mappers, HTTP status code conventions, error response format
-- [ ] Observability: structured logging format, health check endpoints, what to log at each level
-- [ ] Database migration strategy: Flyway scripts in `src/main/resources/db/migration/`
+- [x] `backend/SPEC.md` exists
+- [x] Module structure documented (all planned packages: `task`, `review`, `profile`, `user`, `vcs`)
+- [x] REST API conventions defined (base path, versioning, response envelope, error format)
+- [x] Data model overview: entity list with key fields and relationships (ER-style, text or diagram)
+- [x] AI integration pattern documented: how `@RegisterAiService` services are structured, how prompts are organised, how AI calls are tested
+- [x] Authentication model: how Auth0 JWTs are validated, how `sub` claim maps to users, which endpoints are public vs protected
+- [x] Error handling strategy: exception mappers, HTTP status code conventions, error response format
+- [x] Observability: structured logging format, health check endpoints, what to log at each level
+- [x] Database migration strategy: Flyway scripts in `src/main/resources/db/migration/`
 
 ---
 

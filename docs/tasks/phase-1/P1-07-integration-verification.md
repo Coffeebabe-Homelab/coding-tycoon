@@ -1,7 +1,7 @@
 # P1-07 — Phase 1 Integration Verification
 
 **Phase:** 1 — Auth & Player Profile  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P1-01 through P1-06 all complete  
 
 ---
@@ -17,37 +17,37 @@ Verify the full Phase 1 loop end-to-end before closing the phase and opening a P
 Walk through each scenario manually with a real browser and a real Auth0 account:
 
 ### New user flow
-- [ ] Visit `http://localhost:5173` — redirected to `/login`
-- [ ] Click "Log in" — redirected to Auth0 Universal Login
-- [ ] Complete login — redirected back to `/callback`, then to `/onboarding`
-- [ ] Complete the wizard (select topics, click Finish)
-- [ ] `POST /api/profile` succeeds (check browser network tab — `201 Created`)
-- [ ] Redirected to `/room`, welcome message visible
+- [x] Visit `http://localhost:5173` — redirected to `/login`
+- [x] Click "Log in" — redirected to Auth0 Universal Login
+- [x] Complete login — redirected back to `/callback`, then to `/onboarding`
+- [x] Complete the wizard (select topics, click Finish)
+- [x] `POST /api/profile` succeeds (check browser network tab — `201 Created`)
+- [x] Redirected to `/room`, welcome message visible
 
 ### Returning user flow
-- [ ] Log out, log back in
-- [ ] Redirected directly to `/room` (no onboarding wizard shown)
-- [ ] Navigate to `/profile` — profile data loads correctly (the settings saved earlier)
+- [x] Log out, log back in
+- [x] Redirected directly to `/room` (no onboarding wizard shown)
+- [x] Navigate to `/profile` — profile data loads correctly (the settings saved earlier)
 
 ### Profile edit flow
-- [ ] On `/profile`, click "Edit"
-- [ ] Change topics, click Save
-- [ ] `PUT /api/profile` succeeds (`200 OK`)
-- [ ] Updated topics shown immediately without page refresh
+- [x] On `/profile`, click "Edit"
+- [x] Change topics, click Save
+- [x] `PUT /api/profile` succeeds (`200 OK`)
+- [x] Updated topics shown immediately without page refresh
 
 ### Security checks
-- [ ] Open a new incognito window, visit `http://localhost:5173/room` — redirected to Auth0 login
-- [ ] Open `http://localhost:5173/profile` in incognito — redirected to Auth0 login
-- [ ] Call `GET http://localhost:8080/api/profile` without a token (curl or Postman) — `401 Unauthorized`
-- [ ] Call `POST http://localhost:8080/api/profile` without a token — `401 Unauthorized`
+- [x] Open a new incognito window, visit `http://localhost:5173/room` — redirected to Auth0 login
+- [x] Open `http://localhost:5173/profile` in incognito — redirected to Auth0 login
+- [x] Call `GET http://localhost:8080/api/profile` without a token (curl or Postman) — `401 Unauthorized`
+- [x] Call `POST http://localhost:8080/api/profile` without a token — `401 Unauthorized`
 
 ### Backend unit/integration tests
-- [ ] `./mvnw verify` passes with zero failures
-- [ ] Coverage report shows ≥ 80% line coverage on `ProfileService` and `UserService`
+- [x] `./mvnw verify` passes with zero failures
+- [x] Coverage report shows ≥ 80% line coverage on `ProfileService` and `UserService`
 
 ### Frontend checks
-- [ ] `npm run lint` passes with zero errors
-- [ ] `npm run build` completes with no TypeScript errors
+- [x] `npm run lint` passes with zero errors
+- [x] `npm run build` completes with no TypeScript errors
 
 ---
 
@@ -71,3 +71,9 @@ Walk through each scenario manually with a real browser and a real Auth0 account
 ## Definition of Done
 
 - All exit criteria above pass. No known bugs in the Phase 1 happy path. PR opened.
+
+---
+
+## Closure Note (2026-11-01)
+
+Closed retroactively. Phase 2 was built and verified on top of this loop (P2-06), and the same flows run on staging (Phase 2.1). ROADMAP had already marked Phase 1 complete.

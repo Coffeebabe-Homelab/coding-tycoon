@@ -1,7 +1,7 @@
 # P0-10 — Development Guidelines
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-01, P0-02  
 
 ---
@@ -14,18 +14,18 @@ Write `docs/DEVELOPMENT_GUIDELINES.md` — the team's shared agreement on how to
 
 ## Acceptance Criteria
 
-- [ ] `docs/DEVELOPMENT_GUIDELINES.md` exists
-- [ ] Architecture section: high-level diagram of frontend ↔ backend ↔ AI ↔ Auth0
-- [ ] Backend patterns: layering (Resource → Service → Repository), naming conventions, error handling strategy, REST response standards
-- [ ] Frontend patterns: component structure, naming conventions, state management rules, how to call the backend API
-- [ ] Test coverage minimums defined and documented:
+- [x] `docs/DEVELOPMENT_GUIDELINES.md` exists
+- [x] Architecture section: high-level diagram of frontend ↔ backend ↔ AI ↔ Auth0
+- [x] Backend patterns: layering (Resource → Service → Repository), naming conventions, error handling strategy, REST response standards
+- [x] Frontend patterns: component structure, naming conventions, state management rules, how to call the backend API
+- [x] Test coverage minimums defined and documented:
   - Backend: ≥ 80% line coverage on service layer
   - Frontend: ≥ 70% for business logic (hooks, utils); UI components tested with React Testing Library
-- [ ] AI service testing strategy: mock the AI interface in unit/integration tests; AI quality tested via separate eval scripts
-- [ ] Documentation standards: Javadoc on all public methods in service/resource layer; JSDoc on exported TypeScript functions
-- [ ] Git branching strategy: `main` is always deployable; feature branches named `feat/<short-description>`; one PR per feature
-- [ ] PR checklist defined (tests pass, lint clean, self-review done, SPEC updated if API changed)
-- [ ] Commit message convention: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`)
+- [x] AI service testing strategy: mock the AI interface in unit/integration tests; AI quality tested via separate eval scripts
+- [x] Documentation standards: Javadoc on all public methods in service/resource layer; JSDoc on exported TypeScript functions
+- [x] Git branching strategy: `main` is always deployable; feature branches named `feat/<short-description>`; one PR per feature
+- [x] PR checklist defined (tests pass, lint clean, self-review done, SPEC updated if API changed)
+- [x] Commit message convention: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`)
 
 ---
 
