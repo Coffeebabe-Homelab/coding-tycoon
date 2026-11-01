@@ -233,6 +233,29 @@ class TaskResourceTest {
         assertEquals(1, xpEventRepository.count());
     }
 
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @JwtSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED", "CHANGES_REQUESTED", "SUBMITTED");
+        assertEquals(0, xpEventRepository.count());
+
+        patchStatus(taskId, "APPROVED").statusCode(200);
+
+        assertEquals(1, xpEventRepository.count());
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @JwtSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void patchStatusUnknownTaskReturns404() {
+        patchStatus(-1, "IN_PROGRESS").statusCode(404);
+    }
+
     private Integer createTaskAndPatch(String... statuses) {
         Integer taskId = given()
                 .when().get("/api/tasks/today")
