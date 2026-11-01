@@ -7,6 +7,7 @@ Guidelines for AI agents and humans working on this codebase.
 - The project context is in north_star.md, ROADMAP.md and README.md
 - Always follow CONVENTIONS.md
 - Development tasks should be looked up, added and edit in /docs/tasks
+- Before every change, check the Trello board for an existing card (see Trello Workflow)
 - Ask rather than guess; clarify before coding.
 - One focused change at for each commit (< 100 lines).
 - Minimal code; comments explain why, not what.
@@ -23,6 +24,7 @@ Guidelines for AI agents and humans working on this codebase.
   - Clarify requirements, edge cases, success criteria before coding.
   - If the request is ambiguos ask first, keep record.
   - Propose options and trade-offs if not defined.
+  - When a simpler or better approach than the planned one exists, propose it (pros/cons and a recommendation) before building. Don't make the codebase harder than it needs to be.
 - Minimal Code:
   - Keep code self-explanatory; comments only for rationale, edge cases, or workarounds.
 - One Change at a Time:
@@ -31,6 +33,22 @@ Guidelines for AI agents and humans working on this codebase.
   - Respect human edits unless they contradict tests/specs. If reverting, justify briefly.
 - Development process:
   - Before starting development run tests, ensure everything is working, make a brief summary of the current state of the application
+
+## Trello Workflow
+
+Board: [Coding Tycoon](https://trello.com/b/grPxIeZk/coding-tycoon). Lanes: `BACKLOG` → `TODO` → `IN PROGRESS` → `BLOCKED` → `DONE`.
+
+- `BACKLOG`: future work that waits for a trigger (scale, production, post-MVP). Each card states when and why to start it.
+- `TODO`: ready to be picked up.
+
+- **Before every change**, search the board's active cards (never archived ones) for a card covering it, so work isn't duplicated:
+  - Card exists and is in progress elsewhere → don't start; ask first.
+  - Card exists in `TODO` → add any missing context as a comment, then move it to `IN PROGRESS`.
+  - No card → create one (context, steps, done-when, links to related cards/PRs/`docs/tasks`), then move it to the lane that matches its state.
+- Before creating a card, look for overlapping ones. Extend an existing card with a comment rather than opening a duplicate, and link related cards.
+- **Pending peer review** (PR open) → move the card to `BLOCKED` and put the PR link on it.
+- **Merged** → move the card to `DONE`.
+- Keep cards and `docs/tasks` status consistent; the task file is the spec, the card tracks state.
 
 ## Daily Workflow
 
@@ -110,5 +128,5 @@ Guidelines for AI agents and humans working on this codebase.
 
 ## Summary
 
-- Ask first. Keep code minimal. Make small, focused edits.
+- Check Trello first. Ask first. Keep code minimal. Make small, focused edits.
 - Keep the repo formatted, simple, dry, tested, and green.

@@ -1,6 +1,7 @@
 package dev.codingtycoon.task;
 
 import dev.codingtycoon.profile.JpaProfileRepository;
+import dev.codingtycoon.progress.JpaXpEventRepository;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.topic.JpaTopicRepository;
 import dev.codingtycoon.topic.Topic;
@@ -11,6 +12,7 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.jwt.Claim;
 import io.quarkus.test.security.jwt.JwtSecurity;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -22,6 +24,7 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration tests for /api/tasks endpoints.
@@ -46,12 +49,16 @@ class TaskResourceTest {
     JpaTaskRepository taskRepository;
 
     @Inject
+    JpaXpEventRepository xpEventRepository;
+
+    @Inject
     EntityManager em;
 
     @BeforeEach
     @Transactional
     void setUp() {
-        // Clean up — respect FK order: tasks → join table → profiles → users → topics
+        // Clean up — respect FK order: xp events → tasks → join table → profiles → users → topics
+        xpEventRepository.deleteAll();
         em.createNativeQuery("DELETE FROM tasks").executeUpdate();
         em.createNativeQuery("DELETE FROM player_profile_topics").executeUpdate();
         profileRepository.deleteAll();
@@ -106,7 +113,9 @@ class TaskResourceTest {
                 .statusCode(201)
                 .body("id", notNullValue())
                 .body("title", notNullValue())
-                .body("status", is("ASSIGNED"));
+                .body("status", is("ASSIGNED"))
+                .body("codebaseKey", is("shopfront"))
+                .body("focusFiles", notNullValue());
     }
 
     @Test
@@ -207,6 +216,64 @@ class TaskResourceTest {
                 .when().patch("/api/tasks/1/status")
                 .then()
                 .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @JwtSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void approvingTaskAwardsXpExactlyOnce() {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+        assertEquals(0, xpEventRepository.count(), "no XP before approval");
+
+        patchStatus(taskId, "APPROVED").statusCode(200);
+        patchStatus(taskId, "APPROVED").statusCode(422);
+
+        assertEquals(1, xpEventRepository.count());
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @JwtSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED", "CHANGES_REQUESTED", "SUBMITTED");
+        assertEquals(0, xpEventRepository.count());
+
+        patchStatus(taskId, "APPROVED").statusCode(200);
+
+        assertEquals(1, xpEventRepository.count());
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @JwtSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void patchStatusUnknownTaskReturns404() {
+        patchStatus(-1, "IN_PROGRESS").statusCode(404);
+    }
+
+    private Integer createTaskAndPatch(String... statuses) {
+        Integer taskId = given()
+                .when().get("/api/tasks/today")
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+        for (String status : statuses) {
+            patchStatus(taskId, status).statusCode(200);
+        }
+        return taskId;
+    }
+
+    private ValidatableResponse patchStatus(Integer taskId, String status) {
+        return given()
+                .contentType(ContentType.JSON)
+                .body("{\"status\":\"" + status + "\"}")
+                .when().patch("/api/tasks/" + taskId + "/status")
+                .then();
     }
 
     // ---------------------------------------------------------------------------

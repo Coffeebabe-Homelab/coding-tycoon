@@ -1,7 +1,7 @@
 # P0-01 — Initialise Frontend
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** —  
 
 ---
@@ -14,15 +14,15 @@ Scaffold the `frontend/` directory with Vite + React + TypeScript + Tailwind CSS
 
 ## Acceptance Criteria
 
-- [ ] `frontend/` directory exists at repo root
-- [ ] `npm run dev` starts the Vite dev server on `http://localhost:5173`
-- [ ] Page loads in the browser with no console errors
-- [ ] TypeScript strict mode enabled (`"strict": true` in `tsconfig.json`)
-- [ ] Tailwind CSS installed and working — a test class (e.g. `bg-blue-500`) applies correctly
-- [ ] ESLint configured with React + TypeScript rules
-- [ ] Prettier configured and integrated with ESLint
-- [ ] `npm run build` produces a clean production build
-- [ ] `npm run lint` passes with zero errors on the scaffolded code
+- [x] `frontend/` directory exists at repo root
+- [x] `npm run dev` starts the Vite dev server on `http://localhost:5173`
+- [x] Page loads in the browser with no console errors
+- [x] TypeScript strict mode enabled (`"strict": true` in `tsconfig.json`)
+- [x] Tailwind CSS installed and working — a test class (e.g. `bg-blue-500`) applies correctly
+- [x] ESLint configured with React + TypeScript rules
+- [x] Prettier configured and integrated with ESLint
+- [x] `npm run build` produces a clean production build
+- [x] `npm run lint` passes with zero errors on the scaffolded code
 
 ---
 

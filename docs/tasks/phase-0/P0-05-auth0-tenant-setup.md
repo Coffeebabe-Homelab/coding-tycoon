@@ -1,7 +1,7 @@
 # P0-05 — Auth0 Tenant Setup
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** —  
 
 ---
@@ -14,13 +14,13 @@ Create and configure the Auth0 dev tenant and application so the frontend can au
 
 ## Acceptance Criteria
 
-- [ ] Auth0 tenant created (dev environment)
-- [ ] Single Page Application (SPA) created in Auth0 for the frontend
-- [ ] Allowed Callback URLs set: `http://localhost:5173/callback`
-- [ ] Allowed Logout URLs set: `http://localhost:5173`
-- [ ] Allowed Web Origins set: `http://localhost:5173`
-- [ ] Auth0 API (Resource Server) created for the backend with identifier `https://api.codingtycoon.dev`
-- [ ] Auth0 domain, client ID, and API audience documented in `.env.example` (never committed)
+- [x] Auth0 tenant created (dev environment)
+- [x] Single Page Application (SPA) created in Auth0 for the frontend
+- [x] Allowed Callback URLs set: `http://localhost:5173/callback`
+- [x] Allowed Logout URLs set: `http://localhost:5173`
+- [x] Allowed Web Origins set: `http://localhost:5173`
+- [x] Auth0 API (Resource Server) created for the backend with identifier `https://api.codingtycoon.dev`
+- [x] Auth0 domain, client ID, and API audience documented in `.env.example` (never committed)
 - [ ] Machine-to-machine (M2M) or test user created for automated testing
 
 ---
@@ -70,3 +70,9 @@ Ensure `.env.local` and `.env` are in `.gitignore` — **never commit real crede
 ## Definition of Done
 
 - Auth0 tenant and application exist, callback URLs configured, API resource server defined, env vars documented in `.env.example`.
+
+---
+
+## Closure Note (2026-11-01)
+
+`.env.example` was later removed; Auth0 values are documented in `README.md` and `docs/STAGING_DEPLOY.md`. The M2M/test-user item can't be verified from the repo; confirm it in the Auth0 dashboard.

@@ -21,14 +21,16 @@ If anything is unclear at any point, ask. Explaining is part of the process.
 
 | Concern | Choice |
 |---------|--------|
-| Framework | React 18 + TypeScript (strict mode) |
+| Framework | React 19 + TypeScript (strict mode) |
 | Build tool | Vite |
 | Styling | Tailwind CSS v4 (Vite plugin) |
-| Code editor | Monaco Editor |
+| Routing | React Router 7 |
+| Code editor | Monaco Editor via `@monaco-editor/react` (Phase 3; one shared `CodeEditor` for the explorer and the Phase 4 editor) |
 | Auth | `@auth0/auth0-react` |
-| State (client) | Zustand |
-| State (server) | TBD — React Query or SWR |
-| Linting | ESLint + typescript-eslint + react-hooks |
+| State (client) | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted (P7-02) |
+| Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) |
+| State (server) | Custom hooks over `fetchWithAuth`; React Query/SWR not adopted |
+| Linting | oxlint (`npm run lint`); ESLint config kept for editor integration |
 | Formatting | Prettier |
 
 ---
@@ -44,10 +46,9 @@ frontend/src/
 ├── lib/           Pure utilities
 │   ├── api.ts         fetchWithAuth helper
 │   ├── auth.ts        Auth0 helpers
+│   ├── fileTree.ts    buildFileTree(paths): flat paths → nested tree, folders first (Phase 3)
+│   ├── language.ts    languageForPath(path): file extension → Monaco language id (Phase 3)
 │   └── diff.ts        Diff computation utilities
-├── store/         Zustand stores
-│   ├── gameStore.ts   Session state, current room mode
-│   └── profileStore.ts Player profile cache
 ├── styles/
 │   └── tokens.css     Design tokens — colours, fonts. THE only file to change when rebranding.
 ├── types/         Shared TypeScript interfaces and enums
@@ -62,14 +63,36 @@ frontend/src/
 /                   → redirect: unauthenticated → /login, authenticated → /room
 /login              → LoginPage (public)
 /callback           → Auth0 callback handler
-/room               → GameRoomPage (protected) — main hub
-/room/task          → TaskBoardPage (protected)
-/room/editor        → EditorPage (protected)
-/room/review        → ReviewPage (protected)
-/profile            → ProfilePage (protected)
+/onboarding         → OnboardingPage (protected)
+/room               → GameRoomPage (protected) — main hub: room scene + HUD + panel outlet
+  /room/task        → TaskBoardPage overlay
+  /room/profile     → ProfilePage overlay
+  /room/end-of-day  → EndOfDayPage overlay (Phase 7)
+  /room/codebase    → CodebaseExplorerPage overlay (wide)
+  /room/editor      → EditorPage overlay (Phase 4)
+  /room/review      → ReviewPage overlay (Phase 5)
+/profile            → redirect to /room/profile
 ```
 
-All routes under `/room` and `/profile` are wrapped in `<ProtectedRoute />`.
+`/room` is wrapped in `<ProtectedRoute />`; its panels are nested routes, so they inherit the protection. Panels render through `useOutlet()` inside `GameRoomPage` and wrap their content in `<Overlay>`. While a panel is open the room is `inert`. Closing (Esc, ×, backdrop click, "Back to room") navigates to `/room`, and the browser back button closes a panel too.
+
+### Session flow (`hooks/useSessionFlow.ts`)
+
+On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. Editor and Review are not linked until they exist.
+
+## Game Shell Components (Phase 7)
+
+| File | Role |
+|---|---|
+| `game/RoomScene.tsx` | Static isometric SVG room (walls, floor, desk, monitor, chair, kanban board, door). No routing inside; takes callbacks. |
+| `game/Hotspot.tsx` | SVG `role="button"` wrapper: `tabIndex`, `aria-label`, Enter/Space, `<title>` tooltip, hover/focus glow. No `onActivate` → disabled (`aria-disabled`). |
+| `game/Avatar.tsx` | Placeholder player figure seated at the desk. |
+| `game/RoomHud.tsx` | Top strip: total XP, current streak, "wrap up the day" link after an approval, email, Profile, Log out. |
+| `components/Overlay.tsx` | Accessible modal: `role="dialog"`, `aria-modal`, labelled heading, focus trap (`lib/focusTrap.ts`), Esc/× close, restores focus to the opener. |
+| `pages/EndOfDayPage.tsx` | Outcome (approved / in progress / not started), XP today, total XP, current and longest streak; actions Back to room, Log out. Skill delta hidden until Phase 6. |
+| `hooks/useProgress.ts` | `GET /api/progress`; optional `refreshKey` refetches (the room refetches when a panel opens or closes). |
+
+Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → `/room/codebase`. `Overlay` takes `wide` for panels with their own full-height layout (the explorer).
 
 ---
 
@@ -78,17 +101,16 @@ All routes under `/room` and `/profile` are wrapped in `<ProtectedRoute />`.
 | Data type | Where it lives | Why |
 |---|---|---|
 | Task, review, profile data | React hook + `useState` (or React Query) | Server-owned, stale-able |
-| Current session mode (which panel is open) | Zustand `gameStore` | Shared across unrelated components |
-| Player profile cache | Zustand `profileStore` | Needed in multiple panels |
+| Which panel is open over the room | URL (nested routes under `/room`) | Back button closes it; refresh and deep links keep it |
 | Form values, toggles, local UI | `useState` | No cross-component sharing needed |
 
-Never duplicate server data in Zustand. Zustand stores are for client-side UI state only.
+Don't add a global store unless state truly can't live in the URL or a hook. Never duplicate server data client-side.
 
 ---
 
 ## API Integration Pattern
 
-Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components.
+Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`.
 
 ```ts
 // lib/api.ts
@@ -151,6 +173,10 @@ For the full rules on how to use tokens (what's forbidden, componentisation rule
   --color-text-primary:  #f3f4f6;
   --color-text-muted:    #9ca3af;
 
+  /* Room scene (Phase 7): --color-room-floor, -floor-line, -wall-left, -wall-right, -trim,
+     -desk-top, -desk-side, -monitor, -screen, -board, -note, -door, -chair,
+     -avatar-skin, -avatar-hair, -avatar-shirt; plus --drop-shadow-hotspot (hover/focus glow) */
+
   /* Typography — swap here only */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -178,27 +204,43 @@ Spacing: 4-point scale (`p-4`, `gap-4`, `m-2`). Avoid arbitrary values.
 
 ## Monaco Editor Integration
 
-```tsx
-import Editor from '@monaco-editor/react'
+Pinned exactly: `@monaco-editor/react` 4.7.0, `monaco-editor` 0.57.0.
 
-<Editor
-  height="100%"
-  language="java"
-  theme="vs-dark"
+```tsx
+import { LazyCodeEditor } from '../components/LazyCodeEditor'
+import { languageForPath } from '../lib/language'
+
+<LazyCodeEditor
   value={code}
-  onChange={(val) => setCode(val ?? '')}
-  options={{
-    minimap: { enabled: false },
-    fontSize: 14,
-    wordWrap: 'on',
-    scrollBeyondLastLine: false,
-    readOnly: false,   // true for codebase explorer
-  }}
+  language={languageForPath(path)}
+  readOnly={false}                 // true for the codebase explorer
+  onChange={setCode}
+  ariaLabel={`Editing ${path}`}
 />
 ```
 
-For the **Codebase Explorer** (read-only): set `readOnly: true` and `domReadOnly: true`.
-For the **Editor panel**: allow edits, bind value to component state, surface changes via `onChange`.
+Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else. That file holds all Monaco wiring:
+
+- `loader.config({ monaco })` so the editor comes from the bundle, not jsDelivr
+- `self.MonacoEnvironment.getWorker` with Vite `?worker` imports (editor worker, JSON worker)
+- the `coding-tycoon-dark` theme, built on `vs-dark` from the `tokens.css` colour variables
+- options: no minimap, font size 14, word wrap, `scrollBeyondLastLine: false`
+
+Pages render `LazyCodeEditor` (`React.lazy` + `Suspense` with a "Loading editor…" message), which keeps Monaco in its own build chunks.
+
+For the **Codebase Explorer** (Phase 3, read-only): `readOnly` sets `readOnly: true` and `domReadOnly: true`.
+For the **Editor panel** (Phase 4): allow edits, bind value to component state, surface changes via `onChange`.
+Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tailscale-only staging and offline (P3-04).
+
+### Codebase Explorer (Phase 3)
+
+`pages/CodebaseExplorerPage.tsx` at `/room/codebase`, rendered as a wide `Overlay` over the room: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
+
+- `hooks/useCodebase.ts` loads `GET /api/codebase/files` once and exposes `{ files, focusFiles, openFile, current, isLoading, error, noActiveTask }`. `openFile(path)` fetches `GET /api/codebase/files/{path}` and ignores stale responses.
+- The open file lives in the URL (`?file=<path>`), so refresh, deep links and Back keep it. Without `?file`, the first focus file opens (else the first file).
+- `components/FileTree.tsx`: collapsible folders built from native buttons (Tab/Enter/Space), text glyphs per file type, focus files in `text-warning`, folders leading to focus files start expanded.
+- 404 on the file list shows "no task yet" with a link to the Task Board. The Task Board lists the task's `focusFiles` as explorer deep links plus an "Explore codebase" link.
+- `components/TextLink.tsx`: the shared inline accent link (paired hover/focus).
 
 ---
 

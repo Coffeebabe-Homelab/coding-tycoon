@@ -1,7 +1,7 @@
 # P0-06 — Auth0 SDK Integration (Frontend)
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-01, P0-05  
 
 ---
@@ -14,15 +14,15 @@ Integrate `@auth0/auth0-react` into the frontend. A test page with Login / Logou
 
 ## Acceptance Criteria
 
-- [ ] `@auth0/auth0-react` installed
-- [ ] `Auth0Provider` wraps the React app root in `main.tsx`
-- [ ] Login button triggers the Auth0 Universal Login redirect
-- [ ] After login, user is redirected back to the app at `/callback`
-- [ ] Logout button clears the session and redirects to `/`
-- [ ] `useAuth0()` hook returns `isAuthenticated: true` after login
-- [ ] Access token (JWT) is retrievable via `getAccessTokenSilently()`
-- [ ] Token is logged to the console in dev mode to confirm it's valid (remove before Phase 1)
-- [ ] Protected route wrapper component created (`<ProtectedRoute />`) — redirects to login if unauthenticated
+- [x] `@auth0/auth0-react` installed
+- [x] `Auth0Provider` wraps the React app root in `main.tsx`
+- [x] Login button triggers the Auth0 Universal Login redirect
+- [x] After login, user is redirected back to the app at `/callback`
+- [x] Logout button clears the session and redirects to `/`
+- [x] `useAuth0()` hook returns `isAuthenticated: true` after login
+- [x] Access token (JWT) is retrievable via `getAccessTokenSilently()`
+- [x] Token is logged to the console in dev mode to confirm it's valid (remove before Phase 1)
+- [x] Protected route wrapper component created (`<ProtectedRoute />`) — redirects to login if unauthenticated
 
 ---
 
@@ -75,3 +75,9 @@ export const fetchWithAuth = async (url: string, token: string, options?: Reques
 ## Definition of Done
 
 - Login → redirect → return to app → `isAuthenticated: true` → access token retrievable. Logout clears session.
+
+---
+
+## Closure Note (2026-11-01)
+
+The dev-mode token logging was removed in P1-04 as planned.

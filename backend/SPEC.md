@@ -14,7 +14,8 @@
 | API style | JAX-RS (RESTEasy Reactive) + Jackson |
 | ORM | Hibernate ORM with Panache (Active Record) |
 | Database | PostgreSQL 16 |
-| AI | Quarkus LangChain4j + Ollama — DeepSeek-Coder 6.7B Q4_K_M |
+| AI | Quarkus LangChain4j + Ollama with DeepSeek-Coder 6.7B Q4_K_M (planned; currently `StubTaskAdapter` with seed fallback, see ROADMAP P0-03) |
+| Observability | Quarkus OpenTelemetry: OTLP logs, traces and metrics to LGTM (`observability/README.md`) |
 | Auth | Auth0 OIDC (JWT validation via `quarkus-oidc`) |
 | Validation | Hibernate Validator (`@Valid`, `@NotNull`, etc.) |
 | Health | SmallRye Health (`/q/health`) |
@@ -44,7 +45,8 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── TaskRepository.java          Port (interface) — persistence boundary
 │   ├── JpaTaskRepository.java       Adapter — Panache implementation
 │   ├── TaskAiPort.java              Port (interface) — AI boundary
-│   ├── OllamaTaskAdapter.java       Adapter — LangChain4j implementation
+│   ├── StubTaskAdapter.java         Adapter (current): returns empty, so TaskService uses seed tasks
+│   ├── OllamaTaskAdapter.java       Adapter (planned): LangChain4j implementation
 │   ├── TaskService.java             Domain core: business logic, orchestration
 │   └── TaskResource.java            Adapter (HTTP in): POST /api/tasks/generate, GET /api/tasks/today
 │
@@ -81,6 +83,25 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── VcsService.java              Domain core
 │   └── VcsResource.java             Adapter (HTTP in): POST /api/submissions, GET /api/submissions/template
 │
+├── codebase/                        (Phase 3)
+│   ├── CodebaseRepository.java      Port (interface): list files / read file for a codebase key
+│   ├── ClasspathCodebaseRepository.java  Adapter: static files under resources/codebases/<key>/
+│   ├── CodebaseService.java         Domain core: resolves the player's active task to its codebase; index allow-list
+│   ├── CodebaseFilesResponse.java   Response: { codebase, focusFiles, files }
+│   ├── CodebaseFileResponse.java    Response: { path, content }
+│   └── CodebaseResource.java        Adapter (HTTP in): GET /api/codebase/files, GET /api/codebase/files/{path}
+│
+├── progress/                        (Phase 7)
+│   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt UTC)
+│   ├── XpReason.java                Enum: TASK_APPROVED (FIRST_ATTEMPT_BONUS arrives with Phase 5)
+│   ├── XpEventRepository.java       Port (interface)
+│   ├── JpaXpEventRepository.java    Adapter — Panache
+│   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
+│   ├── Streak.java                  Value: current, longest
+│   ├── ProgressService.java         Domain core: awards XP on approval (called by TaskService), computes totals and streak
+│   ├── ProgressResponse.java        JSON: totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
+│   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
+│
 └── ai/
     └── (shared prompt string constants — no business logic)
 ```
@@ -98,6 +119,20 @@ backend/src/main/java/dev/codingtycoon/
 | Dates | ISO 8601 UTC strings |
 | IDs | `Long` (auto-increment, Panache default) |
 
+### Progress API
+
+`GET /api/progress` (authenticated) → `200`
+
+```json
+{ "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
+```
+
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- A "day" is a UTC calendar day. `xpToday` sums today's events.
+- Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
+- `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
+- `401` without a token, `404` if the player has no profile.
+
 ### HTTP Status Codes
 
 | Code | When |
@@ -110,6 +145,17 @@ backend/src/main/java/dev/codingtycoon/
 | 404 | Resource not found |
 | 422 | Request understood but fails validation |
 | 500 | Unexpected server error |
+
+### Codebase API (Phase 3)
+
+Read-only. Both endpoints require a Bearer token and resolve the codebase from the player's active (non-`APPROVED`) task. Any other HTTP method returns `405`.
+
+| Method | Path | Response | Errors |
+|---|---|---|---|
+| GET | `/api/codebase/files` | `{ "codebase": "shopfront", "focusFiles": ["src/..."], "files": ["README.md", ...] }` (flat, sorted) | 401; 404 no active task / unknown codebase |
+| GET | `/api/codebase/files/{path: .+}` | `{ "path": "...", "content": "..." }` (UTF-8 text) | 401; 404 path not in `index.txt` (includes `../`, absolute and URL-encoded traversal) |
+
+Codebases live in `src/main/resources/codebases/<key>/` with an `index.txt` listing every file (one relative path per line, sorted). The index is the allow-list: only listed paths are ever read, and `CodebaseIndexTest` keeps it in sync with the files. Task responses (`/api/tasks/*`) include `codebaseKey` and `focusFiles`.
 
 ---
 
@@ -148,6 +194,8 @@ Task
   acceptance_criteria TEXT
   difficulty        VARCHAR
   tags              TEXT[]
+  codebase_key      VARCHAR    -- default 'shopfront' (V7)
+  focus_files       TEXT       -- comma-separated codebase paths, default '' (V7)
   status            VARCHAR    -- ASSIGNED | IN_PROGRESS | SUBMITTED | APPROVED | CHANGES_REQUESTED
   created_at        TIMESTAMP
 
@@ -166,6 +214,15 @@ Review
   verdict       VARCHAR   -- APPROVED | CHANGES_REQUESTED
   comments      JSONB     -- [{ file, line, message }]
   reviewed_at   TIMESTAMP
+
+XpEvent                        -- table xp_event; ledger, one row per award
+  id                BIGINT PK
+  player_profile_id BIGINT FK → PlayerProfile
+  task_id           BIGINT FK → Task
+  amount            INT
+  reason            VARCHAR    -- TASK_APPROVED
+  created_at        TIMESTAMP  -- UTC
+  UNIQUE (task_id, reason)     -- makes awarding idempotent
 
 SkillProfile
   id                  BIGINT PK
@@ -268,6 +325,7 @@ Exception mappers in `dev.codingtycoon.exception`:
 | `ConstraintViolationException` | 422 |
 | `NotFoundException` | 404 |
 | `UnauthorizedException` | 401 |
+| Other `WebApplicationException` (e.g. `NotAllowedException`) | its own status (e.g. 405) |
 | `RuntimeException` (fallback) | 500 |
 
 All mappers emit the standard error JSON format. Log unexpected errors at `ERROR` level with full stack traces.
@@ -281,6 +339,18 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 - Naming: `V{n}__{description}.sql` (e.g. `V1__create_user_table.sql`)
 - Dev mode: `quarkus.hibernate-orm.database.generation=drop-and-create` (no migration run)
 - Prod mode: `quarkus.hibernate-orm.database.generation=validate` + Flyway runs on startup
+
+### Reserved Versions
+
+Phases worked in parallel reserve their version numbers up front so branches don't collide. Never edit a migration that has already been deployed; add a new one instead.
+
+| Version | File | Task | Status |
+|---|---|---|---|
+| V1–V6 | user, topics, player profile, profile topics, topic seed, tasks | Phases 1–2 | Applied |
+| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Merged (PR #17) |
+| V8 | `V8__create_xp_event_table.sql` | P7-03 | Added in Phase 7 (PR #16) |
+
+Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 
 ---
 

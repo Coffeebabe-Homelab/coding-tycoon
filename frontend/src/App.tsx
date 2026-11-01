@@ -4,10 +4,12 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { LoadingScreen } from './components/LoadingScreen'
 import LoginPage from './pages/LoginPage'
 import CallbackPage from './pages/CallbackPage'
+import EndOfDayPage from './pages/EndOfDayPage'
 import GameRoomPage from './pages/GameRoomPage'
 import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
 import TaskBoardPage from './pages/TaskBoardPage'
+import CodebaseExplorerPage from './pages/CodebaseExplorerPage'
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -18,6 +20,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/callback" element={<CallbackPage />} />
+      {/* Panels are nested routes: they render as overlays inside the room's outlet. */}
       <Route
         path="/room"
         element={
@@ -25,7 +28,12 @@ function App() {
             <GameRoomPage />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="task" element={<TaskBoardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="end-of-day" element={<EndOfDayPage />} />
+        <Route path="codebase" element={<CodebaseExplorerPage />} />
+      </Route>
       <Route
         path="/onboarding"
         element={
@@ -34,22 +42,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/room/task"
-        element={
-          <ProtectedRoute>
-            <TaskBoardPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
       <Route
         path="/"
         element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />}

@@ -9,6 +9,10 @@ export interface Task {
   acceptanceCriteria: string
   difficulty: string
   tags: string[]
+  /** Synthetic codebase the task belongs to, browsable at /room/codebase. */
+  codebaseKey: string
+  /** Codebase-relative paths the task is about. */
+  focusFiles: string[]
   status: TaskStatus
   createdAt: string
 }
