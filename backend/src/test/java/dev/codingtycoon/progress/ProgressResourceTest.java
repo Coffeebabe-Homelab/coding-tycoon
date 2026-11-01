@@ -36,7 +36,7 @@ class ProgressResourceTest {
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
     @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
-    void getProgressReturns200WithTotals() {
+    void getProgressReturns200WithTotalsAndStreak() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         testData.createEvent(profileId, testData.createTask(profileId), now);
         testData.createEvent(profileId, testData.createTask(profileId), now.minusDays(1));
@@ -46,7 +46,9 @@ class ProgressResourceTest {
                 .then()
                 .statusCode(200)
                 .body("totalXp", is(200))
-                .body("xpToday", is(100));
+                .body("xpToday", is(100))
+                .body("currentStreak", is(2))
+                .body("longestStreak", is(2));
     }
 
     @Test

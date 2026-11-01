@@ -51,7 +51,7 @@ public class ProgressService {
     }
 
     /**
-     * Returns the authenticated player's XP totals.
+     * Returns the authenticated player's XP totals and approval streak.
      *
      * @param sub the Auth0 subject claim
      * @return the player's progress
@@ -67,6 +67,11 @@ public class ProgressService {
                 .filter(e -> e.createdAt.toLocalDate().equals(today))
                 .mapToLong(e -> e.amount)
                 .sum();
-        return new ProgressResponse(totalXp, xpToday);
+        List<LocalDate> approvalDays = events.stream()
+                .filter(e -> e.reason == XpReason.TASK_APPROVED)
+                .map(e -> e.createdAt.toLocalDate())
+                .toList();
+        Streak streak = StreakCalculator.calculate(approvalDays, today);
+        return new ProgressResponse(totalXp, xpToday, streak.current(), streak.longest());
     }
 }

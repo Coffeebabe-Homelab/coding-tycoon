@@ -65,6 +65,8 @@ class ProgressServiceTest {
 
         assertEquals(0, progress.totalXp());
         assertEquals(0, progress.xpToday());
+        assertEquals(0, progress.currentStreak());
+        assertEquals(0, progress.longestStreak());
     }
 
     @Test
