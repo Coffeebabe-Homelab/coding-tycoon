@@ -1,7 +1,7 @@
 # P7-02 — Room as Hub: Overlay Navigation & Session Flow
 
 **Phase:** 7 — Game Shell  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P7-01  
 
 ---
@@ -25,12 +25,12 @@ Recorded in `frontend/SPEC.md` (routing + state management). Zustand is not adop
 
 ## Acceptance Criteria
 
-- [ ] `components/Overlay.tsx`: accessible modal panel (focus trap, `Esc` and a close button return to `/room`, `aria-modal`, labelled heading)
-- [ ] Task Board, Codebase Explorer (if P3-05 has landed) and Profile render as overlays over the room
-- [ ] Session flow: after login → room; if today's task is `ASSIGNED`, the Task Board opens automatically once per session
-- [ ] Flow placeholders for later phases (Editor, Review) are not linked until they exist
-- [ ] Desktop-first layout: no horizontal scroll at 1280px width; the room scales to fill larger screens
-- [ ] Existing protected-route behaviour unchanged (unauthenticated → login)
+- [x] `components/Overlay.tsx`: accessible modal panel (focus trap, `Esc` and a close button return to `/room`, `aria-modal`, labelled heading)
+- [x] Task Board, Codebase Explorer (if P3-05 has landed) and Profile render as overlays over the room (explorer wired after Phase 3 merged: monitor hotspot → `/room/codebase`, wide overlay)
+- [x] Session flow: after login → room; if today's task is `ASSIGNED`, the Task Board opens automatically once per session
+- [x] Flow placeholders for later phases (Editor, Review) are not linked until they exist
+- [x] Desktop-first layout: no horizontal scroll at 1280px width; the room scales to fill larger screens
+- [x] Existing protected-route behaviour unchanged (unauthenticated → login)
 
 ---
 

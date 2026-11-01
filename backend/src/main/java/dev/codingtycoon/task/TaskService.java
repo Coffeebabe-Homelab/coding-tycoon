@@ -4,6 +4,7 @@ import dev.codingtycoon.exception.ConflictException;
 import dev.codingtycoon.exception.UnprocessableException;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.profile.ProfileRepository;
+import dev.codingtycoon.progress.ProgressService;
 import dev.codingtycoon.task.seed.SeedTask;
 import dev.codingtycoon.task.seed.SeedTaskService;
 import dev.codingtycoon.user.UserRepository;
@@ -37,6 +38,9 @@ public class TaskService {
 
     @Inject
     TaskAiPort taskAiPort;
+
+    @Inject
+    ProgressService progressService;
 
     /**
      * Returns the player's current active task, or creates a new one from a seed task if none exists.
@@ -84,6 +88,7 @@ public class TaskService {
      *   <li>CHANGES_REQUESTED → SUBMITTED</li>
      *   <li>APPROVED → (none — terminal state)</li>
      * </ul>
+     * Reaching APPROVED awards the approval XP.
      *
      * @param taskId    the ID of the task to update
      * @param newStatus the desired target status
@@ -99,6 +104,9 @@ public class TaskService {
         validateTransition(task.status, newStatus);
         task.status = newStatus;
         taskRepository.save(task);
+        if (newStatus == TaskStatus.APPROVED) {
+            progressService.awardForApproval(task);
+        }
         return task;
     }
 

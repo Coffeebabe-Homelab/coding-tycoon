@@ -1,7 +1,7 @@
 # P7-04 — Streak Tracker (Backend)
 
 **Phase:** 7 — Game Shell  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P7-03  
 
 ---
@@ -25,13 +25,13 @@ ROADMAP said "daily login + task completion". The options considered were:
 
 ## Acceptance Criteria
 
-- [ ] `currentStreak`: consecutive days ending today (or yesterday, so the streak isn't lost before today's work) with at least one `TASK_APPROVED` XP event (no new table or migration needed)
-- [ ] `longestStreak`: the longest such run ever
-- [ ] Both added to the `GET /api/progress` response
-- [ ] Same "day" definition as P7-03 (UTC unless decided otherwise)
-- [ ] Tests: no activity → 0; single day; consecutive run; gap resets current but keeps longest; yesterday-only keeps the streak alive; multiple events on one day count once
-- [ ] ≥ 80% line and branch coverage maintained on `progress`
-- [ ] `backend/SPEC.md` API updated
+- [x] `currentStreak`: consecutive days ending today (or yesterday, so the streak isn't lost before today's work) with at least one `TASK_APPROVED` XP event (no new table or migration needed)
+- [x] `longestStreak`: the longest such run ever
+- [x] Both added to the `GET /api/progress` response
+- [x] Same "day" definition as P7-03 (UTC unless decided otherwise)
+- [x] Tests: no activity → 0; single day; consecutive run; gap resets current but keeps longest; yesterday-only keeps the streak alive; multiple events on one day count once
+- [x] ≥ 80% line and branch coverage maintained on `progress`
+- [x] `backend/SPEC.md` API updated
 
 ---
 

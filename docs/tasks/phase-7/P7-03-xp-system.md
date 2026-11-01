@@ -1,7 +1,7 @@
 # P7-03 — XP System (Backend)
 
 **Phase:** 7 — Game Shell  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P2-03 (task status state machine), P3-03's `V7` migration merged first (Flyway ordering)  
 
 ---
@@ -21,14 +21,14 @@ Award XP when a task is approved, and expose the player's XP through a `progress
 
 ## Acceptance Criteria
 
-- [ ] Flyway migration `V8__create_xp_event_table.sql` (reserved, see `backend/SPEC.md` § Reserved Versions) creates `xp_event` (`id`, `player_profile_id`, `task_id`, `amount`, `reason`, `created_at`) with a unique constraint on (`task_id`, `reason`), which makes awarding idempotent
-- [ ] New `progress` package: `XpEvent` entity, `XpReason` enum (`TASK_APPROVED`), `ProgressService`, `ProgressResource`
-- [ ] When a task transitions to `APPROVED`, `TaskService` calls `ProgressService.awardForApproval(task)`; repeating the transition never double-awards
-- [ ] XP amounts are constants (`SCREAMING_SNAKE_CASE`) in `ProgressService`, not magic numbers
-- [ ] `GET /api/progress` returns `{ "totalXp": n, "xpToday": n }` for the authenticated player; `401` without a token; `404` if no profile
-- [ ] Tests: award on approval, idempotency, no award on other transitions, totals/today calculation, resource 200/401/404
-- [ ] ≥ 80% line and branch coverage on `progress`
-- [ ] `backend/SPEC.md` updated (package, data model, API)
+- [x] Flyway migration `V8__create_xp_event_table.sql` (reserved, see `backend/SPEC.md` § Reserved Versions) creates `xp_event` (`id`, `player_profile_id`, `task_id`, `amount`, `reason`, `created_at`) with a unique constraint on (`task_id`, `reason`), which makes awarding idempotent
+- [x] New `progress` package: `XpEvent` entity, `XpReason` enum (`TASK_APPROVED`), `ProgressService`, `ProgressResource`
+- [x] When a task transitions to `APPROVED`, `TaskService` calls `ProgressService.awardForApproval(task)`; repeating the transition never double-awards
+- [x] XP amounts are constants (`SCREAMING_SNAKE_CASE`) in `ProgressService`, not magic numbers
+- [x] `GET /api/progress` returns `{ "totalXp": n, "xpToday": n }` for the authenticated player; `401` without a token; `404` if no profile
+- [x] Tests: award on approval, idempotency, no award on other transitions, totals/today calculation, resource 200/401/404
+- [x] ≥ 80% line and branch coverage on `progress`
+- [x] `backend/SPEC.md` updated (package, data model, API)
 
 ---
 

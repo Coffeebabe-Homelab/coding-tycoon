@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTask } from '../hooks/useTask'
-import { LoadingScreen } from '../components/LoadingScreen'
+import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 
@@ -42,10 +42,10 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
     .filter((line) => line.length > 0)
 
   return (
-    <div className="rounded-xl border border-border bg-bg-surface p-8">
+    <article>
       {/* Header row — title + difficulty badge */}
       <div className="mb-4 flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-semibold text-text-primary">{task.title}</h1>
+        <h3 className="text-2xl font-semibold text-text-primary">{task.title}</h3>
         <span
           className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${difficultyClasses(task.difficulty)}`}
         >
@@ -72,12 +72,12 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
       {/* Codebase context */}
       <section aria-labelledby="focus-files-heading" className="mb-6">
-        <h2
+        <h4
           id="focus-files-heading"
           className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted"
         >
           Codebase
-        </h2>
+        </h4>
         {task.focusFiles.length > 0 && (
           <ul className="mb-3 flex flex-col gap-1">
             {task.focusFiles.map((path) => (
@@ -100,12 +100,12 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
       {/* Acceptance criteria */}
       <section aria-labelledby="acceptance-criteria-heading" className="mb-8">
-        <h2
+        <h4
           id="acceptance-criteria-heading"
           className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted"
         >
           Acceptance Criteria
-        </h2>
+        </h4>
         <ul className="flex flex-col gap-2">
           {criteriaLines.map((line, index) => (
             // Criteria lines are static content without stable keys — index is safe here
@@ -141,39 +141,22 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
           Continue
         </button>
       )}
-    </div>
+    </article>
   )
 }
 
-/** Page that shows today's assigned task and lets the player start it. */
+/** Overlay panel that shows today's assigned task and lets the player start it. */
 export default function TaskBoardPage() {
   const { task, isLoading, error, startTask } = useTask()
 
-  if (isLoading) return <LoadingScreen message="Loading today's task…" />
-
   return (
-    <div className="flex min-h-screen flex-col items-start bg-bg-base px-10 py-8">
-      <TextLink to="/room" className="mb-8">
-        ← Back to room
-      </TextLink>
-
-      {error && (
-        <div className="w-full max-w-2xl">
-          <p className="text-danger">{error}</p>
-        </div>
+    <Overlay title="Task Board">
+      {isLoading && <p className="text-text-muted">Loading today's task…</p>}
+      {!isLoading && error && <p className="text-danger">{error}</p>}
+      {!isLoading && !error && !task && (
+        <p className="text-text-muted">No task assigned for today.</p>
       )}
-
-      {!error && !task && (
-        <div className="w-full max-w-2xl">
-          <p className="text-text-muted">No task assigned for today.</p>
-        </div>
-      )}
-
-      {!error && task && (
-        <div className="w-full max-w-2xl">
-          <TaskDetail task={task} onStartTask={startTask} />
-        </div>
-      )}
-    </div>
+      {!isLoading && !error && task && <TaskDetail task={task} onStartTask={startTask} />}
+    </Overlay>
   )
 }

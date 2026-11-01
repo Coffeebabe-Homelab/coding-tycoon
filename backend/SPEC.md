@@ -92,8 +92,14 @@ backend/src/main/java/dev/codingtycoon/
 │   └── CodebaseResource.java        Adapter (HTTP in): GET /api/codebase/files, GET /api/codebase/files/{path}
 │
 ├── progress/                        (Phase 7)
-│   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt)
-│   ├── ProgressService.java         Domain core: awards XP on approval, computes totals and streak
+│   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt UTC)
+│   ├── XpReason.java                Enum: TASK_APPROVED (FIRST_ATTEMPT_BONUS arrives with Phase 5)
+│   ├── XpEventRepository.java       Port (interface)
+│   ├── JpaXpEventRepository.java    Adapter — Panache
+│   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
+│   ├── Streak.java                  Value: current, longest
+│   ├── ProgressService.java         Domain core: awards XP on approval (called by TaskService), computes totals and streak
+│   ├── ProgressResponse.java        JSON: totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
 │   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
 │
 └── ai/
@@ -112,6 +118,20 @@ backend/src/main/java/dev/codingtycoon/
 | Error format | `{ "error": "ErrorType", "message": "Human-readable detail", "status": 400 }` |
 | Dates | ISO 8601 UTC strings |
 | IDs | `Long` (auto-increment, Panache default) |
+
+### Progress API
+
+`GET /api/progress` (authenticated) → `200`
+
+```json
+{ "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
+```
+
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- A "day" is a UTC calendar day. `xpToday` sums today's events.
+- Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
+- `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
+- `401` without a token, `404` if the player has no profile.
 
 ### HTTP Status Codes
 
@@ -194,6 +214,15 @@ Review
   verdict       VARCHAR   -- APPROVED | CHANGES_REQUESTED
   comments      JSONB     -- [{ file, line, message }]
   reviewed_at   TIMESTAMP
+
+XpEvent                        -- table xp_event; ledger, one row per award
+  id                BIGINT PK
+  player_profile_id BIGINT FK → PlayerProfile
+  task_id           BIGINT FK → Task
+  amount            INT
+  reason            VARCHAR    -- TASK_APPROVED
+  created_at        TIMESTAMP  -- UTC
+  UNIQUE (task_id, reason)     -- makes awarding idempotent
 
 SkillProfile
   id                  BIGINT PK
@@ -318,8 +347,8 @@ Phases worked in parallel reserve their version numbers up front so branches don
 | Version | File | Task | Status |
 |---|---|---|---|
 | V1–V6 | user, topics, player profile, profile topics, topic seed, tasks | Phases 1–2 | Applied |
-| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Implemented (Phase 3 PR) |
-| V8 | `V8__create_xp_event_table.sql` | P7-03 | Reserved |
+| V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Merged (PR #17) |
+| V8 | `V8__create_xp_event_table.sql` | P7-03 | Added in Phase 7 (PR #16) |
 
 Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 

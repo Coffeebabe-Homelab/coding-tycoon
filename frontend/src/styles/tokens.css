@@ -32,6 +32,25 @@
   --color-text-primary: #f3f4f6;
   --color-text-muted: #9ca3af;
 
+  /* --- Room scene (game/RoomScene.tsx, game/Avatar.tsx) --- */
+  --color-room-floor: #1e293b;
+  --color-room-floor-line: #334155;
+  --color-room-wall-left: #172033;
+  --color-room-wall-right: #1c2740;
+  --color-room-trim: #475569;
+  --color-room-desk-top: #a16207;
+  --color-room-desk-side: #713f12;
+  --color-room-monitor: #0f172a;
+  --color-room-screen: #38bdf8;
+  --color-room-board: #e2e8f0;
+  --color-room-note: #fde047;
+  --color-room-door: #7c2d12;
+  --color-room-chair: #334155;
+  --color-room-avatar-skin: #f5d0a9;
+  --color-room-avatar-hair: #3f2a1d;
+  --color-room-avatar-shirt: #9333ea;
+  --drop-shadow-hotspot: 0 0 8px var(--color-accent); /* hover/focus glow on room objects */
+
   /* --- Typography --- */
   /* Swap font families here only — no component changes needed */
   --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;

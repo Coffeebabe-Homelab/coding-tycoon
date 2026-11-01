@@ -22,7 +22,7 @@ Let the player browse the task's codebase: a collapsible file tree on the left, 
 - [x] Opens the first focus file by default; `?file=<path>` selects a specific file (deep link)
 - [x] Loading and error states follow existing patterns (`text-danger` for errors); "no active task" shows a friendly message with a link to the task board
 - [x] Task Board shows the task's focus files as links into the explorer, plus an "Explore codebase" link
-- [x] Room page links to the explorer (P7-02 turns it into an overlay; whichever lands second wires it up)
+- [x] Room page links to the explorer (wired in the Phase 7 PR: monitor hotspot opens it as an overlay)
 - [x] Semantic design tokens only, no raw palette classes
 
 ---

@@ -209,12 +209,12 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 **Goal:** The game has a coherent visual shell — the desk room, session flow, and day structure feel like a game, not a CRUD app.
 
 ### Tasks
-- [ ] Static isometric room scene (CSS/SVG; no pixel-art engine for MVP) with an avatar placeholder at the desk (P7-01)
-- [ ] Navigation: room as hub, panels open as overlays; session flow Login → Room → Task Board → work → Review → End of Day; desktop-first layout, minimum 1280px width (P7-02)
-- [ ] XP system: points per approved task, bonus for first-attempt approval (bonus wired once Phase 5 tracks attempts) (P7-03)
-- [ ] Streak tracker (P7-04)
-- [ ] "End of Day" summary screen: task result, XP gained, streak, skill profile delta (delta shown once Phase 6 lands) (P7-05)
-- [ ] Integration verification (P7-06)
+- [x] Static isometric room scene (CSS/SVG; no pixel-art engine for MVP) with an avatar placeholder at the desk (P7-01)
+- [x] Navigation: room as hub, panels open as overlays; session flow Login → Room → Task Board → work → Review → End of Day; desktop-first layout, minimum 1280px width (P7-02)
+- [x] XP system: points per approved task, bonus for first-attempt approval (bonus wired once Phase 5 tracks attempts) (P7-03)
+- [x] Streak tracker (P7-04)
+- [x] "End of Day" summary screen: task result, XP gained, streak, skill profile delta (delta shown once Phase 6 lands) (P7-05)
+- [ ] Integration verification (P7-06) — automated checks done; browser and staging checks pending
 
 ### Exit Criteria
 - The full loop feels cohesive: login → room → task → code → review → end of day
