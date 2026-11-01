@@ -24,6 +24,7 @@ Guidelines for AI agents and humans working on this codebase.
   - Clarify requirements, edge cases, success criteria before coding.
   - If the request is ambiguos ask first, keep record.
   - Propose options and trade-offs if not defined.
+  - When a simpler or better approach than the planned one exists, propose it (pros/cons and a recommendation) before building. Don't make the codebase harder than it needs to be.
 - Minimal Code:
   - Keep code self-explanatory; comments only for rationale, edge cases, or workarounds.
 - One Change at a Time:
@@ -35,7 +36,10 @@ Guidelines for AI agents and humans working on this codebase.
 
 ## Trello Workflow
 
-Board: [Coding Tycoon](https://trello.com/b/grPxIeZk/coding-tycoon). Lanes: `TODO` → `IN PROGRESS` → `BLOCKED` → `DONE`.
+Board: [Coding Tycoon](https://trello.com/b/grPxIeZk/coding-tycoon). Lanes: `BACKLOG` → `TODO` → `IN PROGRESS` → `BLOCKED` → `DONE`.
+
+- `BACKLOG`: future work that waits for a trigger (scale, production, post-MVP). Each card states when and why to start it.
+- `TODO`: ready to be picked up.
 
 - **Before every change**, search the board's active cards (never archived ones) for a card covering it, so work isn't duplicated:
   - Card exists and is in progress elsewhere → don't start; ask first.
