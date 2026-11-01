@@ -63,16 +63,36 @@ frontend/src/
 /                   → redirect: unauthenticated → /login, authenticated → /room
 /login              → LoginPage (public)
 /callback           → Auth0 callback handler
-/room               → GameRoomPage (protected) — main hub
-/room/task          → TaskBoardPage (protected)
-/room/codebase      → CodebaseExplorerPage (protected, Phase 3)
-/room/end-of-day    → EndOfDayPage (protected, Phase 7)
-/room/editor        → EditorPage (protected)
-/room/review        → ReviewPage (protected)
-/profile            → ProfilePage (protected)
+/onboarding         → OnboardingPage (protected)
+/room               → GameRoomPage (protected) — main hub: room scene + HUD + panel outlet
+  /room/task        → TaskBoardPage overlay
+  /room/profile     → ProfilePage overlay
+  /room/end-of-day  → EndOfDayPage overlay (Phase 7)
+  /room/codebase    → CodebaseExplorerPage overlay (Phase 3, not wired yet)
+  /room/editor      → EditorPage overlay (Phase 4)
+  /room/review      → ReviewPage overlay (Phase 5)
+/profile            → redirect to /room/profile
 ```
 
-All routes under `/room` and `/profile` are wrapped in `<ProtectedRoute />`.
+`/room` is wrapped in `<ProtectedRoute />`; its panels are nested routes, so they inherit the protection. Panels render through `useOutlet()` inside `GameRoomPage` and wrap their content in `<Overlay>`. While a panel is open the room is `inert`. Closing (Esc, ×, backdrop click, "Back to room") navigates to `/room`, and the browser back button closes a panel too.
+
+### Session flow (`hooks/useSessionFlow.ts`)
+
+On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. Editor and Review are not linked until they exist.
+
+## Game Shell Components (Phase 7)
+
+| File | Role |
+|---|---|
+| `game/RoomScene.tsx` | Static isometric SVG room (walls, floor, desk, monitor, chair, kanban board, door). No routing inside; takes callbacks. |
+| `game/Hotspot.tsx` | SVG `role="button"` wrapper: `tabIndex`, `aria-label`, Enter/Space, `<title>` tooltip, hover/focus glow. No `onActivate` → disabled (`aria-disabled`). |
+| `game/Avatar.tsx` | Placeholder player figure seated at the desk. |
+| `game/RoomHud.tsx` | Top strip: total XP, current streak, "wrap up the day" link after an approval, email, Profile, Log out. |
+| `components/Overlay.tsx` | Accessible modal: `role="dialog"`, `aria-modal`, labelled heading, focus trap (`lib/focusTrap.ts`), Esc/× close, restores focus to the opener. |
+| `pages/EndOfDayPage.tsx` | Outcome (approved / in progress / not started), XP today, total XP, current and longest streak; actions Back to room, Log out. Skill delta hidden until Phase 6. |
+| `hooks/useProgress.ts` | `GET /api/progress`; optional `refreshKey` refetches (the room refetches when a panel opens or closes). |
+
+Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → disabled ("coming soon") until Phase 3 wires `/room/codebase`.
 
 ---
 
@@ -90,7 +110,7 @@ Don't add a global store unless state truly can't live in the URL or a hook. Nev
 
 ## API Integration Pattern
 
-Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components.
+Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`.
 
 ```ts
 // lib/api.ts
@@ -152,6 +172,10 @@ For the full rules on how to use tokens (what's forbidden, componentisation rule
   /* Text */
   --color-text-primary:  #f3f4f6;
   --color-text-muted:    #9ca3af;
+
+  /* Room scene (Phase 7): --color-room-floor, -floor-line, -wall-left, -wall-right, -trim,
+     -desk-top, -desk-side, -monitor, -screen, -board, -note, -door, -chair,
+     -avatar-skin, -avatar-hair, -avatar-shirt; plus --drop-shadow-hotspot (hover/focus glow) */
 
   /* Typography — swap here only */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
