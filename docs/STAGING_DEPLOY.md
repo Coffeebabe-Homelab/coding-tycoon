@@ -67,11 +67,17 @@ docker compose up -d --remove-orphans
 
 ## Smoke Checks
 
+Jenkins runs this after every deploy; run it manually from the deploy path:
+
 ```bash
 docker compose ps
-curl -fsS http://localhost:${BACKEND_PORT:-8081}/q/health/ready
-curl -fsS http://localhost:${FRONTEND_PORT:-8080}/
+sh scripts/smoke-staging.sh
 ```
+
+It checks backend readiness, then goes through the frontend nginx proxy:
+`/` → 200, `/api/topics` → 200 (proxy reaches backend, path intact),
+`/api/tasks/today` without a token → 401 (backend answered, auth enforced).
+A 502 here usually means nginx cannot reach the backend container.
 
 Manual authenticated check:
 

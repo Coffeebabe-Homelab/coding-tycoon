@@ -168,8 +168,8 @@ pipeline {
             steps {
                 sshagent(credentials: ['staging-ssh-key']) {
                     sh """
-                        sleep 5
                         ssh ${DEPLOY_HOST} 'docker compose -f ${DEPLOY_PATH}/${COMPOSE_FILE} ps'
+                        ssh ${DEPLOY_HOST} 'cd ${DEPLOY_PATH} && COMPOSE_FILE=${COMPOSE_FILE} sh scripts/smoke-staging.sh'
                     """
                 }
             }
