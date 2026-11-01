@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
+import { RoomHud } from '../game/RoomHud'
+import { RoomScene } from '../game/RoomScene'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 
 /**
- * Main game hub page.
+ * Main game hub: the isometric room with clickable objects.
  * On mount, checks whether the player has a profile. If the API returns 404,
  * the player is redirected to /onboarding to complete setup.
  */
@@ -33,38 +35,15 @@ export default function GameRoomPage() {
   }, [getAccessTokenSilently, navigate])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-base text-text-primary">
-      <h1 className="text-2xl font-semibold">Welcome to the Game Room</h1>
-      <p className="text-text-muted">Logged in as {user?.email}</p>
-
-      <Link
-        to="/room/task"
-        className="rounded-lg bg-accent px-6 py-3 text-base font-semibold text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        View today's task
-      </Link>
-
-      <Link
-        to="/room/codebase"
-        className="text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
-      >
-        Explore codebase
-      </Link>
-
-      <Link
-        to="/profile"
-        className="text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
-      >
-        View Profile
-      </Link>
-
-      <button
-        type="button"
-        className="rounded-lg bg-accent px-4 py-2 text-sm text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
-        onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-      >
-        Log out
-      </button>
+    <div className="flex h-screen flex-col bg-bg-base text-text-primary">
+      <RoomHud
+        email={user?.email}
+        profilePath="/profile"
+        onLogout={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+      />
+      <main className="min-h-0 flex-1 p-4">
+        <RoomScene onOpenTaskBoard={() => navigate('/room/task')} />
+      </main>
     </div>
   )
 }
