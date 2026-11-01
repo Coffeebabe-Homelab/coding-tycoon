@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTask } from '../hooks/useTask'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 
 /** Maps a difficulty string to its badge colour classes. */
@@ -70,6 +70,34 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       {/* Description */}
       <p className="mb-6 leading-relaxed text-text-primary">{task.description}</p>
 
+      {/* Codebase context */}
+      <section aria-labelledby="focus-files-heading" className="mb-6">
+        <h2
+          id="focus-files-heading"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted"
+        >
+          Codebase
+        </h2>
+        {task.focusFiles.length > 0 && (
+          <ul className="mb-3 flex flex-col gap-1">
+            {task.focusFiles.map((path) => (
+              <li key={path}>
+                <TextLink
+                  to={{
+                    pathname: '/room/codebase',
+                    search: `?${new URLSearchParams({ file: path })}`,
+                  }}
+                  className="font-mono"
+                >
+                  {path}
+                </TextLink>
+              </li>
+            ))}
+          </ul>
+        )}
+        <TextLink to="/room/codebase">Explore codebase →</TextLink>
+      </section>
+
       {/* Acceptance criteria */}
       <section aria-labelledby="acceptance-criteria-heading" className="mb-8">
         <h2
@@ -125,12 +153,9 @@ export default function TaskBoardPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-start bg-bg-base px-10 py-8">
-      <Link
-        to="/room"
-        className="mb-8 text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
-      >
+      <TextLink to="/room" className="mb-8">
         ← Back to room
-      </Link>
+      </TextLink>
 
       {error && (
         <div className="w-full max-w-2xl">
