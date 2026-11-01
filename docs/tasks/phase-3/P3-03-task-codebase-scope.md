@@ -1,7 +1,7 @@
 # P3-03 — Scope Tasks to a Codebase
 
 **Phase:** 3 — Codebase Explorer  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P3-01  
 
 ---
@@ -14,14 +14,14 @@ Each task knows which codebase it belongs to and which files it is about, so the
 
 ## Acceptance Criteria
 
-- [ ] Flyway migration `V7__add_task_codebase_scope.sql` (reserved, see `backend/SPEC.md` § Reserved Versions) adds to `tasks`: `codebase_key VARCHAR NOT NULL DEFAULT 'shopfront'` and `focus_files TEXT NOT NULL DEFAULT ''` (comma-separated, same convention as `tags`)
-- [ ] `Task` entity, `SeedTask` record and `TaskResponse` expose `codebaseKey` and `focusFiles` (`List<String>` in the response)
-- [ ] Every seed task gets `codebaseKey = "shopfront"`; at least 3 seed tasks reference concrete `shopfront` files in `focusFiles` and mention them in the description
-- [ ] Seed task descriptions that conflict with `shopfront` are adjusted (e.g. the users list task points at `UserController`)
-- [ ] Every `focusFiles` entry exists in the codebase `index.txt` (enforced by a test)
-- [ ] AI-generated tasks (when enabled) default to `shopfront` with no focus files
-- [ ] Existing rows keep working after the migration (defaults applied)
-- [ ] Tests updated/added for the new fields
+- [x] Flyway migration `V7__add_task_codebase_scope.sql` (reserved, see `backend/SPEC.md` § Reserved Versions) adds to `tasks`: `codebase_key VARCHAR NOT NULL DEFAULT 'shopfront'` and `focus_files TEXT NOT NULL DEFAULT ''` (comma-separated, same convention as `tags`)
+- [x] `Task` entity, `SeedTask` record and `TaskResponse` expose `codebaseKey` and `focusFiles` (`List<String>` in the response)
+- [x] Every seed task gets `codebaseKey = "shopfront"`; at least 3 seed tasks reference concrete `shopfront` files in `focusFiles` and mention them in the description
+- [x] Seed task descriptions that conflict with `shopfront` are adjusted (e.g. the users list task points at `UserController`)
+- [x] Every `focusFiles` entry exists in the codebase `index.txt` (enforced by a test)
+- [x] AI-generated tasks (when enabled) default to `shopfront` with no focus files
+- [x] Existing rows keep working after the migration (defaults applied)
+- [x] Tests updated/added for the new fields
 
 ---
 

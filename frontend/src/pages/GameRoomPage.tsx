@@ -45,6 +45,13 @@ export default function GameRoomPage() {
       </Link>
 
       <Link
+        to="/room/codebase"
+        className="text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
+      >
+        Explore codebase
+      </Link>
+
+      <Link
         to="/profile"
         className="text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline"
       >

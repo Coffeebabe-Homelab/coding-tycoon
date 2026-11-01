@@ -8,6 +8,7 @@ import GameRoomPage from './pages/GameRoomPage'
 import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
 import TaskBoardPage from './pages/TaskBoardPage'
+import CodebaseExplorerPage from './pages/CodebaseExplorerPage'
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -47,6 +48,14 @@ function App() {
         element={
           <ProtectedRoute>
             <TaskBoardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/room/codebase"
+        element={
+          <ProtectedRoute>
+            <CodebaseExplorerPage />
           </ProtectedRoute>
         }
       />

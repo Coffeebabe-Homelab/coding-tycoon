@@ -2,6 +2,7 @@ package dev.codingtycoon.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
@@ -68,6 +69,16 @@ public class ExceptionMappers {
     }
 
     /**
+     * Maps other JAX-RS exceptions (e.g. 405 Method Not Allowed) keeping their status,
+     * so the RuntimeException fallback doesn't turn them into 500.
+     */
+    @ServerExceptionMapper
+    public Response mapWebApplication(WebApplicationException e) {
+        LOG.warn("Request rejected: " + e.getMessage());
+        return buildResponse(e.getResponse().getStatusInfo(), e.getClass().getSimpleName(), e.getMessage());
+    }
+
+    /**
      * Fallback mapper for any unhandled RuntimeException — returns 500 Internal Server Error.
      */
     @ServerExceptionMapper
@@ -76,7 +87,7 @@ public class ExceptionMappers {
         return buildResponse(Response.Status.INTERNAL_SERVER_ERROR, "InternalServerError", "An unexpected error occurred");
     }
 
-    private Response buildResponse(Response.Status status, String errorType, String message) {
+    private Response buildResponse(Response.StatusType status, String errorType, String message) {
         return Response.status(status)
                 .entity(Map.of(
                         "error", errorType,

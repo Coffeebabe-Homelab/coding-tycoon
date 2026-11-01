@@ -1,7 +1,7 @@
 # P3-01 — Synthetic Codebase `shopfront`
 
 **Phase:** 3 — Codebase Explorer  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P2-06  
 
 ---
@@ -14,15 +14,15 @@ Hand-write a small, believable Java Spring Boot codebase (Users + Products) that
 
 ## Acceptance Criteria
 
-- [ ] Codebase lives under `backend/src/main/resources/codebases/shopfront/`
-- [ ] Contains a `README.md` explaining what the fictional app does
-- [ ] Layered structure per domain (`user`, `product`): entity, repository, service, controller
-- [ ] Shared `common` package: `NotFoundException`, `GlobalExceptionHandler`
-- [ ] `pom.xml`, `application.properties`, and at least one test class (`UserServiceTest`) for realism
-- [ ] 12–20 files total: big enough to explore, small enough to read in a session
-- [ ] Code is idiomatic Junior-readable Java (no Lombok, no reactive), and gives seed tasks obvious places to work (e.g. `UserController` has no list endpoint yet)
-- [ ] `index.txt` at the codebase root lists every file path (one per line, relative, sorted)
-- [ ] A backend test asserts `index.txt` matches the files actually present (catches forgotten entries)
+- [x] Codebase lives under `backend/src/main/resources/codebases/shopfront/`
+- [x] Contains a `README.md` explaining what the fictional app does
+- [x] Layered structure per domain (`user`, `product`): entity, repository, service, controller
+- [x] Shared `common` package: `NotFoundException`, `GlobalExceptionHandler`
+- [x] `pom.xml`, `application.properties`, and at least one test class (`UserServiceTest`) for realism
+- [x] 12–20 files total: big enough to explore, small enough to read in a session
+- [x] Code is idiomatic Junior-readable Java (no Lombok, no reactive), and gives seed tasks obvious places to work (e.g. `UserController` has no list endpoint yet)
+- [x] `index.txt` at the codebase root lists every file path (one per line, relative, sorted)
+- [x] A backend test asserts `index.txt` matches the files actually present (catches forgotten entries)
 
 ---
 
