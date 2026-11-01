@@ -20,9 +20,8 @@ class CodebaseIndexTest {
 
     @Test
     void shopfrontIndexListsEveryFileSorted() throws IOException {
-        List<String> indexed = Files.readAllLines(SHOPFRONT_ROOT.resolve("index.txt")).stream()
-                .filter(line -> !line.isBlank())
-                .toList();
+        // Blank lines are rejected too: the repository serves the index verbatim.
+        List<String> indexed = Files.readAllLines(SHOPFRONT_ROOT.resolve("index.txt"));
 
         assertEquals(filesOnDisk(), indexed);
     }
