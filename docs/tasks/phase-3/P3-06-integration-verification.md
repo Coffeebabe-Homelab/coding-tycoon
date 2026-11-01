@@ -1,7 +1,7 @@
 # P3-06 — Phase 3 Integration Verification
 
 **Phase:** 3 — Codebase Explorer  
-**Status:** 🔲 Not started  
+**Status:** 🟡 Automated checks done; manual browser and staging checks pending  
 **Depends on:** P3-01 through P3-05  
 
 ---
@@ -23,16 +23,16 @@ Verify the Phase 3 exit criteria end-to-end before closing the phase.
 
 ### Read-only
 - [ ] Typing in the editor does nothing
-- [ ] No write endpoint exists under `/api/codebase`
+- [x] No write endpoint exists under `/api/codebase`
 
 ### Security checks
-- [ ] `GET /api/codebase/files` without a token → `401`
-- [ ] `GET /api/codebase/files/../../application.properties` (and URL-encoded variants) → `404`
-- [ ] A path not in `index.txt` → `404`
+- [x] `GET /api/codebase/files` without a token → `401`
+- [x] `GET /api/codebase/files/../../application.properties` (and URL-encoded variants) → `404`
+- [x] A path not in `index.txt` → `404`
 
 ### Automated checks
-- [ ] `./mvnw verify` passes; coverage ≥ 80% on `codebase` and the changed `task` code
-- [ ] `npm run lint` and `npm run build` pass; Monaco is in its own chunk
+- [x] `./mvnw verify` passes; coverage ≥ 80% on `codebase` and the changed `task` code
+- [x] `npm run lint` and `npm run build` pass; Monaco is in its own chunk
 
 ### Staging
 - [ ] Deployed via Jenkins; smoke test green; explorer works on the staging URL (confirms the Monaco loading choice from P3-04)

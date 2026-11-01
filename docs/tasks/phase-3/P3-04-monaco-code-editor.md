@@ -1,7 +1,7 @@
 # P3-04 — Monaco `CodeEditor` Component
 
 **Phase:** 3 — Codebase Explorer  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P2-04  
 
 ---
@@ -27,15 +27,15 @@ Recorded in `frontend/SPEC.md` § Monaco Editor Integration.
 
 ## Acceptance Criteria
 
-- [ ] `@monaco-editor/react` and `monaco-editor` installed with **exact pinned** versions; `loader.config({ monaco })` makes it load from the bundle, with no CDN requests at runtime
-- [ ] `components/CodeEditor.tsx` props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`
-- [ ] `readOnly` sets Monaco `readOnly: true` and `domReadOnly: true`
-- [ ] Options per `frontend/SPEC.md`: no minimap, font size 14, word wrap, `scrollBeyondLastLine: false`
-- [ ] Editor theme follows the app's dark look (tokens, not raw colours, where Monaco allows)
-- [ ] `lib/language.ts`: maps a file extension to a Monaco language id (`.java`, `.xml`, `.properties`, `.md`, `.json`, `.sql`, fallback `plaintext`)
-- [ ] `CodeEditor` is lazy-loaded (`React.lazy` + `Suspense` with the existing loading style); the initial bundle size stays roughly the same
-- [ ] No other file imports `@monaco-editor/react` directly
-- [ ] Container has an `aria-label` (accessibility baseline)
+- [x] `@monaco-editor/react` and `monaco-editor` installed with **exact pinned** versions; `loader.config({ monaco })` makes it load from the bundle, with no CDN requests at runtime
+- [x] `components/CodeEditor.tsx` props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`
+- [x] `readOnly` sets Monaco `readOnly: true` and `domReadOnly: true`
+- [x] Options per `frontend/SPEC.md`: no minimap, font size 14, word wrap, `scrollBeyondLastLine: false`
+- [x] Editor theme follows the app's dark look (tokens, not raw colours, where Monaco allows)
+- [x] `lib/language.ts`: maps a file extension to a Monaco language id (`.java`, `.xml`, `.properties`, `.md`, `.json`, `.sql`, fallback `plaintext`)
+- [x] `CodeEditor` is lazy-loaded (`React.lazy` + `Suspense` with the existing loading style); the initial bundle size stays roughly the same
+- [x] No other file imports `@monaco-editor/react` directly
+- [x] Container has an `aria-label` (accessibility baseline)
 
 ---
 
