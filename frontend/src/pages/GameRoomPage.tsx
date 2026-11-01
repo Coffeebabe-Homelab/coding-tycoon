@@ -32,6 +32,7 @@ export default function GameRoomPage() {
           <RoomScene
             onOpenTaskBoard={() => navigate('/room/task')}
             onOpenEndOfDay={() => navigate('/room/end-of-day')}
+            onOpenCodebase={() => navigate('/room/codebase')}
           />
         </main>
       </div>

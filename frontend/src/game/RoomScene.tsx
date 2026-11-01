@@ -5,6 +5,8 @@ interface RoomSceneProps {
   onOpenTaskBoard: () => void
   /** Omitted while the End of Day screen doesn't exist: the door is then disabled. */
   onOpenEndOfDay?: () => void
+  /** Omitted while no codebase panel exists: the monitor is then disabled. */
+  onOpenCodebase?: () => void
 }
 
 const LABEL_CLASS = 'fill-text-muted text-sm'
@@ -15,7 +17,7 @@ const LABEL_CLASS = 'fill-text-muted text-sm'
  *
  * Geometry: the floor diamond's back corner is (600,250); walls are 230 units tall.
  */
-export function RoomScene({ onOpenTaskBoard, onOpenEndOfDay }: RoomSceneProps) {
+export function RoomScene({ onOpenTaskBoard, onOpenEndOfDay, onOpenCodebase }: RoomSceneProps) {
   return (
     <svg
       viewBox="0 0 1200 680"
@@ -84,8 +86,15 @@ export function RoomScene({ onOpenTaskBoard, onOpenEndOfDay }: RoomSceneProps) {
         <polygon points="660,280 820,360 740,400 580,320" className="fill-room-desk-top" />
       </g>
 
-      {/* Monitor → Codebase Explorer (Phase 3) / Editor (Phase 4); disabled until those exist */}
-      <Hotspot label="Computer: Codebase Explorer coming soon">
+      {/* Monitor → Codebase Explorer (Phase 3); the Phase 4 editor will open from here too */}
+      <Hotspot
+        label={
+          onOpenCodebase
+            ? 'Computer: open the Codebase Explorer'
+            : 'Computer: Codebase Explorer coming soon'
+        }
+        onActivate={onOpenCodebase}
+      >
         <line x1="724" y1="318" x2="724" y2="334" className="stroke-room-monitor" strokeWidth="6" />
         <polygon points="684,228 764,268 764,338 684,298" className="fill-room-monitor" />
         <polygon points="690,240 758,274 758,328 690,294" className="fill-room-screen" />
