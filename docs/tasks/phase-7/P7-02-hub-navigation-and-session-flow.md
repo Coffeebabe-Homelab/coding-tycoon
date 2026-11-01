@@ -26,7 +26,7 @@ Recorded in `frontend/SPEC.md` (routing + state management). Zustand is not adop
 ## Acceptance Criteria
 
 - [x] `components/Overlay.tsx`: accessible modal panel (focus trap, `Esc` and a close button return to `/room`, `aria-modal`, labelled heading)
-- [x] Task Board, Codebase Explorer (if P3-05 has landed) and Profile render as overlays (P3-05 not landed yet: the monitor hotspot is disabled until Phase 3 merges) over the room
+- [x] Task Board, Codebase Explorer (if P3-05 has landed) and Profile render as overlays over the room (explorer wired after Phase 3 merged: monitor hotspot → `/room/codebase`, wide overlay)
 - [x] Session flow: after login → room; if today's task is `ASSIGNED`, the Task Board opens automatically once per session
 - [x] Flow placeholders for later phases (Editor, Review) are not linked until they exist
 - [x] Desktop-first layout: no horizontal scroll at 1280px width; the room scales to fill larger screens

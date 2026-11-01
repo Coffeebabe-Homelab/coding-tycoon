@@ -68,7 +68,7 @@ frontend/src/
   /room/task        → TaskBoardPage overlay
   /room/profile     → ProfilePage overlay
   /room/end-of-day  → EndOfDayPage overlay (Phase 7)
-  /room/codebase    → CodebaseExplorerPage overlay (Phase 3, not wired yet)
+  /room/codebase    → CodebaseExplorerPage overlay (wide)
   /room/editor      → EditorPage overlay (Phase 4)
   /room/review      → ReviewPage overlay (Phase 5)
 /profile            → redirect to /room/profile
@@ -92,7 +92,7 @@ On entering the room: no profile (`404`) → `/onboarding`. If the player landed
 | `pages/EndOfDayPage.tsx` | Outcome (approved / in progress / not started), XP today, total XP, current and longest streak; actions Back to room, Log out. Skill delta hidden until Phase 6. |
 | `hooks/useProgress.ts` | `GET /api/progress`; optional `refreshKey` refetches (the room refetches when a panel opens or closes). |
 
-Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → disabled ("coming soon") until Phase 3 wires `/room/codebase`.
+Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → `/room/codebase`. `Overlay` takes `wide` for panels with their own full-height layout (the explorer).
 
 ---
 
@@ -234,7 +234,7 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 
 ### Codebase Explorer (Phase 3)
 
-`pages/CodebaseExplorerPage.tsx` at `/room/codebase`: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
+`pages/CodebaseExplorerPage.tsx` at `/room/codebase`, rendered as a wide `Overlay` over the room: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
 
 - `hooks/useCodebase.ts` loads `GET /api/codebase/files` once and exposes `{ files, focusFiles, openFile, current, isLoading, error, noActiveTask }`. `openFile(path)` fetches `GET /api/codebase/files/{path}` and ignores stale responses.
 - The open file lives in the URL (`?file=<path>`), so refresh, deep links and Back keep it. Without `?file`, the first focus file opens (else the first file).
