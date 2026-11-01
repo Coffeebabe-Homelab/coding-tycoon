@@ -10,19 +10,16 @@
 
 Coding Tycoon simulates the full professional developer cycle — task → code → review → iterate — inside an engaging, gamified environment. Every session is one in-game "workday": your manager drops a ticket, you explore the codebase, write the fix, push it, and wait for the AI senior dev's review.
 
-See [north_star.md](./north_star.md) for the full vision and [ROADMAP.md](./ROADMAP.md) for the delivery plan.
+See [north_star.md](./north_star.md) for the full vision and [ROADMAP.md](./ROADMAP.md) for the delivery plan. The application design lives in [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb).
 
 ---
 
 ## Prerequisites
 
 - [Node.js 20+](https://nodejs.org/)
-- [Java 21+](https://adoptium.net/) (Temurin recommended)
+- [Java 25](https://adoptium.net/) (Temurin recommended; `sdk install java 25-tem` via SDKMAN)
 - [Docker + Docker Compose](https://docs.docker.com/get-docker/)
 - [Auth0 account](https://auth0.com/) (free tier)
-
-> **Java 25:** The project targets Java 25 but runs on 21 until Java 25 is widely available.
-> Install via SDKMAN: `sdk install java 25-tem`
 
 ---
 
@@ -35,13 +32,11 @@ git clone git@github.com:Pedro-Appel/codign-tycoon.git
 cd codign-tycoon
 ```
 
-### 2. Start the container stack
+### 2. Make sure Docker is running
 
-```bash
-docker compose up -d
-```
+For local development you don't need to start the Compose stack. In dev mode, Quarkus Dev Services starts its own PostgreSQL container. Ollama is not needed yet because the task engine falls back to seed data.
 
-This starts PostgreSQL, the backend, and the frontend through Docker Compose. Ollama is optional at this stage because the task engine falls back to seed data.
+The root `docker-compose.yml` runs the full stack the way staging does (postgres, backend, frontend, lgtm). It needs an untracked root `.env` with the variables listed in [docs/STAGING_DEPLOY.md](./docs/STAGING_DEPLOY.md#environment-file). Its frontend binds port `5173`, so don't run it alongside `npm run dev`.
 
 ### 3. Configure Auth0
 
@@ -49,13 +44,7 @@ Follow the [Auth0 Setup](#auth0-setup) section below, then come back here.
 
 ### 4. Configure environment variables
 
-Copy the example file and fill in your Auth0 values:
-
-```bash
-cp .env.example frontend/.env.local
-```
-
-Edit `frontend/.env.local`:
+Create `frontend/.env.local` (ignored by Git) with your Auth0 values:
 
 ```env
 VITE_AUTH0_DOMAIN=your-tenant.auth0.com
@@ -125,8 +114,12 @@ Frontend starts on `http://localhost:5173`.
 |---|---|
 | `AUTH0_DOMAIN` | Auth0 tenant domain |
 | `AUTH0_AUDIENCE` | API identifier — `https://api.codingtycoon.dev` |
-| `DB_USER` | PostgreSQL username (prod only; dev uses Dev Services) |
+| `DATABASE_JDBC_URL` | PostgreSQL JDBC URL (prod only; dev uses Dev Services) |
+| `DB_USER` | PostgreSQL username (prod only) |
 | `DB_PASSWORD` | PostgreSQL password (prod only) |
+| `CORS_ORIGINS` | Allowed frontend origins (default `http://localhost:5173`) |
+| `LOG_LEVEL` | Root log level (default `INFO`) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP endpoint for logs/traces/metrics (default `http://127.0.0.1:4318`) |
 
 ---
 
@@ -155,5 +148,8 @@ Backend tests use Quarkus Dev Services — Docker must be running. AI services a
 | [ROADMAP.md](./ROADMAP.md) | Phase-by-phase delivery plan |
 | [docs/DEVELOPMENT_GUIDELINES.md](./docs/DEVELOPMENT_GUIDELINES.md) | Coding patterns, testing strategy, Git workflow |
 | [docs/STAGING_DEPLOY.md](./docs/STAGING_DEPLOY.md) | Staging Docker Compose deploy runbook |
+| [observability/README.md](./observability/README.md) | LGTM observability stack and Grafana dashboard |
+| [docs/tasks/](./docs/tasks/) | Per-phase task specs and status |
 | [backend/SPEC.md](./backend/SPEC.md) | Backend architecture, API conventions, data model |
 | [frontend/SPEC.md](./frontend/SPEC.md) | Frontend architecture, component structure, state management |
+| [Figma design](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) | Source of the application's visual design |

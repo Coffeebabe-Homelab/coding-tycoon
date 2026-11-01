@@ -12,14 +12,7 @@ Phase 2.1 deploys the Phase 2 application with Docker Compose: frontend, backend
 
 ## Environment File
 
-On the staging host:
-
-```bash
-cd ~/staging/myapp
-cp .env.staging.example .env
-```
-
-Fill in real values in `.env`. Never commit that file.
+Jenkins writes `.env` on every deploy from the secret-file credential `coding-tycoon-env-file` (stage *Prepare environment file*). It is then rsynced to `DEPLOY_PATH`. To change a value, update that credential and redeploy. There is no committed example file; never commit `.env`.
 
 Required values:
 
@@ -34,7 +27,11 @@ Required values:
 | `VITE_AUTH0_DOMAIN` | Auth0 tenant domain baked into the frontend build |
 | `VITE_AUTH0_CLIENT_ID` | Auth0 SPA client ID |
 | `VITE_AUTH0_AUDIENCE` | Auth0 API identifier baked into the frontend build |
-| `VITE_API_BASE_URL` | Public backend API base URL used by the browser |
+| `VITE_API_BASE_URL` | Public backend API base URL used by the browser (empty means same origin, through the nginx `/api` proxy) |
+| `GF_SECURITY_ADMIN_USER` | Grafana admin user for the `lgtm` service |
+| `GF_SECURITY_ADMIN_PASSWORD` | Grafana admin password for the `lgtm` service |
+
+Optional: `DB_NAME` (default `codingtycoon`), `FRONTEND_PORT` (default `5173`), `LOG_LEVEL`, `OTEL_SERVICE_NAME`, `DEPLOYMENT_ENVIRONMENT` (default `homelab`), and the `GRAFANA_PORT`/`OTLP_*_PORT` bindings. See [observability/README.md](../observability/README.md).
 
 ## Auth0 Staging URLs
 

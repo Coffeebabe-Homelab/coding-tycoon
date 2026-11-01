@@ -21,14 +21,16 @@ If anything is unclear at any point, ask. Explaining is part of the process.
 
 | Concern | Choice |
 |---------|--------|
-| Framework | React 18 + TypeScript (strict mode) |
+| Framework | React 19 + TypeScript (strict mode) |
 | Build tool | Vite |
 | Styling | Tailwind CSS v4 (Vite plugin) |
-| Code editor | Monaco Editor |
+| Routing | React Router 7 |
+| Code editor | Monaco Editor via `@monaco-editor/react` (Phase 3; one shared `CodeEditor` for the explorer and the Phase 4 editor) |
 | Auth | `@auth0/auth0-react` |
-| State (client) | Zustand |
-| State (server) | TBD — React Query or SWR |
-| Linting | ESLint + typescript-eslint + react-hooks |
+| State (client) | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted (P7-02) |
+| Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) |
+| State (server) | Custom hooks over `fetchWithAuth`; React Query/SWR not adopted |
+| Linting | oxlint (`npm run lint`); ESLint config kept for editor integration |
 | Formatting | Prettier |
 
 ---
@@ -45,9 +47,6 @@ frontend/src/
 │   ├── api.ts         fetchWithAuth helper
 │   ├── auth.ts        Auth0 helpers
 │   └── diff.ts        Diff computation utilities
-├── store/         Zustand stores
-│   ├── gameStore.ts   Session state, current room mode
-│   └── profileStore.ts Player profile cache
 ├── styles/
 │   └── tokens.css     Design tokens — colours, fonts. THE only file to change when rebranding.
 ├── types/         Shared TypeScript interfaces and enums
@@ -64,6 +63,8 @@ frontend/src/
 /callback           → Auth0 callback handler
 /room               → GameRoomPage (protected) — main hub
 /room/task          → TaskBoardPage (protected)
+/room/codebase      → CodebaseExplorerPage (protected, Phase 3)
+/room/end-of-day    → EndOfDayPage (protected, Phase 7)
 /room/editor        → EditorPage (protected)
 /room/review        → ReviewPage (protected)
 /profile            → ProfilePage (protected)
@@ -78,11 +79,10 @@ All routes under `/room` and `/profile` are wrapped in `<ProtectedRoute />`.
 | Data type | Where it lives | Why |
 |---|---|---|
 | Task, review, profile data | React hook + `useState` (or React Query) | Server-owned, stale-able |
-| Current session mode (which panel is open) | Zustand `gameStore` | Shared across unrelated components |
-| Player profile cache | Zustand `profileStore` | Needed in multiple panels |
+| Which panel is open over the room | URL (nested routes under `/room`) | Back button closes it; refresh and deep links keep it |
 | Form values, toggles, local UI | `useState` | No cross-component sharing needed |
 
-Never duplicate server data in Zustand. Zustand stores are for client-side UI state only.
+Don't add a global store unless state truly can't live in the URL or a hook. Never duplicate server data client-side.
 
 ---
 
@@ -197,8 +197,11 @@ import Editor from '@monaco-editor/react'
 />
 ```
 
-For the **Codebase Explorer** (read-only): set `readOnly: true` and `domReadOnly: true`.
-For the **Editor panel**: allow edits, bind value to component state, surface changes via `onChange`.
+Wrap Monaco once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else.
+
+For the **Codebase Explorer** (Phase 3, read-only): `readOnly` sets `readOnly: true` and `domReadOnly: true`.
+For the **Editor panel** (Phase 4): allow edits, bind value to component state, surface changes via `onChange`.
+Load `CodeEditor` lazily (`React.lazy`) so Monaco stays out of the initial bundle. Monaco is **bundled locally** (`monaco-editor` + `loader.config({ monaco })`), never loaded from a CDN, so it works on the Tailscale-only staging and offline (P3-04).
 
 ---
 

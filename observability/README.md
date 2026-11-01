@@ -4,7 +4,7 @@ Quarkus sends logs, HTTP traces, and metrics to the bundled LGTM Collector using
 
 ## Run
 
-From the repository root, copy `.env.example` to `.env` and supply the existing application values plus a non-default `GF_SECURITY_ADMIN_USER` and strong `GF_SECURITY_ADMIN_PASSWORD`. `.env` is ignored by Git. Grafana anonymous access is disabled. Credentials initialize a new volume; changing environment values later does not reset an existing account.
+From the repository root, create an untracked `.env` (variables listed in `docs/STAGING_DEPLOY.md`) and supply the existing application values plus a non-default `GF_SECURITY_ADMIN_USER` and strong `GF_SECURITY_ADMIN_PASSWORD`. `.env` is ignored by Git. Grafana anonymous access is disabled. Credentials initialize a new volume; changing environment values later does not reset an existing account.
 
 ```sh
 docker compose config --quiet
