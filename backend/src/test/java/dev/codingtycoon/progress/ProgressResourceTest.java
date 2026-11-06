@@ -2,8 +2,8 @@ package dev.codingtycoon.progress;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class ProgressResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void getProgressReturns200WithTotalsAndStreak() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         testData.createEvent(profileId, testData.createTask(profileId), now);
@@ -61,7 +61,7 @@ class ProgressResourceTest {
 
     @Test
     @TestSecurity(user = NO_PROFILE_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = NO_PROFILE_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = NO_PROFILE_SUB)})
     void getProgressWithoutProfileReturns404() {
         given()
                 .when().get("/api/progress")
