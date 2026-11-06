@@ -305,6 +305,8 @@ when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 
 **Mocking convention:** use Mockito (`quarkus-junit5-mockito`, version from the Quarkus BOM), not hand-written fakes. In a `@QuarkusTest`, use `@InjectMock` to replace a bean. In a plain unit test, use `Mockito.mock(...)`.
 
+**Coverage:** `./mvnw verify` writes `target/jacoco-report`, covering both `@QuarkusTest` and plain unit tests, and fails if any package is under 80% lines or 80% branches. Data accumulates between runs, so use `./mvnw clean verify` for exact numbers.
+
 ---
 
 ## Authentication & Authorisation
