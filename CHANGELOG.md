@@ -15,6 +15,7 @@
 - Docs: fix stale `.env.example` references (README, staging runbook, observability README), the Java 25 prerequisite, backend env vars, and the frontend/backend SPEC stack tables.
 - Docs: add Phase 3 (Codebase Explorer, Monaco `CodeEditor` shared with Phase 4) and Phase 7 (Game Shell) task specs, which can be worked on in parallel. Reserve Flyway versions V7 (P3-03) and V8 (P7-03). Record the decisions: Monaco bundled locally, overlays driven by nested routes, 100 XP plus a 50 XP first-attempt bonus, UTC days, streak counted on approved-task days.
 - Docs: link the Figma application design from README and the frontend SPEC.
+- Docs: fix drift. README points to the real repo and says backend tests run on H2, north_star closes the state management decision, ROADMAP no longer says task generation calls Ollama, and the staging runbook lists every environment variable and how `.env` reaches the host.
 
 - Allow `PATCH` in backend CORS methods so starting a task (`PATCH /api/tasks/{id}/status`) isn't rejected.
 - Add a CORS check to the staging smoke test (POST with the public `Origin` must reach auth) and document the Tailscale staging URL for `CORS_ORIGINS` and Auth0.
