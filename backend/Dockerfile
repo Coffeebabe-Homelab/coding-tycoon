@@ -11,12 +11,17 @@ RUN ./mvnw -B -DskipTests package
 
 FROM eclipse-temurin:25-jre-alpine
 
+RUN addgroup -S -g 1001 app && adduser -S -u 1001 -G app app
+
 WORKDIR /app
 
 COPY --from=build /workspace/backend/target/quarkus-app/lib/ lib/
 COPY --from=build /workspace/backend/target/quarkus-app/*.jar ./
 COPY --from=build /workspace/backend/target/quarkus-app/app/ app/
 COPY --from=build /workspace/backend/target/quarkus-app/quarkus/ quarkus/
+
+# The app files stay root-owned: the runtime user only needs to read them.
+USER app
 
 EXPOSE 8080
 
