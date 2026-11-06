@@ -45,7 +45,7 @@ If staging uses a port during early setup, add that exact origin too, for exampl
 
 ## Jenkins Assumptions
 
-The existing Jenkinsfile checks out the `staging` branch, builds the root Compose project, rsyncs the repo to the staging host, and runs:
+The Jenkinsfile validates `dev` (the same checks as GitHub CI), waits for manual approval, merges `dev` into `staging`, builds the root Compose project, rsyncs the repo to the staging host, and runs the command below. With the `DEPLOY_ONLY` parameter it skips validation, approval and merge, and deploys `staging` as-is.
 
 ```bash
 docker compose -f docker-compose.yml up -d --build --remove-orphans

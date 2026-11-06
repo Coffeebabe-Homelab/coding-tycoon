@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- CI: GitHub CI runs on `dev` pushes and PRs. Jenkins Validate now matches it (frontend build, backend `verify`) and sets its git identity repo-locally instead of with `git config --global`. Actions are SHA-pinned, and Dependabot opens monthly update PRs against `dev`. Document the real branch flow (`feat/*` → `dev` → `staging`).
 - Wire the Codebase Explorer into the room: the monitor hotspot opens `/room/codebase` as a wide overlay (nested route), replacing the standalone page.
 - Phase 3 Codebase Explorer: add the static `shopfront` synthetic codebase (Users + Products, with an `index.txt` allow-list and a consistency test). Add the read-only `GET /api/codebase/files` and `GET /api/codebase/files/{path}` endpoints, which resolve the codebase from the player's active task and return 404 for any path that isn't in the index.
 - Flyway `V7__add_task_codebase_scope.sql`: tasks gain `codebase_key` (default `shopfront`) and `focus_files`. Task responses include `codebaseKey` and `focusFiles`. Three seed tasks now point at real `shopfront` files.
