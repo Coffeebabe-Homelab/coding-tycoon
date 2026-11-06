@@ -22,7 +22,6 @@ public class JpaTopicRepository implements TopicRepository, PanacheRepository<To
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
-        // Using positional parameter syntax compatible with both H2 (test) and PostgreSQL (prod).
         return list("id IN ?1", ids);
     }
 }

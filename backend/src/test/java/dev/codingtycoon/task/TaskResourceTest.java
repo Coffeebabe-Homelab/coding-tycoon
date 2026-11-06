@@ -2,6 +2,7 @@ package dev.codingtycoon.task;
 
 import dev.codingtycoon.profile.JpaProfileRepository;
 import dev.codingtycoon.progress.JpaXpEventRepository;
+import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.topic.JpaTopicRepository;
 import dev.codingtycoon.topic.Topic;
@@ -14,7 +15,6 @@ import io.quarkus.test.security.jwt.JwtSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration tests for /api/tasks endpoints.
- * Uses H2 in-memory DB (drop-and-create); topics and profile are inserted manually per test.
+ * Runs on PostgreSQL with the Flyway schema; topics come from the V5 seed, the profile is inserted per test.
  */
 @QuarkusTest
 class TaskResourceTest {
@@ -52,29 +52,15 @@ class TaskResourceTest {
     JpaXpEventRepository xpEventRepository;
 
     @Inject
-    EntityManager em;
+    ProgressTestData testData;
 
     @BeforeEach
     @Transactional
     void setUp() {
-        // Clean up — respect FK order: xp events → tasks → join table → profiles → users → topics
-        xpEventRepository.deleteAll();
-        em.createNativeQuery("DELETE FROM tasks").executeUpdate();
-        em.createNativeQuery("DELETE FROM player_profile_topics").executeUpdate();
-        profileRepository.deleteAll();
-        userRepository.deleteAll();
-        topicRepository.deleteAll();
+        testData.clear();
 
-        // Insert topics
-        Topic t1 = new Topic();
-        t1.name = "REST APIs";
-        t1.slug = "rest-apis";
-        topicRepository.persist(t1);
-
-        Topic t2 = new Topic();
-        t2.name = "CRUD";
-        t2.slug = "crud";
-        topicRepository.persist(t2);
+        Topic t1 = topicRepository.find("slug", "rest-apis").firstResult();
+        Topic t2 = topicRepository.find("slug", "crud").firstResult();
 
         // Insert user + profile for the main test user
         User user = new User();

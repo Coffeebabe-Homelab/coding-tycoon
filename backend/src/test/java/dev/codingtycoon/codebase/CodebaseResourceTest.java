@@ -2,9 +2,9 @@ package dev.codingtycoon.codebase;
 
 import dev.codingtycoon.profile.JpaProfileRepository;
 import dev.codingtycoon.profile.PlayerProfile;
+import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.task.JpaTaskRepository;
 import dev.codingtycoon.task.Task;
-import dev.codingtycoon.topic.JpaTopicRepository;
 import dev.codingtycoon.user.JpaUserRepository;
 import dev.codingtycoon.user.User;
 import io.quarkus.test.junit.QuarkusTest;
@@ -12,7 +12,6 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.jwt.Claim;
 import io.quarkus.test.security.jwt.JwtSecurity;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,22 +41,15 @@ class CodebaseResourceTest {
     JpaProfileRepository profileRepository;
 
     @Inject
-    JpaTopicRepository topicRepository;
-
-    @Inject
     JpaTaskRepository taskRepository;
 
     @Inject
-    EntityManager em;
+    ProgressTestData testData;
 
     @BeforeEach
     @Transactional
     void setUp() {
-        em.createNativeQuery("DELETE FROM tasks").executeUpdate();
-        em.createNativeQuery("DELETE FROM player_profile_topics").executeUpdate();
-        profileRepository.deleteAll();
-        userRepository.deleteAll();
-        topicRepository.deleteAll();
+        testData.clear();
 
         PlayerProfile profile = createProfile(TEST_SUB);
         createProfile(NO_TASK_SUB);
