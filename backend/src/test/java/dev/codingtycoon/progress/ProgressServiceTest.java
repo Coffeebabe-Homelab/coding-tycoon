@@ -95,6 +95,15 @@ class ProgressServiceTest {
     }
 
     @Test
+    void getProgressReturnsLatestTitleWhenSeveralApprovedToday() {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        testData.createEvent(profileId, testData.createTask(profileId, "Latest task"), now);
+        testData.createEvent(profileId, testData.createTask(profileId, "Earlier task"), now.minusSeconds(1));
+
+        assertEquals("Latest task", progressService.getProgress(TEST_SUB).approvedTodayTaskTitle());
+    }
+
+    @Test
     void getProgressWithoutProfileThrowsNotFound() {
         assertThrows(NotFoundException.class, () -> progressService.getProgress("auth0|unknown"));
     }
