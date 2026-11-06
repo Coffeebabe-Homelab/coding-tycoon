@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Backend tests: replace the hand-written fakes in `TaskServiceTest` and `CodebaseServiceTest` with Mockito mocks, keeping the same scenarios.
 - Backend tests: add `quarkus-junit5-mockito` (test scope, version from the Quarkus BOM). Mocks replace hand-written fakes from now on; see the mocking convention in `backend/SPEC.md`.
 - Wire the Codebase Explorer into the room: the monitor hotspot opens `/room/codebase` as a wide overlay (nested route), replacing the standalone page.
 - Phase 3 Codebase Explorer: add the static `shopfront` synthetic codebase (Users + Products, with an `index.txt` allow-list and a consistency test). Add the read-only `GET /api/codebase/files` and `GET /api/codebase/files/{path}` endpoints, which resolve the codebase from the player's active task and return 404 for any path that isn't in the index.
