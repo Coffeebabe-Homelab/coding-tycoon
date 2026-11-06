@@ -16,6 +16,18 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
+      // "Logic" per DEVELOPMENT_GUIDELINES: everything with behaviour. Leaves out main.tsx (bootstrap)
+      // and types/ (no runtime code).
+      include: [
+        'src/lib/**',
+        'src/hooks/**',
+        'src/components/**',
+        'src/pages/**',
+        'src/game/**',
+        'src/App.tsx',
+      ],
+      exclude: ['src/**/*.test.*'],
+      thresholds: { statements: 70, branches: 70, functions: 70, lines: 70 },
     },
   },
 })
