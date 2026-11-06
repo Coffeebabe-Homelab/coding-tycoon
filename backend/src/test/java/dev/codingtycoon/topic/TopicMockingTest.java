@@ -34,4 +34,17 @@ class TopicMockingTest {
 
         Mockito.verify(topicRepository).listTopics();
     }
+
+    @Test
+    void unexpectedFailureBecomes500WithoutLeakingDetails() {
+        Mockito.when(topicRepository.listTopics()).thenThrow(new IllegalStateException("db password is hunter2"));
+
+        given()
+                .when().get("/api/topics")
+                .then()
+                .statusCode(500)
+                .body("error", is("InternalServerError"))
+                .body("message", is("An unexpected error occurred"))
+                .body("status", is(500));
+    }
 }

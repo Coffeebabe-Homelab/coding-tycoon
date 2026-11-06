@@ -2,11 +2,15 @@ package dev.codingtycoon.codebase;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClasspathCodebaseRepositoryTest {
@@ -42,5 +46,27 @@ class ClasspathCodebaseRepositoryTest {
     @Test
     void readFileForMissingFileIsEmpty() {
         assertTrue(repository.readFile("shopfront", "src/Missing.java").isEmpty());
+    }
+
+    @Test
+    void unreadableResourceThrows() {
+        Thread thread = Thread.currentThread();
+        ClassLoader original = thread.getContextClassLoader();
+        thread.setContextClassLoader(new ClassLoader(original) {
+            @Override
+            public InputStream getResourceAsStream(String name) {
+                return new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        throw new IOException("disk failure");
+                    }
+                };
+            }
+        });
+        try {
+            assertThrows(UncheckedIOException.class, () -> repository.readFile("shopfront", "README.md"));
+        } finally {
+            thread.setContextClassLoader(original);
+        }
     }
 }
