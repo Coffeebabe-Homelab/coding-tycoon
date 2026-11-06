@@ -322,7 +322,7 @@ chore(deps): bump quarkus to 3.24.2
 ### PR Process & Checklist
 
 Before opening a PR:
-- [ ] All tests pass locally (`npm run lint && npm run build` / `./mvnw verify`)
+- [ ] All tests pass locally (`npm run lint && npm run test:coverage && npm run build` / `./mvnw verify`)
 - [ ] New code has tests (≥ coverage thresholds)
 - [ ] Javadoc / JSDoc on new public API
 - [ ] `SPEC.md` updated if API contracts changed
