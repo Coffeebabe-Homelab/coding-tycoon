@@ -32,9 +32,6 @@ pipeline {
                     credentialsId: 'git-checkout-key'
         
                 sh '''
-                    git config --global pull.rebase false
-                    git config --global user.email "jenkins@mecha-rat"
-                    git config --global user.name "Jenkins"
                     git fetch origin --prune
                     git fetch origin dev --prune
                     git fetch origin staging --prune
@@ -53,13 +50,14 @@ pipeline {
                         dir('frontend') {
                             sh 'npm ci'
                             sh 'npm run lint'
+                            sh 'npm run build'
                         }
                     }
                 }
                 stage('Backend') {
                     steps {
                         dir('backend') {
-                            sh './mvnw -B test'
+                            sh './mvnw -B verify'
                         }
                     }
                 }
@@ -83,9 +81,10 @@ pipeline {
             steps {
                 sshagent(credentials: ['git-checkout-key']) {
                     sh '''
-                        git config --global pull.rebase false
-                        git config --global user.email "jenkins@mecha-rat"
-                        git config --global user.name "Jenkins"
+                        # Only this merge commit needs an identity. Repo-local, so the agent's
+                        # global git config stays untouched.
+                        git config user.email "jenkins@mecha-rat"
+                        git config user.name "Jenkins"
                         git fetch origin --prune
                         git fetch origin dev --prune
                         git fetch origin staging --prune
@@ -105,9 +104,6 @@ pipeline {
                     credentialsId: 'git-checkout-key'
         
                 sh '''
-                    git config --global pull.rebase false
-                    git config --global user.email "jenkins@mecha-rat"
-                    git config --global user.name "Jenkins"
                     git fetch origin --prune
                     git fetch origin staging --prune
                     git checkout -B staging origin/staging
