@@ -128,7 +128,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
 - [x] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
 - [x] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
-- [ ] Integration verification (P3-06)
+- [ ] Integration verification (P3-06) — staging verified except deep-link refresh after login (fix pending) and focus-file links (retest)
 
 ### Exit Criteria
 - Player can open the file tree and browse the synthetic codebase
@@ -177,6 +177,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - APPROVED path: task closes, player sees success state
 - CHANGES REQUESTED path: feedback shown, player can iterate
 - Multiple attempts tracked correctly
+- HUD and End of Day show the same XP and streak values as `GET /api/progress` (deferred from P7-06)
 
 ---
 
@@ -214,7 +215,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] XP system: points per approved task, bonus for first-attempt approval (bonus wired once Phase 5 tracks attempts) (P7-03)
 - [x] Streak tracker (P7-04)
 - [x] "End of Day" summary screen: task result, XP gained, streak, skill profile delta (delta shown once Phase 6 lands) (P7-05)
-- [ ] Integration verification (P7-06) — automated checks done; browser and staging checks pending
+- [x] Integration verification (P7-06) — staging verified 2026-11-01; XP/streak UI values re-checked in Phase 5
 
 ### Exit Criteria
 - The full loop feels cohesive: login → room → task → code → review → end of day
@@ -283,4 +284,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-11-01 | Status: Phases 0–2.1 complete. Phase 3 (Codebase Explorer) and Phase 7 (Game Shell) are next and run in parallel.*
+*Last updated: 2026-11-06 | Status: Phases 0–2.1 and Phase 7 (Game Shell) complete. Phase 3 (Codebase Explorer) is delivered; P3-06 verification is still open (deep-link refresh fix, focus-file retest).*
