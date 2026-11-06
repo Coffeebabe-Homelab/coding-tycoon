@@ -101,13 +101,13 @@ describe('useSessionFlow', () => {
     const first = enterAt('/room')
     await waitFor(() => expect(location()).toHaveTextContent('/room/task'))
     first.unmount()
-    fetchMock.mockClear()
 
     enterAt('/room')
     await settle()
 
     expect(location()).toHaveTextContent(/^\/room$/)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const taskRequests = fetchMock.mock.calls.filter(([url]) => url.endsWith('/api/tasks/today'))
+    expect(taskRequests).toHaveLength(1)
   })
 
   it('stays in the room when the task has already started', async () => {
