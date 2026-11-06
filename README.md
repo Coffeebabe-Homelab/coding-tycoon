@@ -136,7 +136,7 @@ cd backend
 ./mvnw verify
 ```
 
-Backend tests use Quarkus Dev Services — Docker must be running. AI services are mocked in tests; no Ollama needed.
+Backend tests use Quarkus Dev Services PostgreSQL 16 with the real Flyway migrations — Docker must be running. AI services are mocked in tests; no Ollama needed.
 
 ---
 

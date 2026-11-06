@@ -41,6 +41,6 @@ jobs:
           distribution: temurin
           cache: maven
 
-      # Quarkus Dev Services (Testcontainers) spins up PostgreSQL automatically.
+      # Quarkus Dev Services (Testcontainers) starts PostgreSQL 16 and Flyway migrates it; needs Docker.
       # Ollama AI calls are mocked in tests — no Ollama needed in CI.
       - run: ./mvnw verify -B
