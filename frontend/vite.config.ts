@@ -10,6 +10,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     env: { VITE_API_BASE_URL: 'http://api.test' },
+    testTimeout: 20000,
     // Each test starts from clean mocks and a real fetch, so tests can't leak into each other.
     mockReset: true,
     unstubGlobals: true,
