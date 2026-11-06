@@ -53,6 +53,7 @@ pipeline {
                         dir('frontend') {
                             sh 'npm ci'
                             sh 'npm run lint'
+                            sh 'npm run test:coverage'
                         }
                     }
                 }
