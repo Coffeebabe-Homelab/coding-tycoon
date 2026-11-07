@@ -2,7 +2,7 @@
 
 > A browser-based game that teaches real coding skills through a simulated developer workday.
 
-[![CI](https://github.com/Pedro-Appel/codign-tycoon/actions/workflows/ci.yml/badge.svg)](https://github.com/Pedro-Appel/codign-tycoon/actions/workflows/ci.yml)
+[![CI](https://github.com/Coffeebabe-Homelab/coding-tycoon/actions/workflows/ci.yml/badge.svg)](https://github.com/Coffeebabe-Homelab/coding-tycoon/actions/workflows/ci.yml)
 
 ---
 
@@ -16,7 +16,7 @@ See [north_star.md](./north_star.md) for the full vision and [ROADMAP.md](./ROAD
 
 ## Prerequisites
 
-- [Node.js 20+](https://nodejs.org/)
+- [Node.js 22+](https://nodejs.org/)
 - [Java 25](https://adoptium.net/) (Temurin recommended; `sdk install java 25-tem` via SDKMAN)
 - [Docker + Docker Compose](https://docs.docker.com/get-docker/)
 - [Auth0 account](https://auth0.com/) (free tier)
@@ -28,8 +28,8 @@ See [north_star.md](./north_star.md) for the full vision and [ROADMAP.md](./ROAD
 ### 1. Clone and enter the repo
 
 ```bash
-git clone git@github.com:Pedro-Appel/codign-tycoon.git
-cd codign-tycoon
+git clone git@github.com:Coffeebabe-Homelab/coding-tycoon.git
+cd coding-tycoon
 ```
 
 ### 2. Make sure Docker is running

@@ -80,7 +80,7 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 
 ### Tasks
 - [x] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
-- [x] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
+- [x] `POST /api/tasks/generate` — generates a task from player profile; runs on `StubTaskAdapter` with seed fallback, Ollama not wired in yet
 - [x] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
 - [x] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
 - [x] `GET /api/tasks/today` — returns today's active task for the player
