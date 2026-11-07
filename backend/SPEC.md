@@ -127,7 +127,8 @@ backend/src/main/java/dev/codingtycoon/
 { "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
 ```
 
-- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- `PATCH /api/tasks/{id}/status` only accepts player transitions on the caller's own tasks: `ASSIGNED → IN_PROGRESS`, `IN_PROGRESS → SUBMITTED`, `CHANGES_REQUESTED → SUBMITTED`. Another player's task returns `404`, and any other transition returns `422`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
 - `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
@@ -198,6 +199,7 @@ Task
   focus_files       TEXT       -- comma-separated codebase paths, default '' (V7)
   status            VARCHAR    -- ASSIGNED | IN_PROGRESS | SUBMITTED | APPROVED | CHANGES_REQUESTED
   created_at        TIMESTAMP
+  -- at most one non-APPROVED task per player_profile_id: partial unique index (V9)
 
 Submission
   id             BIGINT PK
@@ -354,6 +356,7 @@ Phases worked in parallel reserve their version numbers up front so branches don
 | V1–V6 | user, topics, player profile, profile topics, topic seed, tasks | Phases 1–2 | Applied |
 | V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Merged (PR #17) |
 | V8 | `V8__create_xp_event_table.sql` | P7-03 | Added in Phase 7 (PR #16) |
+| V9 | `V9__one_active_task_per_player.sql` | [Trello](https://trello.com/c/3Fdjmel6) | Removes duplicate active tasks, keeping the newest |
 
 Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 

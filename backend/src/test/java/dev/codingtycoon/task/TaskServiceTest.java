@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
@@ -38,10 +39,10 @@ class TaskServiceTest {
     private static final Long USER_ID = 1L;
     private static final Long PROFILE_ID = 2L;
     private static final Long TASK_ID = 3L;
-    private static final Map<TaskStatus, Set<TaskStatus>> ALLOWED = Map.of(
+    private static final Map<TaskStatus, Set<TaskStatus>> PLAYER_TRANSITIONS = Map.of(
             TaskStatus.ASSIGNED, Set.of(TaskStatus.IN_PROGRESS),
             TaskStatus.IN_PROGRESS, Set.of(TaskStatus.SUBMITTED),
-            TaskStatus.SUBMITTED, Set.of(TaskStatus.APPROVED, TaskStatus.CHANGES_REQUESTED),
+            TaskStatus.SUBMITTED, Set.of(),
             TaskStatus.CHANGES_REQUESTED, Set.of(TaskStatus.SUBMITTED),
             TaskStatus.APPROVED, Set.of()
     );
@@ -125,7 +126,7 @@ class TaskServiceTest {
     void allowedTransitionUpdatesAndSavesTask(TaskStatus from, TaskStatus to) {
         Task task = storedTask(from);
 
-        assertSame(task, taskService.transitionStatus(TASK_ID, to));
+        assertSame(task, taskService.transitionStatus(SUB, TASK_ID, to));
 
         assertEquals(to, task.status);
         Mockito.verify(taskRepository).save(task);
@@ -136,7 +137,7 @@ class TaskServiceTest {
     void forbiddenTransitionIsRejectedAndNothingChanges(TaskStatus from, TaskStatus to) {
         Task task = storedTask(from);
 
-        assertThrows(UnprocessableException.class, () -> taskService.transitionStatus(TASK_ID, to));
+        assertThrows(UnprocessableException.class, () -> taskService.transitionStatus(SUB, TASK_ID, to));
 
         assertEquals(from, task.status);
         Mockito.verify(taskRepository, Mockito.never()).save(any());
@@ -144,26 +145,66 @@ class TaskServiceTest {
     }
 
     @Test
-    void approvalAwardsXp() {
+    void transitionOfUnknownTaskIsNotFound() {
+        assertThrows(NotFoundException.class, () -> taskService.transitionStatus(SUB, TASK_ID, TaskStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void transitionOfAnotherPlayersTaskIsNotFoundAndChangesNothing() {
+        Task task = storedTask(TaskStatus.ASSIGNED);
+        task.playerProfileId = PROFILE_ID + 1;
+
+        assertThrows(NotFoundException.class, () -> taskService.transitionStatus(SUB, TASK_ID, TaskStatus.IN_PROGRESS));
+
+        assertEquals(TaskStatus.ASSIGNED, task.status);
+        Mockito.verify(taskRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    void approvalVerdictAwardsXp() {
         Task task = storedTask(TaskStatus.SUBMITTED);
 
-        taskService.transitionStatus(TASK_ID, TaskStatus.APPROVED);
+        assertSame(task, taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
 
+        assertEquals(TaskStatus.APPROVED, task.status);
+        Mockito.verify(taskRepository).save(task);
         Mockito.verify(progressService).awardForApproval(task);
     }
 
     @Test
-    void otherTransitionsAwardNoXp() {
-        storedTask(TaskStatus.SUBMITTED);
+    void changesRequestedVerdictAwardsNoXp() {
+        Task task = storedTask(TaskStatus.SUBMITTED);
 
-        taskService.transitionStatus(TASK_ID, TaskStatus.CHANGES_REQUESTED);
+        taskService.applyReviewVerdict(TASK_ID, TaskStatus.CHANGES_REQUESTED);
 
+        assertEquals(TaskStatus.CHANGES_REQUESTED, task.status);
         Mockito.verifyNoInteractions(progressService);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = TaskStatus.class, names = "SUBMITTED", mode = EnumSource.Mode.EXCLUDE)
+    void verdictOnATaskThatIsNotSubmittedIsRejected(TaskStatus from) {
+        Task task = storedTask(from);
+
+        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
+
+        assertEquals(from, task.status);
+        Mockito.verifyNoInteractions(progressService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TaskStatus.class, names = {"APPROVED", "CHANGES_REQUESTED"}, mode = EnumSource.Mode.EXCLUDE)
+    void statusThatIsNotAVerdictIsRejected(TaskStatus status) {
+        Task task = storedTask(TaskStatus.SUBMITTED);
+
+        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, status));
+
+        assertEquals(TaskStatus.SUBMITTED, task.status);
+    }
+
     @Test
-    void transitionOfUnknownTaskIsNotFound() {
-        assertThrows(NotFoundException.class, () -> taskService.transitionStatus(TASK_ID, TaskStatus.IN_PROGRESS));
+    void verdictOnUnknownTaskIsNotFound() {
+        assertThrows(NotFoundException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
     }
 
     @Test
@@ -179,20 +220,21 @@ class TaskServiceTest {
     private Task storedTask(TaskStatus status) {
         Task task = new Task();
         task.id = TASK_ID;
+        task.playerProfileId = PROFILE_ID;
         task.status = status;
         Mockito.when(taskRepository.findTaskById(TASK_ID)).thenReturn(Optional.of(task));
         return task;
     }
 
     static Stream<Arguments> allowedTransitions() {
-        return ALLOWED.entrySet().stream()
+        return PLAYER_TRANSITIONS.entrySet().stream()
                 .flatMap(e -> e.getValue().stream().map(to -> Arguments.of(e.getKey(), to)));
     }
 
-    /** Every pair of statuses not listed in ALLOWED, so a new status can't slip through untested. */
+    /** Every pair of statuses not listed in PLAYER_TRANSITIONS, so a new status can't slip through untested. */
     static Stream<Arguments> forbiddenTransitions() {
         return Arrays.stream(TaskStatus.values()).flatMap(from -> Arrays.stream(TaskStatus.values())
-                .filter(to -> !ALLOWED.get(from).contains(to))
+                .filter(to -> !PLAYER_TRANSITIONS.get(from).contains(to))
                 .map(to -> Arguments.of(from, to)));
     }
 }

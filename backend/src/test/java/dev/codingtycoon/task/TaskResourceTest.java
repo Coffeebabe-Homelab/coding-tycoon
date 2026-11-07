@@ -1,5 +1,6 @@
 package dev.codingtycoon.task;
 
+import dev.codingtycoon.exception.UnprocessableException;
 import dev.codingtycoon.profile.JpaProfileRepository;
 import dev.codingtycoon.progress.JpaXpEventRepository;
 import dev.codingtycoon.progress.ProgressTestData;
@@ -18,6 +19,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
@@ -25,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Integration tests for /api/tasks endpoints.
@@ -35,6 +39,10 @@ class TaskResourceTest {
 
     private static final String TEST_SUB = "auth0|task-test-user";
     private static final String NO_PROFILE_SUB = "auth0|task-no-profile-user";
+    private static final String OTHER_SUB = "auth0|task-other-user";
+
+    @Inject
+    TaskService taskService;
 
     @Inject
     JpaUserRepository userRepository;
@@ -213,8 +221,9 @@ class TaskResourceTest {
         Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
         assertEquals(0, xpEventRepository.count(), "no XP before approval");
 
-        patchStatus(taskId, "APPROVED").statusCode(200);
-        patchStatus(taskId, "APPROVED").statusCode(422);
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
+        assertThrows(UnprocessableException.class,
+                () -> taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED));
 
         assertEquals(1, xpEventRepository.count());
     }
@@ -225,10 +234,12 @@ class TaskResourceTest {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
-        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED", "CHANGES_REQUESTED", "SUBMITTED");
+        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.CHANGES_REQUESTED);
+        patchStatus(taskId, "SUBMITTED").statusCode(200);
         assertEquals(0, xpEventRepository.count());
 
-        patchStatus(taskId, "APPROVED").statusCode(200);
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
 
         assertEquals(1, xpEventRepository.count());
     }
@@ -240,6 +251,34 @@ class TaskResourceTest {
     })
     void patchStatusUnknownTaskReturns404() {
         patchStatus(-1, "IN_PROGRESS").statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void patchStatusOfAnotherPlayersTaskReturns404AndChangesNothing() {
+        testData.createProfile(OTHER_SUB);
+        Long otherTaskId = taskService.getOrCreateTodayTask(OTHER_SUB).first().id;
+
+        patchStatus(otherTaskId.intValue(), "IN_PROGRESS").statusCode(404);
+
+        assertEquals(TaskStatus.ASSIGNED, taskService.findActiveTask(OTHER_SUB).orElseThrow().status);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"APPROVED", "CHANGES_REQUESTED"})
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void playerCannotSetAReviewVerdictOnTheirOwnTask(String verdict) {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+
+        patchStatus(taskId, verdict).statusCode(422);
+
+        assertEquals(0, xpEventRepository.count());
     }
 
     private Integer createTaskAndPatch(String... statuses) {

@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -48,10 +49,8 @@ describe('ProtectedRoute', () => {
     expect(screen.queryByText('secret room')).not.toBeInTheDocument()
   })
 
-  // Known bug: loginWithRedirect runs during render. https://trello.com/c/vnH7h4Wt
-  // renderToString runs render but never effects, so this holds only once it moves to an effect.
-  // When fixed this test starts passing: drop `.fails`.
-  it.fails('does not start the redirect during render', () => {
+  // renderToString runs render but never effects, so this holds only while the redirect is in an effect.
+  it('does not start the redirect during render', () => {
     const auth = authState({ isAuthenticated: false })
     vi.mocked(useAuth0).mockReturnValue(auth)
 
@@ -60,9 +59,16 @@ describe('ProtectedRoute', () => {
     expect(auth.loginWithRedirect).not.toHaveBeenCalled()
   })
 
-  // Known bug: the deep link is lost across the login round trip. https://trello.com/c/vnH7h4Wt
-  // When fixed this test starts passing: drop `.fails`.
-  it.fails('remembers the deep link for after login', () => {
+  it('starts only one redirect under StrictMode', () => {
+    const auth = authState({ isAuthenticated: false })
+    vi.mocked(useAuth0).mockReturnValue(auth)
+
+    render(<StrictMode>{guarded()}</StrictMode>)
+
+    expect(auth.loginWithRedirect).toHaveBeenCalledTimes(1)
+  })
+
+  it('remembers the deep link for after login', () => {
     const auth = authState({ isAuthenticated: false })
     vi.mocked(useAuth0).mockReturnValue(auth)
 
