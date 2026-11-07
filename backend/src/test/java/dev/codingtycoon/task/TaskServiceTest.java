@@ -1,19 +1,29 @@
 package dev.codingtycoon.task;
 
+import dev.codingtycoon.exception.UnprocessableException;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.profile.ProfileRepository;
+import dev.codingtycoon.progress.ProgressService;
 import dev.codingtycoon.task.seed.SeedTaskService;
 import dev.codingtycoon.user.User;
 import dev.codingtycoon.user.UserRepository;
 import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,11 +37,20 @@ class TaskServiceTest {
     private static final String SUB = "auth0|unit";
     private static final Long USER_ID = 1L;
     private static final Long PROFILE_ID = 2L;
+    private static final Long TASK_ID = 3L;
+    private static final Map<TaskStatus, Set<TaskStatus>> ALLOWED = Map.of(
+            TaskStatus.ASSIGNED, Set.of(TaskStatus.IN_PROGRESS),
+            TaskStatus.IN_PROGRESS, Set.of(TaskStatus.SUBMITTED),
+            TaskStatus.SUBMITTED, Set.of(TaskStatus.APPROVED, TaskStatus.CHANGES_REQUESTED),
+            TaskStatus.CHANGES_REQUESTED, Set.of(TaskStatus.SUBMITTED),
+            TaskStatus.APPROVED, Set.of()
+    );
 
     private final TaskRepository taskRepository = Mockito.mock(TaskRepository.class);
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final ProfileRepository profileRepository = Mockito.mock(ProfileRepository.class);
     private final TaskAiPort taskAiPort = Mockito.mock(TaskAiPort.class);
+    private final ProgressService progressService = Mockito.mock(ProgressService.class);
     private final TaskService taskService = new TaskService();
 
     @BeforeEach
@@ -51,6 +70,7 @@ class TaskServiceTest {
         taskService.taskRepository = taskRepository;
         taskService.seedTaskService = new SeedTaskService();
         taskService.taskAiPort = taskAiPort;
+        taskService.progressService = progressService;
     }
 
     @Test
@@ -100,6 +120,52 @@ class TaskServiceTest {
         assertThrows(NotFoundException.class, () -> taskService.findActiveTask(SUB));
     }
 
+    @ParameterizedTest
+    @MethodSource("allowedTransitions")
+    void allowedTransitionUpdatesAndSavesTask(TaskStatus from, TaskStatus to) {
+        Task task = storedTask(from);
+
+        assertSame(task, taskService.transitionStatus(TASK_ID, to));
+
+        assertEquals(to, task.status);
+        Mockito.verify(taskRepository).save(task);
+    }
+
+    @ParameterizedTest
+    @MethodSource("forbiddenTransitions")
+    void forbiddenTransitionIsRejectedAndNothingChanges(TaskStatus from, TaskStatus to) {
+        Task task = storedTask(from);
+
+        assertThrows(UnprocessableException.class, () -> taskService.transitionStatus(TASK_ID, to));
+
+        assertEquals(from, task.status);
+        Mockito.verify(taskRepository, Mockito.never()).save(any());
+        Mockito.verifyNoInteractions(progressService);
+    }
+
+    @Test
+    void approvalAwardsXp() {
+        Task task = storedTask(TaskStatus.SUBMITTED);
+
+        taskService.transitionStatus(TASK_ID, TaskStatus.APPROVED);
+
+        Mockito.verify(progressService).awardForApproval(task);
+    }
+
+    @Test
+    void otherTransitionsAwardNoXp() {
+        storedTask(TaskStatus.SUBMITTED);
+
+        taskService.transitionStatus(TASK_ID, TaskStatus.CHANGES_REQUESTED);
+
+        Mockito.verifyNoInteractions(progressService);
+    }
+
+    @Test
+    void transitionOfUnknownTaskIsNotFound() {
+        assertThrows(NotFoundException.class, () -> taskService.transitionStatus(TASK_ID, TaskStatus.IN_PROGRESS));
+    }
+
     @Test
     void responseSplitsFocusFiles() {
         Task task = new Task();
@@ -108,5 +174,25 @@ class TaskServiceTest {
         task.focusFiles = "a/A.java, b/B.java";
 
         assertEquals(List.of("a/A.java", "b/B.java"), TaskResponse.from(task).focusFiles());
+    }
+
+    private Task storedTask(TaskStatus status) {
+        Task task = new Task();
+        task.id = TASK_ID;
+        task.status = status;
+        Mockito.when(taskRepository.findTaskById(TASK_ID)).thenReturn(Optional.of(task));
+        return task;
+    }
+
+    static Stream<Arguments> allowedTransitions() {
+        return ALLOWED.entrySet().stream()
+                .flatMap(e -> e.getValue().stream().map(to -> Arguments.of(e.getKey(), to)));
+    }
+
+    /** Every pair of statuses not listed in ALLOWED, so a new status can't slip through untested. */
+    static Stream<Arguments> forbiddenTransitions() {
+        return Arrays.stream(TaskStatus.values()).flatMap(from -> Arrays.stream(TaskStatus.values())
+                .filter(to -> !ALLOWED.get(from).contains(to))
+                .map(to -> Arguments.of(from, to)));
     }
 }

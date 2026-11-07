@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Backend coverage: the JaCoCo report now counts plain unit tests as well as `@QuarkusTest`, and `./mvnw verify` fails if any package drops under 80% lines or 80% branches. New tests cover the task state machine, the 500 fallback, unreadable codebase files and `UserService`. Overall: 100% lines, 95.8% branches (`dev` reported 93.2% / 73.2%). By package (lines/branches): codebase 100/87.5, exception 100/100, health 100/n-a, profile 100/100, progress 100/88.9, task 100/100, task.seed 100/100, topic 100/100, user 100/n-a.
 - Backend tests: keep OIDC enabled in tests against a local stub server, using `quarkus-test-oidc-server` and `quarkus-test-security-oidc` instead of `quarkus-test-security-jwt`. `OidcTokenValidationTest` sends real signed tokens and checks that a wrong issuer, wrong audience, expired token, wrong signature and malformed token all get 401. Add `ProfileServiceTest` unit tests with Mockito.
 - Backend tests: run on Dev Services PostgreSQL 16 with the real Flyway migrations instead of H2 with `drop-and-create`, and remove `quarkus-jdbc-h2`. Docker is now required to run them. `SchemaValidationTest` boots with `generation=validate` to catch entity/migration drift, and tests use the V5 topic seed instead of re-inserting topics.
 - Backend tests: replace the hand-written fakes in `TaskServiceTest` and `CodebaseServiceTest` with Mockito mocks, keeping the same scenarios.
