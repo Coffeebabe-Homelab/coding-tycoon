@@ -303,6 +303,10 @@ ReviewAiPort reviewAiPort;
 when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 ```
 
+**Mocking convention:** use Mockito (`quarkus-junit5-mockito`, version from the Quarkus BOM), not hand-written fakes. In a `@QuarkusTest`, use `@InjectMock` to replace a bean. In a plain unit test, use `Mockito.mock(...)`.
+
+**Coverage:** `./mvnw verify` writes `target/jacoco-report`, covering both `@QuarkusTest` and plain unit tests, and fails if any package is under 80% lines or 80% branches. Data accumulates between runs, so use `./mvnw clean verify` for exact numbers.
+
 ---
 
 ## Authentication & Authorisation
@@ -313,6 +317,7 @@ when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 - Use `@Authenticated` on resource classes; `@PermitAll` to explicitly open an endpoint
 - Inject the JWT with `@Inject JsonWebToken jwt` — use `jwt.getSubject()` as the user identifier
 - CORS is configured for `http://localhost:5173` in dev mode
+- Tests keep OIDC enabled against a local stub server (`OidcWiremockTestResource`). `OidcTokenValidationTest` covers real token validation; other tests inject an identity with `@TestSecurity` + `@OidcSecurity`
 
 ---
 
@@ -337,7 +342,7 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 - Tool: Flyway (included via Quarkus extension)
 - Location: `src/main/resources/db/migration/`
 - Naming: `V{n}__{description}.sql` (e.g. `V1__create_user_table.sql`)
-- Dev mode: `quarkus.hibernate-orm.database.generation=drop-and-create` (no migration run)
+- Dev and test modes: `quarkus.hibernate-orm.database.generation=none` + Flyway runs on Dev Services PostgreSQL. Tests use `postgres:16` (same major version as `docker-compose.yml`), so Docker must be running. `SchemaValidationTest` boots with `validate` to catch entity/migration drift.
 - Prod mode: `quarkus.hibernate-orm.database.generation=validate` + Flyway runs on startup
 
 ### Reserved Versions

@@ -2,17 +2,16 @@ package dev.codingtycoon.codebase;
 
 import dev.codingtycoon.profile.JpaProfileRepository;
 import dev.codingtycoon.profile.PlayerProfile;
+import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.task.JpaTaskRepository;
 import dev.codingtycoon.task.Task;
-import dev.codingtycoon.topic.JpaTopicRepository;
 import dev.codingtycoon.user.JpaUserRepository;
 import dev.codingtycoon.user.User;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,22 +41,15 @@ class CodebaseResourceTest {
     JpaProfileRepository profileRepository;
 
     @Inject
-    JpaTopicRepository topicRepository;
-
-    @Inject
     JpaTaskRepository taskRepository;
 
     @Inject
-    EntityManager em;
+    ProgressTestData testData;
 
     @BeforeEach
     @Transactional
     void setUp() {
-        em.createNativeQuery("DELETE FROM tasks").executeUpdate();
-        em.createNativeQuery("DELETE FROM player_profile_topics").executeUpdate();
-        profileRepository.deleteAll();
-        userRepository.deleteAll();
-        topicRepository.deleteAll();
+        testData.clear();
 
         PlayerProfile profile = createProfile(TEST_SUB);
         createProfile(NO_TASK_SUB);
@@ -86,7 +78,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void listFilesReturnsActiveTaskCodebase() {
         given()
                 .when().get("/api/codebase/files")
@@ -100,7 +92,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void readFileReturnsContent() {
         given()
                 .when().get("/api/codebase/files/" + FOCUS_FILE)
@@ -122,7 +114,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void unknownPathReturns404() {
         given()
                 .when().get("/api/codebase/files/src/main/java/com/shopfront/Nope.java")
@@ -143,7 +135,7 @@ class CodebaseResourceTest {
             "index.txt"
     })
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void traversalAttemptsReturn404(String path) {
         given()
                 .urlEncodingEnabled(false)
@@ -155,7 +147,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = NO_TASK_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = NO_TASK_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = NO_TASK_SUB)})
     void noActiveTaskReturns404() {
         given()
                 .when().get("/api/codebase/files")
@@ -166,7 +158,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void writeMethodsAreNotAllowed() {
         given().body("x").when().put("/api/codebase/files/README.md").then().statusCode(405);
         given().body("x").when().post("/api/codebase/files/README.md").then().statusCode(405);

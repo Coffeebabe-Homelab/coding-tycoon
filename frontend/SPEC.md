@@ -285,6 +285,30 @@ Use `getAccessTokenSilently()` to retrieve the access token — always in hooks 
 - **React Testing Library** — component tests
 - **jsdom** — DOM environment for Vitest
 
+### Running
+
+| Command | Use |
+|---|---|
+| `npm test` | Run everything once |
+| `npm run test:watch` | Re-run on save while developing |
+| `npm run test:coverage` | Run with coverage and enforce the threshold (what CI and Jenkins run) |
+
+Config lives in `vite.config.ts` (`test` block), setup and helpers in `src/test/`. Tests sit next to the code as `*.test.ts(x)`: `tsc -b` type-checks them, and nothing imports them from `main.tsx`, so they stay out of the bundle.
+
+Versions are pinned to what still runs on Node 20 (CI). Vitest 5, jsdom 30+ and jest-dom 6.10+ need Node 22; upgrade them when CI moves.
+
+### Coverage
+
+At least 70% statements, branches, functions and lines across `lib`, `hooks`, `components`, `pages`, `game` and `App.tsx`, measured as one total. Not measured: `main.tsx`, `types/`, test files.
+
+### Mocking
+
+Mock at the boundary only: `@auth0/auth0-react` (`authState()`), `fetch` (`stubApi()`) and Monaco. Keep real hooks and a real `MemoryRouter`, and assert the URL with `LocationProbe` rather than mocking `navigate`.
+
+### Known bugs
+
+Record a bug owned by another card with `it.fails` and a comment linking the card. The test states the correct behaviour, so fixing the bug makes Vitest flag it, and you then drop `.fails`.
+
 ### What to test
 
 - Hooks: data transformation, error states, loading states

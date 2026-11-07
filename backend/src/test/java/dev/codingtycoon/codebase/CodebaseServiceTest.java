@@ -5,50 +5,40 @@ import dev.codingtycoon.task.TaskService;
 import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Unit tests for CodebaseService with a fake repository and a stubbed TaskService.
+ * Unit tests for CodebaseService with a mocked repository and TaskService.
  */
 class CodebaseServiceTest {
 
     private static final String SUB = "auth0|codebase-unit";
-    private static final Map<String, String> FILES = Map.of(
-            "README.md", "# Demo",
-            "src/A.java", "class A {}"
-    );
 
+    private final TaskService taskService = Mockito.mock(TaskService.class);
+    private final CodebaseRepository codebaseRepository = Mockito.mock(CodebaseRepository.class);
     private final CodebaseService service = new CodebaseService();
-    private Optional<Task> activeTask;
+    private Task task;
 
     @BeforeEach
     void setUp() {
-        Task task = new Task();
+        task = new Task();
         task.codebaseKey = "demo";
         task.focusFiles = "src/A.java";
-        activeTask = Optional.of(task);
 
-        service.taskService = new TaskService() {
-            @Override
-            public Optional<Task> findActiveTask(String sub) {
-                return activeTask;
-            }
-        };
-        service.codebaseRepository = new CodebaseRepository() {
-            public List<String> listFiles(String codebaseKey) {
-                return "demo".equals(codebaseKey) ? List.of("README.md", "src/A.java", "src/Gone.java") : List.of();
-            }
+        Mockito.when(taskService.findActiveTask(SUB)).thenReturn(Optional.of(task));
+        Mockito.when(codebaseRepository.listFiles("demo"))
+                .thenReturn(List.of("README.md", "src/A.java", "src/Gone.java"));
+        Mockito.when(codebaseRepository.readFile("demo", "README.md")).thenReturn(Optional.of("# Demo"));
+        Mockito.when(codebaseRepository.readFile("demo", "src/A.java")).thenReturn(Optional.of("class A {}"));
 
-            public Optional<String> readFile(String codebaseKey, String path) {
-                return Optional.ofNullable(FILES.get(path));
-            }
-        };
+        service.taskService = taskService;
+        service.codebaseRepository = codebaseRepository;
     }
 
     @Test
@@ -68,6 +58,8 @@ class CodebaseServiceTest {
     @Test
     void readFileOutsideIndexIsNotFound() {
         assertThrows(NotFoundException.class, () -> service.readFile(SUB, "../secret.properties"));
+        // The allow-list is the security boundary: an unlisted path must never reach the repository.
+        Mockito.verify(codebaseRepository, Mockito.never()).readFile("demo", "../secret.properties");
     }
 
     @Test
@@ -77,7 +69,7 @@ class CodebaseServiceTest {
 
     @Test
     void noActiveTaskIsNotFound() {
-        activeTask = Optional.empty();
+        Mockito.when(taskService.findActiveTask(SUB)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> service.listFiles(SUB));
         assertThrows(NotFoundException.class, () -> service.readFile(SUB, "README.md"));
@@ -85,7 +77,7 @@ class CodebaseServiceTest {
 
     @Test
     void unknownCodebaseIsNotFound() {
-        activeTask.orElseThrow().codebaseKey = "missing";
+        task.codebaseKey = "missing";
 
         assertThrows(NotFoundException.class, () -> service.listFiles(SUB));
     }
