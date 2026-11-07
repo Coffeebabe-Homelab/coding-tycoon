@@ -14,13 +14,16 @@ export class ApiError extends Error {
  * Fetch wrapper that injects the Auth0 Bearer token into every request.
  * Always use this instead of raw fetch for authenticated API calls.
  *
- * @throws ApiError when the response status is not 2xx
+ * @throws ApiError when the response status is not 2xx, or with status 401 when there is no token
  */
 export const fetchWithAuth = async <T>(
   path: string,
-  token: string,
+  token: string | undefined,
   options?: RequestInit,
 ): Promise<T> => {
+  // Auth0's getAccessTokenSilently() can resolve to undefined; never send "Bearer undefined".
+  if (!token) throw new ApiError(401, 'No access token')
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
