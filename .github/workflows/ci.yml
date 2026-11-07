@@ -45,3 +45,38 @@ jobs:
       # Quarkus Dev Services (Testcontainers) starts PostgreSQL 16 and Flyway migrates it; needs Docker.
       # Ollama AI calls are mocked in tests — no Ollama needed in CI.
       - run: ./mvnw verify -B
+
+      # Also runs after a failed build, when the results matter most. Missing reports just give empty tables.
+      - name: Write job summary
+        if: always()
+        shell: python
+        run: |
+          import csv, glob, os
+          import xml.etree.ElementTree as ET
+          from collections import defaultdict
+
+          def pct(covered, missed):
+              return f"{100 * covered / (covered + missed):.1f}%" if covered + missed else "n/a"
+
+          suites = [ET.parse(f).getroot() for f in glob.glob("target/surefire-reports/TEST-*.xml")]
+          count = lambda attr: sum(int(s.get(attr, 0)) for s in suites)
+          failed = count("failures") + count("errors")
+          out = ["## Backend tests", "| Total | Passed | Failed | Skipped |", "|---|---|---|---|",
+                 f"| {count('tests')} | {count('tests') - failed - count('skipped')} | {failed} | {count('skipped')} |"]
+          out += [f"- ❌ `{c.get('classname')}.{c.get('name')}`" for s in suites for c in s.iter("testcase")
+                  if c.find("failure") is not None or c.find("error") is not None]
+
+          totals = defaultdict(lambda: [0, 0, 0, 0])
+          if os.path.exists("target/jacoco-report/jacoco.csv"):
+              with open("target/jacoco-report/jacoco.csv") as f:
+                  for row in csv.DictReader(f):
+                      columns = ("LINE_COVERED", "LINE_MISSED", "BRANCH_COVERED", "BRANCH_MISSED")
+                      for key in (row["PACKAGE"], "**Total**"):
+                          totals[key] = [a + int(row[c]) for a, c in zip(totals[key], columns)]
+
+          out += ["", "## Backend coverage", "| Package | Lines | Branches |", "|---|---|---|"]
+          # "**Total**" sorts first because * comes before letters.
+          out += [f"| {p} | {pct(v[0], v[1])} | {pct(v[2], v[3])} |" for p, v in sorted(totals.items())]
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(out) + "\n")
