@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Cleanup: remove `.kiro/` and the unused `quarkus-smallrye-jwt` dependency (`quarkus-oidc` provides `JsonWebToken`). Upgrade GitHub Actions to their Node 24 releases (`checkout` v7, `setup-node` v7, `setup-java` v6) and remove a stale H2 comment from `ci.yml`.
 - Docs: add the Night Shift design implementation roadmap and its four stage plans in `docs/design/`.
 - Frontend tests: add Vitest and React Testing Library with first tests for `lib`, hooks, components and pages, plus `npm test` and `npm run test:coverage` (at least 70% on logic). Coverage runs in GitHub Actions and the Jenkins Validate stage. Known bugs are recorded as `it.fails` tests linked to their cards.
 - Backend coverage: the JaCoCo report now counts plain unit tests as well as `@QuarkusTest`, and `./mvnw verify` fails if any package drops under 80% lines or 80% branches. New tests cover the task state machine, the 500 fallback, unreadable codebase files and `UserService`. Overall: 100% lines, 95.8% branches (`dev` reported 93.2% / 73.2%). By package (lines/branches): codebase 100/87.5, exception 100/100, health 100/n-a, profile 100/100, progress 100/88.9, task 100/100, task.seed 100/100, topic 100/100, user 100/n-a.
