@@ -52,6 +52,7 @@ pipeline {
                             sh 'npm run lint'
                             sh 'npm run format:check'
                             sh 'npm run test:coverage'
+                            sh 'npm run build'
                         }
                     }
                 }
