@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Frontend dependencies: update the minor-and-patch group, including `@auth0/auth0-react` 2.30. Auth0 now types the token as possibly `undefined`, so `fetchWithAuth` throws a 401 `ApiError` instead of sending `Bearer undefined`.
 - CI: the backend job writes test totals, failed tests and per-package JaCoCo coverage to the GitHub Actions job summary, including when the build fails.
 - Cleanup: remove `.kiro/` and the unused `quarkus-smallrye-jwt` dependency (`quarkus-oidc` provides `JsonWebToken`). Upgrade GitHub Actions to their Node 24 releases (`checkout` v7, `setup-node` v7, `setup-java` v6) and remove a stale H2 comment from `ci.yml`.
 - Docs: add the Night Shift design implementation roadmap and its four stage plans in `docs/design/`.

@@ -53,6 +53,16 @@ describe('fetchWithAuth', () => {
     await expect(fetchWithAuth('/api/things', 'abc')).rejects.toThrow('Failed to fetch')
   })
 
+  it('throws a 401 ApiError without calling the API when there is no token', async () => {
+    const fetchMock = stubApi({ 'GET /api/things': {} })
+
+    const error = await fetchWithAuth('/api/things', undefined).catch((caught: unknown) => caught)
+
+    expect(error).toBeInstanceOf(ApiError)
+    expect((error as ApiError).status).toBe(401)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   // Known bug: res.json() throws on an empty body. https://trello.com/c/d6v9NYfk
   // When fixed this test starts passing, so Vitest flags it: drop `.fails`.
   it.fails('resolves on 204 No Content', async () => {
