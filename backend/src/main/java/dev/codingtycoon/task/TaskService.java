@@ -52,7 +52,7 @@ public class TaskService {
      */
     @Transactional
     public Pair<Task, Boolean> getOrCreateTodayTask(String sub) {
-        PlayerProfile profile = requireProfile(sub);
+        PlayerProfile profile = requireLockedProfile(sub);
 
         return taskRepository.findTodayForProfile(profile.id)
                 .map(task -> new Pair<>(task, false))
@@ -141,7 +141,7 @@ public class TaskService {
      */
     @Transactional
     public Task generateTask(String sub) {
-        PlayerProfile profile = requireProfile(sub);
+        PlayerProfile profile = requireLockedProfile(sub);
 
         if (taskRepository.findTodayForProfile(profile.id).isPresent()) {
             throw new ConflictException("An active task already exists for this player");
@@ -175,6 +175,13 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return profileRepository.findByUserId(user.id)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
+    }
+
+    /** Task creation checks then inserts. The lock makes parallel callers take turns, so the next one sees the new task. */
+    private PlayerProfile requireLockedProfile(String sub) {
+        PlayerProfile profile = requireProfile(sub);
+        profileRepository.lockForUpdate(profile.id);
+        return profile;
     }
 
     private Task buildTaskFromSeed(Long profileId, SeedTask seed) {
