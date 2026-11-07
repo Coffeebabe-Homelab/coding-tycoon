@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Frontend dependencies: update the minor-and-patch group, including `@auth0/auth0-react` 2.30. Auth0 now types the token as possibly `undefined`, so `fetchWithAuth` throws a 401 `ApiError` instead of sending `Bearer undefined`.
+- CI: the backend job writes test totals, failed tests and per-package JaCoCo coverage to the GitHub Actions job summary, including when the build fails.
 - Cleanup: remove `.kiro/` and the unused `quarkus-smallrye-jwt` dependency (`quarkus-oidc` provides `JsonWebToken`). Upgrade GitHub Actions to their Node 24 releases (`checkout` v7, `setup-node` v7, `setup-java` v6) and remove a stale H2 comment from `ci.yml`.
 - Docs: add the Night Shift design implementation roadmap and its four stage plans in `docs/design/`.
 - Frontend tests: add Vitest and React Testing Library with first tests for `lib`, hooks, components and pages, plus `npm test` and `npm run test:coverage` (at least 70% on logic). Coverage runs in GitHub Actions and the Jenkins Validate stage. Known bugs are recorded as `it.fails` tests linked to their cards.
@@ -12,6 +13,7 @@
 - Backend tests: replace the hand-written fakes in `TaskServiceTest` and `CodebaseServiceTest` with Mockito mocks, keeping the same scenarios.
 - Backend tests: add `quarkus-junit5-mockito` (test scope, version from the Quarkus BOM). Mocks replace hand-written fakes from now on; see the mocking convention in `backend/SPEC.md`.
 - CI: GitHub CI runs on `dev` pushes and PRs. Jenkins Validate now matches it (frontend build, backend `verify`) and sets its git identity repo-locally instead of with `git config --global`. Actions are SHA-pinned, and Dependabot opens monthly update PRs against `dev`. Document the real branch flow (`feat/*` → `dev` → `staging`).
+- Docs: record the 2026-11-01 staging verification. P7-06 is closed, with the XP/streak UI check moved to Phase 5. P3-06 stays open for the deep-link refresh fix and the focus-file retest.
 - Wire the Codebase Explorer into the room: the monitor hotspot opens `/room/codebase` as a wide overlay (nested route), replacing the standalone page.
 - Phase 3 Codebase Explorer: add the static `shopfront` synthetic codebase (Users + Products, with an `index.txt` allow-list and a consistency test). Add the read-only `GET /api/codebase/files` and `GET /api/codebase/files/{path}` endpoints, which resolve the codebase from the player's active task and return 404 for any path that isn't in the index.
 - Flyway `V7__add_task_codebase_scope.sql`: tasks gain `codebase_key` (default `shopfront`) and `focus_files`. Task responses include `codebaseKey` and `focusFiles`. Three seed tasks now point at real `shopfront` files.
