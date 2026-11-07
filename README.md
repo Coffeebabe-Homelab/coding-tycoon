@@ -16,7 +16,7 @@ See [north_star.md](./north_star.md) for the full vision and [ROADMAP.md](./ROAD
 
 ## Prerequisites
 
-- [Node.js 20+](https://nodejs.org/)
+- [Node.js 22+](https://nodejs.org/)
 - [Java 25](https://adoptium.net/) (Temurin recommended; `sdk install java 25-tem` via SDKMAN)
 - [Docker + Docker Compose](https://docs.docker.com/get-docker/)
 - [Auth0 account](https://auth0.com/) (free tier)
@@ -136,7 +136,7 @@ cd backend
 ./mvnw verify
 ```
 
-Backend tests run on in-memory H2, so they need neither Docker nor Ollama.
+Backend tests use Quarkus Dev Services PostgreSQL 16 with the real Flyway migrations — Docker must be running. AI services are mocked in tests; no Ollama needed.
 
 ---
 

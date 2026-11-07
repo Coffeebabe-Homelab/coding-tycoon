@@ -339,7 +339,7 @@ All mappers emit the standard error JSON format. Log unexpected errors at `ERROR
 - Tool: Flyway (included via Quarkus extension)
 - Location: `src/main/resources/db/migration/`
 - Naming: `V{n}__{description}.sql` (e.g. `V1__create_user_table.sql`)
-- Dev mode: `quarkus.hibernate-orm.database.generation=drop-and-create` (no migration run)
+- Dev and test modes: `quarkus.hibernate-orm.database.generation=none` + Flyway runs on Dev Services PostgreSQL. Tests use `postgres:16` (same major version as `docker-compose.yml`), so Docker must be running. `SchemaValidationTest` boots with `validate` to catch entity/migration drift.
 - Prod mode: `quarkus.hibernate-orm.database.generation=validate` + Flyway runs on startup
 
 ### Reserved Versions

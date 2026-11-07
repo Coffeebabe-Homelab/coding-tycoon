@@ -1,8 +1,7 @@
 package dev.codingtycoon.profile;
 
+import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.topic.JpaTopicRepository;
-import dev.codingtycoon.topic.Topic;
-import dev.codingtycoon.user.JpaUserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.jwt.Claim;
@@ -22,7 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 
 /**
  * Integration tests for the /api/profile endpoints.
- * Uses H2 in-memory DB; topics are inserted manually since Flyway seed data does not run in test.
+ * Runs on PostgreSQL with the Flyway schema; topics come from the V5 seed.
  */
 @QuarkusTest
 class ProfileResourceTest {
@@ -33,38 +32,18 @@ class ProfileResourceTest {
     JpaTopicRepository topicRepository;
 
     @Inject
-    JpaUserRepository userRepository;
+    ProgressTestData testData;
 
-    @Inject
-    JpaProfileRepository profileRepository;
-
-    @Inject
-    jakarta.persistence.EntityManager em;
-
-    /** Inserted in setUp so each test has known topic IDs to reference. */
+    /** Seed topic IDs, looked up in setUp so tests don't depend on generated values. */
     private Long topicId1;
     private Long topicId2;
 
     @BeforeEach
     @Transactional
     void setUp() {
-        // Clean state: clear join table first (FK constraints), then profiles, users, topics.
-        em.createNativeQuery("DELETE FROM player_profile_topics").executeUpdate();
-        profileRepository.deleteAll();
-        userRepository.deleteAll();
-        topicRepository.deleteAll();
-
-        Topic t1 = new Topic();
-        t1.name = "REST APIs";
-        t1.slug = "rest-apis";
-        topicRepository.persist(t1);
-        topicId1 = t1.id;
-
-        Topic t2 = new Topic();
-        t2.name = "CRUD";
-        t2.slug = "crud";
-        topicRepository.persist(t2);
-        topicId2 = t2.id;
+        testData.clear();
+        topicId1 = topicRepository.find("slug", "rest-apis").firstResult().id;
+        topicId2 = topicRepository.find("slug", "crud").firstResult().id;
     }
 
     @Test
