@@ -11,6 +11,7 @@
 Phase 0 — Foundation          Project setup, tooling, CI skeleton
 Phase 1 — Auth & Profile      Login, onboarding, player profile
 Phase 2 — Task Engine         AI task generation, Task Board UI
+Phase 2.1 — Staging Deploy    Minimal Docker Compose deploy slice
 Phase 3 — Codebase Explorer   Synthetic codebase, file tree browser
 Phase 4 — Code Editor         Monaco editor, VCS panel, commit/push
 Phase 5 — AI Review Engine    Code review, feedback, iteration loop
@@ -26,18 +27,18 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Skeleton repos, local dev environment running, CI green on empty project.
 
 ### Tasks
-- [ ] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
-- [ ] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
-- [ ] Add `quarkus-langchain4j-ollama` extension to backend
-- [ ] Docker Compose for local: PostgreSQL + Ollama
-- [ ] Auth0 tenant setup (dev application, callback URLs)
-- [ ] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)
-- [ ] Configure Quarkus OIDC to validate Auth0 JWTs
-- [ ] Basic CI pipeline (GitHub Actions): lint + build frontend, build backend
-- [ ] `README.md` with local dev setup instructions
-- [ ] `docs/DEVELOPMENT_GUIDELINES.md` — architecture decisions, coding patterns, minimum test coverage (unit + integration), documentation standards, Git branching strategy, PR checklist
-- [ ] `backend/SPEC.md` — backend architecture, module structure, REST API conventions, data model overview, AI integration patterns, error handling, security model, observability
-- [ ] `frontend/SPEC.md` — frontend architecture, component structure, state management approach, routing, design system usage (Tailwind conventions, component naming), Monaco integration guidelines, accessibility baseline
+- [x] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
+- [x] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
+- [ ] Add `quarkus-langchain4j-ollama` extension to backend *(deferred: version compatibility regression on Quarkus 3.33+. Task generation runs on `StubTaskAdapter` with seed fallback. Revisit with the first real AI adapter, Phase 5 at the latest)*
+- [x] Docker Compose for local: PostgreSQL + Ollama
+- [x] Auth0 tenant setup (dev application, callback URLs)
+- [x] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)
+- [x] Configure Quarkus OIDC to validate Auth0 JWTs
+- [x] Basic CI pipeline (GitHub Actions): lint + build frontend, build backend
+- [x] `README.md` with local dev setup instructions
+- [x] `docs/DEVELOPMENT_GUIDELINES.md` — architecture decisions, coding patterns, minimum test coverage (unit + integration), documentation standards, Git branching strategy, PR checklist
+- [x] `backend/SPEC.md` — backend architecture, module structure, REST API conventions, data model overview, AI integration patterns, error handling, security model, observability
+- [x] `frontend/SPEC.md` — frontend architecture, component structure, state management approach, routing, design system usage (Tailwind conventions, component naming), Monaco integration guidelines, accessibility baseline
 
 ### Exit Criteria
 - `npm run dev` starts the frontend (blank page, no errors)
@@ -53,17 +54,22 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Player can log in, complete onboarding, and have a persisted profile.
 
 ### Tasks
-- [ ] Auth0 login/logout flow in frontend (protected routes)
-- [ ] Onboarding wizard UI: language (Java), framework (Spring Boot), seniority (Junior), topics
-- [ ] `POST /api/profile` — create profile on first login
-- [ ] `GET /api/profile` — retrieve profile
-- [ ] Profile page UI: display onboarding settings (editable)
-- [ ] Backend: `User` + `PlayerProfile` entities, PostgreSQL migration (Flyway/Liquibase)
-- [ ] JWT user identity wired to profile (Auth0 `sub` claim)
+- [x] `User` entity, `UserRepository` port/adapter, Flyway `V1__create_user_table.sql` (P1-01)
+- [x] `Topic` entity, `PlayerProfile` entity, join table `player_profile_topics`, Flyway migrations V2–V5 including seed data (P1-02)
+- [x] `GET /api/topics` — public endpoint returning available topics for the onboarding wizard (P1-03)
+- [x] `POST /api/profile` — create profile on first login; also creates `User` record if new; topics referenced by ID (P1-03)
+- [x] `GET /api/profile` — retrieve profile with topics resolved to full objects (P1-03)
+- [x] `PUT /api/profile` — update seniority and topics (P1-03)
+- [x] Auth0 login/logout flow in frontend — extract pages into `pages/`, clean up routing, remove dev token logging (P1-04)
+- [x] Onboarding wizard UI: 3-step form; topics loaded from `GET /api/topics`, not hardcoded (P1-05)
+- [x] Profile page UI: display onboarding settings; inline edit mode; topics as badge chips (P1-06)
+- [x] JWT user identity wired to profile via Auth0 `sub` claim (P1-01, P1-03)
+- [x] Integration verification: full new-user and returning-user flows, security checks, coverage thresholds (P1-07)
 
 ### Exit Criteria
-- New user logs in → onboarding wizard → profile saved
-- Returning user logs in → lands on profile page with correct data
+- New user logs in → onboarding wizard (topics from API) → profile saved
+- Returning user logs in → lands on room, profile page shows correct data
+- Profile edit saves changes; topics reflect the normalised `topics` table
 - Backend rejects unauthenticated requests with 401
 
 ---
@@ -73,18 +79,42 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** AI generates a daily task appropriate for the player profile; player sees it on the Task Board.
 
 ### Tasks
-- [ ] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
-- [ ] `POST /api/tasks/generate` — calls Ollama to generate a task from player profile
-- [ ] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
-- [ ] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
-- [ ] `GET /api/tasks/today` — returns today's active task for the player
-- [ ] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
-- [ ] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [x] Design task data model: `Task` entity (title, description, acceptance criteria, difficulty, tags)
+- [x] `POST /api/tasks/generate` — generates a task from player profile; runs on `StubTaskAdapter` with seed fallback, Ollama not wired in yet
+- [x] Ollama prompt template: task-generator (language, framework, seniority, topic → task spec)
+- [x] Seed 10 hand-crafted fallback tasks (Java/Junior) — decouples AI from early testing
+- [x] `GET /api/tasks/today` — returns today's active task for the player
+- [x] Task Board UI — Kanban-inspired: Today's ticket with title, description, acceptance criteria
+- [x] Task status state machine: `ASSIGNED → IN_PROGRESS → SUBMITTED → APPROVED / CHANGES_REQUESTED`
+- [x] Integration verification: task loop, seed fallback, security checks, backend verify, frontend build/lint (P2-06)
 
 ### Exit Criteria
-- Player logs in → Task Board shows a relevant Java/Junior task
-- Task was either AI-generated or drawn from seed data
-- Task persists across page refresh
+- Player logs in → Task Board shows a relevant Java/Junior task matched to their selected topics
+- Task was either AI-generated or drawn from seed data (seed is always the fallback)
+- "Start task" transitions status to `IN_PROGRESS` and persists across page refresh
+
+---
+
+## Phase 2.1 — Staging Deploy Slice
+
+**Goal:** Create the smallest deployable version of the application for a staging host using Docker Compose and the existing Jenkinsfile.
+
+This phase is intentionally infrastructure-only. It does not add gameplay features. The deployable slice should run the Phase 2 app with Auth0 login, profile onboarding, task board, seed task fallback, and persisted PostgreSQL data.
+
+### Tasks
+- [x] Compose app stack: `frontend`, `backend`, and `postgres` services build and run from the repo root (P2.1-01)
+- [x] Backend staging configuration: database, Auth0, CORS, HTTP host/port, and health endpoint are environment-driven (P2.1-02)
+- [x] Frontend production container: Vite build served as static files with staging Auth0/API configuration (P2.1-03)
+- [x] Staging deployment docs and smoke checks: environment contract, Jenkins assumptions, rollback notes, and health verification (P2.1-04)
+- [x] Observability: LGTM stack with Quarkus OTLP logs/traces/metrics and an importable Grafana dashboard (LGTM-01; checking the panels in staging is still open)
+
+### Exit Criteria
+- Jenkins can deploy the `staging` branch by running `docker compose up -d --build --remove-orphans` on the staging host
+- Staging exposes the frontend over HTTP/HTTPS and routes API calls to the backend
+- Backend connects to the Compose PostgreSQL service and runs Flyway migrations at startup
+- Auth0 staging callback/logout/web origins are documented and match the deployed frontend URL
+- A smoke test (`scripts/smoke-staging.sh`, run by Jenkins after each deploy) verifies: backend health responds, frontend loads, the `/api` proxy reaches the backend, and `GET /api/tasks/today` without a token returns `401`. Login and the authenticated task board are checked manually (documented in `docs/STAGING_DEPLOY.md`)
+- Ollama is optional for this phase; seed task fallback keeps staging playable without an AI service
 
 ---
 
@@ -93,13 +123,12 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** Player can browse a synthetic Java codebase to understand the context for their task.
 
 ### Tasks
-- [ ] Design synthetic codebase structure (a small Java Spring Boot app — Users + Products)
-- [ ] `GET /api/codebase/files` — returns file tree for the player's current task
-- [ ] `GET /api/codebase/files/{path}` — returns file content (read-only)
-- [ ] Codebase scoped per task (task description references specific files)
-- [ ] File tree UI component (collapsible, file icons by type)
-- [ ] File viewer: syntax-highlighted read-only code (Prism or Monaco read-only mode)
-- [ ] Codebase stored as static files in backend resources (MVP — no generation)
+- [x] Synthetic codebase `shopfront` (small Java Spring Boot app: Users + Products) stored as static files in backend resources; no generation in MVP (P3-01)
+- [x] `codebase` domain: `GET /api/codebase/files` (file tree for the player's current task) and `GET /api/codebase/files/{path}` (read-only content), safe against path traversal (P3-02)
+- [x] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
+- [x] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
+- [x] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
+- [ ] Integration verification (P3-06)
 
 ### Exit Criteria
 - Player can open the file tree and browse the synthetic codebase
@@ -180,14 +209,12 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 **Goal:** The game has a coherent visual shell — the desk room, session flow, and day structure feel like a game, not a CRUD app.
 
 ### Tasks
-- [ ] Static isometric room scene (CSS/SVG — no pixel art engine for MVP)
-- [ ] Basic avatar placeholder at the desk
-- [ ] Session flow: Login → Room → Task Board opens → work → Review → End of Day screen
-- [ ] "End of Day" summary screen: task result, XP gained, streak, skill profile delta
-- [ ] XP system: points per approved task, bonus for first-attempt approval
-- [ ] Streak tracker (daily login + task completion)
-- [ ] Navigation: room as hub, panels open as overlays
-- [ ] Responsive layout (desktop-first, minimum 1280px width)
+- [x] Static isometric room scene (CSS/SVG; no pixel-art engine for MVP) with an avatar placeholder at the desk (P7-01)
+- [x] Navigation: room as hub, panels open as overlays; session flow Login → Room → Task Board → work → Review → End of Day; desktop-first layout, minimum 1280px width (P7-02)
+- [x] XP system: points per approved task, bonus for first-attempt approval (bonus wired once Phase 5 tracks attempts) (P7-03)
+- [x] Streak tracker (P7-04)
+- [x] "End of Day" summary screen: task result, XP gained, streak, skill profile delta (delta shown once Phase 6 lands) (P7-05)
+- [ ] Integration verification (P7-06) — automated checks done; browser and staging checks pending
 
 ### Exit Criteria
 - The full loop feels cohesive: login → room → task → code → review → end of day
@@ -206,10 +233,10 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 - [ ] Error handling: graceful degradation if Ollama is slow / unreachable
 - [ ] Loading states throughout (review is async — spinner / progress indicator)
 - [ ] Mobile warning screen ("best on desktop")
-- [ ] Basic observability: structured logging (Quarkus), frontend error boundary
+- [ ] Basic observability: structured logging (Quarkus), frontend error boundary *(backend telemetry already done via LGTM/OTLP; frontend error boundary still pending)*
 - [ ] End-to-end smoke test: new user → complete 1 task → skill profile updated
 - [ ] User acceptance testing (play through all 10 tasks)
-- [ ] Deploy to a staging environment (docker-compose on a VPS or local demo)
+- [x] Deploy to a staging environment (docker-compose on a VPS or local demo) *(delivered early in Phase 2.1)*
 
 ### Exit Criteria
 - A new user can complete the full loop unassisted for all 10 tasks
@@ -256,4 +283,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-08-22 | Status: draft — iterating*
+*Last updated: 2026-11-01 | Status: Phases 0–2.1 complete. Phase 3 (Codebase Explorer) and Phase 7 (Game Shell) are next and run in parallel.*

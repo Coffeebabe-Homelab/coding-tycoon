@@ -1,7 +1,7 @@
 # P0-07 — Auth0 JWT Validation (Backend)
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-02, P0-05  
 
 ---
@@ -14,12 +14,12 @@ Configure Quarkus OIDC to validate Auth0-issued JWTs. A protected test endpoint 
 
 ## Acceptance Criteria
 
-- [ ] `quarkus-oidc` extension added to `pom.xml`
-- [ ] Auth0 OIDC issuer and audience configured in `application.properties`
-- [ ] `GET /api/me` returns `{ "sub": "<auth0-user-id>" }` when called with a valid Bearer token
-- [ ] `GET /api/me` returns `401 Unauthorized` when called without a token or with an invalid token
-- [ ] `@RolesAllowed` or `@Authenticated` annotation used on the protected resource
-- [ ] Integration test covers both authenticated and unauthenticated scenarios
+- [x] `quarkus-oidc` extension added to `pom.xml`
+- [x] Auth0 OIDC issuer and audience configured in `application.properties`
+- [x] `GET /api/me` returns `{ "sub": "<auth0-user-id>" }` when called with a valid Bearer token
+- [x] `GET /api/me` returns `401 Unauthorized` when called without a token or with an invalid token
+- [x] `@RolesAllowed` or `@Authenticated` annotation used on the protected resource
+- [x] Integration test covers both authenticated and unauthenticated scenarios
 
 ---
 

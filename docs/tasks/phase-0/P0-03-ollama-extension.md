@@ -1,7 +1,7 @@
 # P0-03 — Add Quarkus LangChain4j Ollama Extension
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ⏸ Deferred — revisit with the first real AI adapter (Phase 5 at the latest)  
 **Depends on:** P0-02  
 
 ---
@@ -81,3 +81,9 @@ ollama pull deepseek-coder:6.7b-instruct-q4_K_M
 ## Definition of Done
 
 - `GET /api/ai/ping` returns a non-empty string response from Ollama with no errors.
+
+---
+
+## Closure Note (2026-11-01)
+
+Not implemented. `quarkus-langchain4j-ollama` 1.x regresses on Quarkus 3.33+ (see the comment in `backend/pom.xml`). Task generation uses `StubTaskAdapter` and falls back to seed tasks (P2-05). Pick this up when the first real AI adapter is needed.

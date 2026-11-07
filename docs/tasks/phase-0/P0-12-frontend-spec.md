@@ -1,7 +1,7 @@
 # P0-12 — Frontend SPEC.md
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-01, P0-10  
 
 ---
@@ -14,16 +14,16 @@ Write `frontend/SPEC.md` — the authoritative technical specification for the f
 
 ## Acceptance Criteria
 
-- [ ] `frontend/SPEC.md` exists
-- [ ] Application architecture documented: routing structure, page map, component hierarchy
-- [ ] State management documented: what lives in Zustand/Redux vs local React state; rules for when to use each
-- [ ] API integration pattern: how to call the backend (auth token injection, error handling, loading states)
-- [ ] Tailwind CSS conventions: spacing scale, colour tokens used in the game, component naming rules
-- [ ] Monaco Editor integration: how to mount, configure, handle value changes, set language
-- [ ] Auth0 integration: `useAuth0` hook usage, `ProtectedRoute`, token retrieval pattern
-- [ ] Folder structure documented with purpose of each directory
-- [ ] Accessibility baseline: minimum ARIA requirements, keyboard navigation expectations
-- [ ] Testing approach: React Testing Library conventions, what to test vs what not to test in UI components
+- [x] `frontend/SPEC.md` exists
+- [x] Application architecture documented: routing structure, page map, component hierarchy
+- [x] State management documented: what lives in Zustand/Redux vs local React state; rules for when to use each
+- [x] API integration pattern: how to call the backend (auth token injection, error handling, loading states)
+- [x] Tailwind CSS conventions: spacing scale, colour tokens used in the game, component naming rules
+- [x] Monaco Editor integration: how to mount, configure, handle value changes, set language
+- [x] Auth0 integration: `useAuth0` hook usage, `ProtectedRoute`, token retrieval pattern
+- [x] Folder structure documented with purpose of each directory
+- [x] Accessibility baseline: minimum ARIA requirements, keyboard navigation expectations
+- [x] Testing approach: React Testing Library conventions, what to test vs what not to test in UI components
 
 ---
 

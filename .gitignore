@@ -25,3 +25,6 @@ backend/.quarkus/
 
 # Logs
 *.log
+
+# Claude Code local state (agent worktrees)
+.claude/

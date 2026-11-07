@@ -1,7 +1,7 @@
 # P0-02 — Initialise Backend
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** —  
 
 ---
@@ -14,14 +14,14 @@ Scaffold the `backend/` directory as a Quarkus project with REST, Panache ORM, a
 
 ## Acceptance Criteria
 
-- [ ] `backend/` directory exists at repo root
-- [ ] `./mvnw quarkus:dev` starts the Quarkus dev server on `http://localhost:8080`
-- [ ] `GET /q/health` returns `{"status": "UP"}`
-- [ ] Dev Services auto-starts a PostgreSQL container (no manual DB setup needed)
-- [ ] A `HealthCheckResource` or equivalent test endpoint returns 200
-- [ ] `./mvnw test` runs and passes (at least the scaffolded Quarkus tests)
-- [ ] Java 25 used as the runtime
-- [ ] Panache ORM with Hibernate configured (Quarkus Dev Services handles the DB URL)
+- [x] `backend/` directory exists at repo root
+- [x] `./mvnw quarkus:dev` starts the Quarkus dev server on `http://localhost:8080`
+- [x] `GET /q/health` returns `{"status": "UP"}`
+- [x] Dev Services auto-starts a PostgreSQL container (no manual DB setup needed)
+- [x] A `HealthCheckResource` or equivalent test endpoint returns 200
+- [x] `./mvnw test` runs and passes (at least the scaffolded Quarkus tests)
+- [x] Java 25 used as the runtime
+- [x] Panache ORM with Hibernate configured (Quarkus Dev Services handles the DB URL)
 
 ---
 

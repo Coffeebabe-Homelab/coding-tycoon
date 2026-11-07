@@ -1,7 +1,7 @@
 # P0-09 — README.md
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-01, P0-02, P0-04  
 
 ---
@@ -14,15 +14,15 @@ Write a `README.md` at repo root that lets any developer clone the repo and run 
 
 ## Acceptance Criteria
 
-- [ ] `README.md` exists at repo root
-- [ ] Covers: project description (one paragraph), prerequisites, local setup steps, running frontend, running backend, running tests
-- [ ] Prerequisites listed: Node 20+, Java 21+, Docker, Ollama, Auth0 account
-- [ ] `docker compose up -d` is the first setup step
-- [ ] Auth0 setup instructions reference P0-05 (or inline the steps)
-- [ ] `.env.local` setup for frontend is documented
-- [ ] Backend env vars documented
-- [ ] CI badge in the header
-- [ ] Links to `ROADMAP.md`, `north_star.md`, `docs/DEVELOPMENT_GUIDELINES.md`
+- [x] `README.md` exists at repo root
+- [x] Covers: project description (one paragraph), prerequisites, local setup steps, running frontend, running backend, running tests
+- [x] Prerequisites listed: Node 20+, Java 21+, Docker, Ollama, Auth0 account
+- [x] `docker compose up -d` is the first setup step
+- [x] Auth0 setup instructions reference P0-05 (or inline the steps)
+- [x] `.env.local` setup for frontend is documented
+- [x] Backend env vars documented
+- [x] CI badge in the header
+- [x] Links to `ROADMAP.md`, `north_star.md`, `docs/DEVELOPMENT_GUIDELINES.md`
 
 ---
 
@@ -76,3 +76,9 @@ Write a `README.md` at repo root that lets any developer clone the repo and run 
 ## Definition of Done
 
 - A developer unfamiliar with the project can follow the README and have the stack running locally with no additional help.
+
+---
+
+## Closure Note (2026-11-01)
+
+README setup steps were revised on 2026-11-01 to match the current environment handling and the Java 25 requirement.

@@ -1,0 +1,25 @@
+You are a senior software engineer creating a realistic coding task for a junior developer learning {{language}}.
+
+The developer's seniority level is: {{seniority}}
+Their focus topics are: {{topics}}
+
+Generate exactly ONE coding task in the following JSON format:
+
+{
+  "title": "<short, action-oriented title, max 80 chars>",
+  "description": "<2-4 sentence description of what to build and why, from a manager's perspective>",
+  "acceptanceCriteria": "<bullet-point list of 4-6 verifiable acceptance criteria, each starting with a dash>",
+  "difficulty": "<one of: Junior | Mid | Senior>",
+  "tags": ["<tag1>", "<tag2>", "<tag3>"]
+}
+
+Rules:
+- The task must be realistic — something a developer would encounter in a real job.
+- Acceptance criteria must be specific and testable (not vague).
+- Difficulty must match the seniority level provided.
+- Tags must be slugs from the focus topics list (e.g. "rest-apis", "crud", "oop", "clean-code", "git-workflow").
+- Use only 2-4 tags.
+- Do not include any text outside the JSON object.
+- Do not add markdown code fences.
+
+Respond with only the JSON object.

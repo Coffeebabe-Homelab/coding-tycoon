@@ -19,6 +19,7 @@ pipeline {
         DEPLOY_HOST = 'staging-deploy'          // SSH alias, see step 5
         DEPLOY_PATH = '~/staging/myapp'
         COMPOSE_FILE = 'docker-compose.yml'
+        PUBLIC_ORIGIN = 'https://coding-tycoon-stg.tail028aa9.ts.net'   // must be listed in CORS_ORIGINS
         REPOSITORY = 'git@github.com:Coffeebabe-Homelab/coding-tycoon.git'
     }
 
@@ -29,11 +30,8 @@ pipeline {
                 git branch: 'dev',
                     url: env.REPOSITORY,
                     credentialsId: 'git-checkout-key'
-
+        
                 sh '''
-                    git config --global pull.rebase false
-                    git config --global user.email "jenkins@mecha-rat"
-                    git config --global user.name "Jenkins"
                     git fetch origin --prune
                     git fetch origin dev --prune
                     git fetch origin staging --prune
@@ -52,13 +50,14 @@ pipeline {
                         dir('frontend') {
                             sh 'npm ci'
                             sh 'npm run lint'
+                            sh 'npm run test:coverage'
                         }
                     }
                 }
                 stage('Backend') {
                     steps {
                         dir('backend') {
-                            sh './mvnw -B test'
+                            sh './mvnw -B verify'
                         }
                     }
                 }
@@ -76,15 +75,16 @@ pipeline {
                       // submitter: 'youruser'   // uncomment + set to restrict who can approve
             }
         }
-
+        
         stage('Merge dev into staging') {
             when { expression { !params.DEPLOY_ONLY } }
             steps {
                 sshagent(credentials: ['git-checkout-key']) {
                     sh '''
-                        git config --global pull.rebase false
-                        git config --global user.email "jenkins@mecha-rat"
-                        git config --global user.name "Jenkins"
+                        # Only this merge commit needs an identity. Repo-local, so the agent's
+                        # global git config stays untouched.
+                        git config user.email "jenkins@mecha-rat"
+                        git config user.name "Jenkins"
                         git fetch origin --prune
                         git fetch origin dev --prune
                         git fetch origin staging --prune
@@ -102,11 +102,8 @@ pipeline {
                 git branch: 'staging',
                     url: env.REPOSITORY,
                     credentialsId: 'git-checkout-key'
-
+        
                 sh '''
-                    git config --global pull.rebase false
-                    git config --global user.email "jenkins@mecha-rat"
-                    git config --global user.name "Jenkins"
                     git fetch origin --prune
                     git fetch origin staging --prune
                     git checkout -B staging origin/staging
@@ -127,6 +124,9 @@ pipeline {
 
         stage('Build images') {
             steps {
+                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                    sh "scp \$ENVFILE ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                }
                 sh "docker compose -f ${COMPOSE_FILE} build"
             }
         }
@@ -146,6 +146,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                withCredentials([file(credentialsId: 'staging-env-file', variable: 'ENVFILE')]) {
+                    sh "scp \$ENVFILE ${DEPLOY_HOST}:${DEPLOY_PATH}/.env"
+                }
                 sshagent(credentials: ['staging-ssh-key']) {
                     sh """
                         ssh ${DEPLOY_HOST} '\
@@ -162,8 +165,8 @@ pipeline {
             steps {
                 sshagent(credentials: ['staging-ssh-key']) {
                     sh """
-                        sleep 5
                         ssh ${DEPLOY_HOST} 'docker compose -f ${DEPLOY_PATH}/${COMPOSE_FILE} ps'
+                        ssh ${DEPLOY_HOST} 'cd ${DEPLOY_PATH} && COMPOSE_FILE=${COMPOSE_FILE} PUBLIC_ORIGIN=${PUBLIC_ORIGIN} sh scripts/smoke-staging.sh'
                     """
                 }
             }

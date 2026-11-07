@@ -1,7 +1,7 @@
 # P0-08 — CI Pipeline (GitHub Actions)
 
 **Phase:** 0 — Foundation  
-**Status:** 🔲 Not started  
+**Status:** ✅ Complete  
 **Depends on:** P0-01, P0-02  
 
 ---
@@ -14,14 +14,14 @@ A GitHub Actions CI pipeline that runs on every push and pull request. It builds
 
 ## Acceptance Criteria
 
-- [ ] `.github/workflows/ci.yml` exists
-- [ ] Pipeline triggers on `push` and `pull_request` to `main`
-- [ ] Frontend job: `npm ci` → `npm run lint` → `npm run build`
-- [ ] Backend job: `./mvnw verify` (compiles + runs tests)
-- [ ] Backend tests use Dev Services (Testcontainers) — no external DB needed in CI
-- [ ] Pipeline passes on the current scaffolded code
+- [x] `.github/workflows/ci.yml` exists
+- [x] Pipeline triggers on `push` and `pull_request` to `main`
+- [x] Frontend job: `npm ci` → `npm run lint` → `npm run build`
+- [x] Backend job: `./mvnw verify` (compiles + runs tests)
+- [x] Backend tests use Dev Services (Testcontainers) — no external DB needed in CI
+- [x] Pipeline passes on the current scaffolded code
 - [ ] Branch protection rule on `main`: require CI green before merge (document in README, configure manually in GitHub)
-- [ ] Build badge added to `README.md`
+- [x] Build badge added to `README.md`
 
 ---
 
@@ -86,3 +86,9 @@ jobs:
 ## Definition of Done
 
 - Both jobs pass on a push to main. Pipeline visible in GitHub Actions tab.
+
+---
+
+## Closure Note (2026-11-01)
+
+Branch protection is manual GitHub configuration and can't be verified from the repo; confirm it in the GitHub settings. A Jenkins pipeline (`Jenkinsfile`) was added in Phase 2.1: it validates `dev`, merges into `staging` after approval, deploys, and runs the smoke test.

@@ -1,0 +1,132 @@
+# Agent Guidelines for project development
+
+Guidelines for AI agents and humans working on this codebase.
+
+## At a Glance
+
+- The project context is in north_star.md, ROADMAP.md and README.md
+- Always follow CONVENTIONS.md
+- Development tasks should be looked up, added and edit in /docs/tasks
+- Before every change, check the Trello board for an existing card (see Trello Workflow)
+- Ask rather than guess; clarify before coding.
+- One focused change at for each commit (< 100 lines).
+- Minimal code; comments explain why, not what.
+- Public APIs: typed, stable, documented.
+- Development flow: Test -> Red -> fix -> green
+- Tests 80% of code, prioritize critical sections
+- If using patters do not over engineer, keep it Simple.
+- Use explicit imports.
+- Stream large data; avoid shared mutable state across threads.
+
+## Critical Principles
+
+- Ask Rather Than Guess:
+  - Clarify requirements, edge cases, success criteria before coding.
+  - If the request is ambiguos ask first, keep record.
+  - Propose options and trade-offs if not defined.
+  - When a simpler or better approach than the planned one exists, propose it (pros/cons and a recommendation) before building. Don't make the codebase harder than it needs to be.
+- Minimal Code:
+  - Keep code self-explanatory; comments only for rationale, edge cases, or workarounds.
+- One Change at a Time:
+  - Single concern per edit; keep diffs small and reviewable, commit if necessary.
+- Human Changes Precedence:
+  - Respect human edits unless they contradict tests/specs. If reverting, justify briefly.
+- Development process:
+  - Before starting development run tests, ensure everything is working, make a brief summary of the current state of the application
+
+## Trello Workflow
+
+Board: [Coding Tycoon](https://trello.com/b/grPxIeZk/coding-tycoon). Lanes: `BACKLOG` → `TODO` → `IN PROGRESS` → `BLOCKED` → `DONE`.
+
+- `BACKLOG`: future work that waits for a trigger (scale, production, post-MVP). Each card states when and why to start it.
+- `TODO`: ready to be picked up.
+
+- **Before every change**, search the board's active cards (never archived ones) for a card covering it, so work isn't duplicated:
+  - Card exists and is in progress elsewhere → don't start; ask first.
+  - Card exists in `TODO` → add any missing context as a comment, then move it to `IN PROGRESS`.
+  - No card → create one (context, steps, done-when, links to related cards/PRs/`docs/tasks`), then move it to the lane that matches its state.
+- Before creating a card, look for overlapping ones. Extend an existing card with a comment rather than opening a duplicate, and link related cards.
+- **Pending peer review** (PR open) → move the card to `BLOCKED` and put the PR link on it.
+- **Merged** → move the card to `DONE`.
+- Keep cards and `docs/tasks` status consistent; the task file is the spec, the card tracks state.
+
+## Daily Workflow
+
+- Run tests; ensure coverage complies.
+- When asked to change add to `CHANGELOG.md`
+
+## Project Style
+
+- Function must have single responsability.
+- Naming:
+  - Functions: `camelCase`;
+  - Classes: `PascalCase`; Constants: `SCREAMING_SNAKE_CASE`;
+- Documentation:
+  - Keep simple and clean.
+
+## Design Patterns
+
+- Prefer composition over inheritance.
+- Extract reusable logic to avoid repetition (DRY).
+
+## Engineering Practices
+
+- Testing:
+  - Execute every line; cover all branches (normal, error, early return).
+- CI and Automation:
+  - Test on supported Java versions (e.g., 25/LTS), collect coverage, run Jacoco, build docs.
+
+## Imports and Dependencies
+
+- Minimize dependencies; pin versions;
+
+## Documentation Policy
+
+- Keep SPEC.md always up to date.
+- For any PLAN.md executed save it with the correct name after implementation for history tracking
+
+## Logging
+
+- Use `trace` only when required and tracking.
+- Use `debug` only when developing and for points of variable hard manipulation 
+- Use `info` for importante flow.
+- Use `warn` for recoverable failures.
+- Use `error` for critical failure.
+
+## Backend
+
+### Practices
+
+- Keep it simple
+- Do not repeat yourself
+
+### Code Organization
+
+- Use domain driven desing.
+- Keep things well defined so if the future demands decoupling it's not hard.
+
+## Frontend
+
+### Practices
+
+- Explain while doing
+- Never expose secrets
+- Assume the user does not know frontend so he'll need guidance on making decisions for it. Explain pros and cons before and let him make the decision
+
+## Service Patterns
+
+- Externalize config;
+- Do not expose secrets
+
+## Code Review Checklist (short)
+
+- Intent clarified; minimal code; single concern; small diff.
+- Naming/formatting follow conventions.
+- Appropriate exceptions and validations with clear messages.
+- Tests cover defined coverage for lines and branches
+- Explicit imports; clear organization; CI covers tests, coverage, docs.
+
+## Summary
+
+- Check Trello first. Ask first. Keep code minimal. Make small, focused edits.
+- Keep the repo formatted, simple, dry, tested, and green.
