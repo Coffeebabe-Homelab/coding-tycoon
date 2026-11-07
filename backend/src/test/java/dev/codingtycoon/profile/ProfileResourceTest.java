@@ -4,8 +4,8 @@ import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.topic.JpaTopicRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -48,7 +48,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -68,7 +68,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -94,7 +94,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -123,7 +123,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -167,7 +167,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -183,7 +183,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })
@@ -199,7 +199,7 @@ class ProfileResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
             @Claim(key = "email", value = "test@example.com")
     })

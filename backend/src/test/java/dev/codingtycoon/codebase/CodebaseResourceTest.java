@@ -9,8 +9,8 @@ import dev.codingtycoon.user.JpaUserRepository;
 import dev.codingtycoon.user.User;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +78,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void listFilesReturnsActiveTaskCodebase() {
         given()
                 .when().get("/api/codebase/files")
@@ -92,7 +92,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void readFileReturnsContent() {
         given()
                 .when().get("/api/codebase/files/" + FOCUS_FILE)
@@ -114,7 +114,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void unknownPathReturns404() {
         given()
                 .when().get("/api/codebase/files/src/main/java/com/shopfront/Nope.java")
@@ -135,7 +135,7 @@ class CodebaseResourceTest {
             "index.txt"
     })
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void traversalAttemptsReturn404(String path) {
         given()
                 .urlEncodingEnabled(false)
@@ -147,7 +147,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = NO_TASK_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = NO_TASK_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = NO_TASK_SUB)})
     void noActiveTaskReturns404() {
         given()
                 .when().get("/api/codebase/files")
@@ -158,7 +158,7 @@ class CodebaseResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void writeMethodsAreNotAllowed() {
         given().body("x").when().put("/api/codebase/files/README.md").then().statusCode(405);
         given().body("x").when().post("/api/codebase/files/README.md").then().statusCode(405);

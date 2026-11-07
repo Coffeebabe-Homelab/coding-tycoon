@@ -10,8 +10,8 @@ import dev.codingtycoon.user.JpaUserRepository;
 import dev.codingtycoon.user.User;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import jakarta.inject.Inject;
@@ -89,7 +89,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void getTodayTaskFirstCallCreatesTask201() {
@@ -106,7 +106,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void getTodayTaskSecondCallReturnsSameTask200() {
@@ -135,7 +135,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = NO_PROFILE_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = NO_PROFILE_SUB)
     })
     void getTodayTaskWithNoProfileReturns404() {
@@ -151,7 +151,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void patchStatusValidTransitionReturns200() {
@@ -174,7 +174,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void patchStatusInvalidTransitionReturns422() {
@@ -206,7 +206,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void approvingTaskAwardsXpExactlyOnce() {
@@ -221,7 +221,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
@@ -235,7 +235,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void patchStatusUnknownTaskReturns404() {
@@ -268,7 +268,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void generateTaskCreatesTaskReturns201() {
@@ -284,7 +284,7 @@ class TaskResourceTest {
 
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void generateTaskWhenActiveTaskExistsReturns409() {

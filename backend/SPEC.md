@@ -315,6 +315,7 @@ when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 - Use `@Authenticated` on resource classes; `@PermitAll` to explicitly open an endpoint
 - Inject the JWT with `@Inject JsonWebToken jwt` — use `jwt.getSubject()` as the user identifier
 - CORS is configured for `http://localhost:5173` in dev mode
+- Tests keep OIDC enabled against a local stub server (`OidcWiremockTestResource`). `OidcTokenValidationTest` covers real token validation; other tests inject an identity with `@TestSecurity` + `@OidcSecurity`
 
 ---
 

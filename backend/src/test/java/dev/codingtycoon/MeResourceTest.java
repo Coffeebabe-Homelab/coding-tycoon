@@ -2,8 +2,8 @@ package dev.codingtycoon;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -15,7 +15,7 @@ class MeResourceTest {
 
     @Test
     @TestSecurity(user = "auth0|test-user-123", roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
         @Claim(key = "sub", value = "auth0|test-user-123")
     })
     void authenticatedUserReceivesSubClaim() {
@@ -36,7 +36,7 @@ class MeResourceTest {
 
     @Test
     @TestSecurity(user = "auth0|another-user", roles = {})
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
         @Claim(key = "sub", value = "auth0|another-user")
     })
     void subClaimIsNotNull() {
