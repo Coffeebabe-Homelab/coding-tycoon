@@ -34,7 +34,7 @@ export function useTask(): {
       .catch(() => setError("Failed to load today's task"))
       .finally(() => setIsLoading(false))
     // getAccessTokenSilently is stable — no re-render risk
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**

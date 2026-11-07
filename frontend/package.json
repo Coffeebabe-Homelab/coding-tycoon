@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "format:check": "prettier --check src"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.30.0",
@@ -21,7 +22,6 @@
     "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.4",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "6.9.1",
@@ -32,16 +32,11 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitest/coverage-v8": "5.1.0",
-    "eslint": "^10.14.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.7",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "29.1.1",
     "oxlint": "^1.91.0",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "5.1.0"
   }

@@ -30,8 +30,8 @@ If anything is unclear at any point, ask. Explaining is part of the process.
 | State (client) | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted (P7-02) |
 | Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) |
 | State (server) | Custom hooks over `fetchWithAuth`; React Query/SWR not adopted |
-| Linting | oxlint (`npm run lint`); ESLint config kept for editor integration |
-| Formatting | Prettier |
+| Linting | oxlint (`npm run lint`), the only linter |
+| Formatting | Prettier (`npm run format:check`, run in CI) |
 
 ---
 
