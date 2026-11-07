@@ -32,7 +32,7 @@ export function useProfile(): {
 
   useEffect(() => {
     fetchProfile()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return { profile, isLoading, error, refetch: fetchProfile }

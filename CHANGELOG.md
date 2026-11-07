@@ -2,10 +2,12 @@
 
 ## Unreleased
 
+- Frontend tooling: oxlint is now the only linter. Remove ESLint, `typescript-eslint`, their plugins and `eslint.config.js`, which CI never ran. GitHub Actions and Jenkins now run `npm run format:check` (Prettier), and `src` is formatted to pass it.
 - Frontend dependencies: update the minor-and-patch group, including `@auth0/auth0-react` 2.30. Auth0 now types the token as possibly `undefined`, so `fetchWithAuth` throws a 401 `ApiError` instead of sending `Bearer undefined`.
 - CI: the backend job writes test totals, failed tests and per-package JaCoCo coverage to the GitHub Actions job summary, including when the build fails.
 - Cleanup: remove `.kiro/` and the unused `quarkus-smallrye-jwt` dependency (`quarkus-oidc` provides `JsonWebToken`). Upgrade GitHub Actions to their Node 24 releases (`checkout` v7, `setup-node` v7, `setup-java` v6) and remove a stale H2 comment from `ci.yml`.
 - Docs: add the Night Shift design implementation roadmap and its four stage plans in `docs/design/`.
+- Frontend dependencies: update `vitest` and `@vitest/coverage-v8` to 5.1.0. Dependabot now groups them, because they must share a version.
 - Frontend tests: add Vitest and React Testing Library with first tests for `lib`, hooks, components and pages, plus `npm test` and `npm run test:coverage` (at least 70% on logic). Coverage runs in GitHub Actions and the Jenkins Validate stage. Known bugs are recorded as `it.fails` tests linked to their cards.
 - Security: `PATCH /api/tasks/{id}/status` now checks task ownership (another player's task returns 404) and only accepts player transitions, so players can't approve their own work (422). Verdicts and XP go through `TaskService.applyReviewVerdict`, which the Phase 5 review engine will call. Until then nothing can approve a task on a running server.
 - Backend coverage: the JaCoCo report now counts plain unit tests as well as `@QuarkusTest`, and `./mvnw verify` fails if any package drops under 80% lines or 80% branches. New tests cover the task state machine, the 500 fallback, unreadable codebase files and `UserService`. Overall: 100% lines, 95.8% branches (`dev` reported 93.2% / 73.2%). By package (lines/branches): codebase 100/87.5, exception 100/100, health 100/n-a, profile 100/100, progress 100/88.9, task 100/100, task.seed 100/100, topic 100/100, user 100/n-a.

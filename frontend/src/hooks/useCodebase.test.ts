@@ -7,7 +7,11 @@ import { authState, jsonResponse, stubApi } from '../test/helpers'
 vi.mock('@auth0/auth0-react', () => ({ useAuth0: vi.fn() }))
 
 const FILES_ROUTE = 'GET /api/codebase/files'
-const CODEBASE = { codebase: 'shopfront', focusFiles: ['src/A.java'], files: ['src/A.java', 'b.md'] }
+const CODEBASE = {
+  codebase: 'shopfront',
+  focusFiles: ['src/A.java'],
+  files: ['src/A.java', 'b.md'],
+}
 
 async function renderLoaded() {
   const { result } = renderHook(() => useCodebase())
