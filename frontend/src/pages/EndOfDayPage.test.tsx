@@ -59,11 +59,16 @@ describe('EndOfDayPage', () => {
   })
 
   it('notes a task that was never started', async () => {
-    stubApi({ 'GET /api/progress': PROGRESS, 'GET /api/tasks/today': { ...TASK, status: 'ASSIGNED' } })
+    stubApi({
+      'GET /api/progress': PROGRESS,
+      'GET /api/tasks/today': { ...TASK, status: 'ASSIGNED' },
+    })
 
     renderEndOfDay()
 
-    expect(await screen.findByRole('heading', { name: 'No task started today' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'No task started today' }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/Add endpoint/)).toHaveTextContent('Not started')
   })
 
