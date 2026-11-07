@@ -18,7 +18,6 @@ Required values:
 
 | Variable | Purpose |
 |---|---|
-| `DB_NAME` | PostgreSQL database name |
 | `DB_USER` | PostgreSQL user |
 | `DB_PASSWORD` | PostgreSQL password |
 | `AUTH0_DOMAIN` | Auth0 tenant domain for backend JWT validation |
@@ -31,7 +30,12 @@ Required values:
 | `GF_SECURITY_ADMIN_USER` | Grafana admin user for the `lgtm` service |
 | `GF_SECURITY_ADMIN_PASSWORD` | Grafana admin password for the `lgtm` service |
 
-Optional: `DB_NAME` (default `codingtycoon`), `FRONTEND_PORT` (default `5173`), `LOG_LEVEL`, `OTEL_SERVICE_NAME`, `DEPLOYMENT_ENVIRONMENT` (default `homelab`), and the `GRAFANA_PORT`/`OTLP_*_PORT` bindings. See [observability/README.md](../observability/README.md).
+Optional: `DB_NAME` (default `codingtycoon`), `FRONTEND_PORT` (default `5173`), `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://lgtm:4318`), `OTEL_SERVICE_NAME` (default `coding-tycoon-backend`), `DEPLOYMENT_ENVIRONMENT` (default `homelab`), and the `GRAFANA_PORT` (default `3000`), `OTLP_GRPC_PORT` (default `4317`) and `OTLP_HTTP_PORT` (default `4318`) bindings. See [observability/README.md](../observability/README.md).
+
+Don't set these in `.env`:
+
+- `DATABASE_JDBC_URL` and `QUARKUS_PROFILE`: Compose sets them for the backend.
+- `LOG_LEVEL`: the backend reads it (default `INFO`), but Compose doesn't pass it to the container, so a value in `.env` has no effect.
 
 ## Auth0 Staging URLs
 
@@ -45,13 +49,13 @@ If staging uses a port during early setup, add that exact origin too, for exampl
 
 ## Jenkins Assumptions
 
-The existing Jenkinsfile checks out the `staging` branch, builds the root Compose project, rsyncs the repo to the staging host, and runs:
+The Jenkinsfile validates `dev` (the same checks as GitHub CI), waits for manual approval, merges `dev` into `staging`, builds the root Compose project, rsyncs the repo to the staging host, and runs the command below. With the `DEPLOY_ONLY` parameter it skips validation, approval and merge, and deploys `staging` as-is.
 
 ```bash
 docker compose -f docker-compose.yml up -d --build --remove-orphans
 ```
 
-The staging host must keep its `.env` file in `DEPLOY_PATH`. The Jenkins rsync excludes `.git` only, so recreate `.env` if the deploy directory is rebuilt from scratch.
+The Jenkins rsync excludes `.git` only, so each deploy also copies `.env` to `DEPLOY_PATH`. A manual deploy reuses the `.env` already there, so create one first if the deploy directory is new.
 
 ## Manual Deploy
 

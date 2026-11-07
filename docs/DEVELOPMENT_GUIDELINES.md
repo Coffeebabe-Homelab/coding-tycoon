@@ -296,10 +296,15 @@ CI only runs deterministic tests.
 
 ### Branches
 
-- `main` — always deployable; CI must be green; protected branch
-- `feat/<short-description>` — feature branches; one PR per feature
-- `fix/<short-description>` — bug fix branches
-- `chore/<short-description>` — non-functional changes (deps, tooling)
+Work flows `feat/*` → `dev` → `staging`:
+
+- `feat/<short-description>` — feature branches, cut from `dev`; one PR per feature
+- `fix/<short-description>` — bug fix branches, cut from `dev`
+- `chore/<short-description>` — non-functional changes (deps, tooling), cut from `dev`
+- `docs/<short-description>` — documentation-only changes, cut from `dev`
+- `dev` — integration branch; every PR targets it, and GitHub CI runs on its pushes and PRs
+- `staging` — what runs on the staging host. Only Jenkins updates it: after validation and manual approval it merges `dev` into `staging` and deploys (see [STAGING_DEPLOY.md](./STAGING_DEPLOY.md))
+- `main` — default branch; GitHub CI also runs on it. **When `main` is updated is not defined yet**, and it is well behind `dev`
 
 ### Commit Messages (Conventional Commits)
 
@@ -329,4 +334,4 @@ Before opening a PR:
 - [ ] Self-review done — read the diff yourself before requesting review
 - [ ] PR description explains **why**, not just **what**
 
-Branch protection on `main`: require CI green + 1 approving review before merge.
+Branch protection is not enabled on `dev`, `staging` or `main`, so CI green and review are conventions, not enforced.

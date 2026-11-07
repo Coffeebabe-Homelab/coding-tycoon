@@ -124,7 +124,7 @@ The player sees this as a clean **progress dashboard**, not raw AI output:
 | Framework | React + TypeScript |
 | Code editor | Monaco Editor (VS Code engine) |
 | Styling | Tailwind CSS — utility-first, AI-friendly, zero custom CSS overhead |
-| State management | Zustand or Redux Toolkit (TBD) |
+| State management | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted |
 | Build tool | Vite |
 
 ### Backend
@@ -204,7 +204,7 @@ AI model: **DeepSeek-Coder 6.7B Q4_K_M** (`deepseek-coder:6.7b-instruct-q4_K_M`)
 | 6 | Multiplayer / team simulation | 🚫 **Not for MVP** — post-launch |
 | 7 | Pixel art / animated room | 🚫 **Not for MVP** — static scene for now |
 | 8 | Skill Profile granularity: coarse (player-facing) vs fine-grained (AI context) | ❓ Open |
-| 9 | State management: Zustand vs Redux Toolkit | ❓ Open |
+| 9 | State management: Zustand vs Redux Toolkit | ✅ **Neither** — `useState` + custom hooks, nested routes for panels (P7-02, see `frontend/SPEC.md`) |
 
 ---
 

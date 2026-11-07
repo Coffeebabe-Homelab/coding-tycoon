@@ -3,6 +3,12 @@
 ## Unreleased
 
 - Frontend tests: add Vitest and React Testing Library with first tests for `lib`, hooks, components and pages, plus `npm test` and `npm run test:coverage` (at least 70% on logic). Coverage runs in GitHub Actions and the Jenkins Validate stage. Known bugs are recorded as `it.fails` tests linked to their cards.
+- Backend coverage: the JaCoCo report now counts plain unit tests as well as `@QuarkusTest`, and `./mvnw verify` fails if any package drops under 80% lines or 80% branches. New tests cover the task state machine, the 500 fallback, unreadable codebase files and `UserService`. Overall: 100% lines, 95.8% branches (`dev` reported 93.2% / 73.2%). By package (lines/branches): codebase 100/87.5, exception 100/100, health 100/n-a, profile 100/100, progress 100/88.9, task 100/100, task.seed 100/100, topic 100/100, user 100/n-a.
+- Backend tests: keep OIDC enabled in tests against a local stub server, using `quarkus-test-oidc-server` and `quarkus-test-security-oidc` instead of `quarkus-test-security-jwt`. `OidcTokenValidationTest` sends real signed tokens and checks that a wrong issuer, wrong audience, expired token, wrong signature and malformed token all get 401. Add `ProfileServiceTest` unit tests with Mockito.
+- Backend tests: run on Dev Services PostgreSQL 16 with the real Flyway migrations instead of H2 with `drop-and-create`, and remove `quarkus-jdbc-h2`. Docker is now required to run them. `SchemaValidationTest` boots with `generation=validate` to catch entity/migration drift, and tests use the V5 topic seed instead of re-inserting topics.
+- Backend tests: replace the hand-written fakes in `TaskServiceTest` and `CodebaseServiceTest` with Mockito mocks, keeping the same scenarios.
+- Backend tests: add `quarkus-junit5-mockito` (test scope, version from the Quarkus BOM). Mocks replace hand-written fakes from now on; see the mocking convention in `backend/SPEC.md`.
+- CI: GitHub CI runs on `dev` pushes and PRs. Jenkins Validate now matches it (frontend build, backend `verify`) and sets its git identity repo-locally instead of with `git config --global`. Actions are SHA-pinned, and Dependabot opens monthly update PRs against `dev`. Document the real branch flow (`feat/*` → `dev` → `staging`).
 - Wire the Codebase Explorer into the room: the monitor hotspot opens `/room/codebase` as a wide overlay (nested route), replacing the standalone page.
 - Phase 3 Codebase Explorer: add the static `shopfront` synthetic codebase (Users + Products, with an `index.txt` allow-list and a consistency test). Add the read-only `GET /api/codebase/files` and `GET /api/codebase/files/{path}` endpoints, which resolve the codebase from the player's active task and return 404 for any path that isn't in the index.
 - Flyway `V7__add_task_codebase_scope.sql`: tasks gain `codebase_key` (default `shopfront`) and `focus_files`. Task responses include `codebaseKey` and `focusFiles`. Three seed tasks now point at real `shopfront` files.
@@ -16,12 +22,14 @@
 - Docs: fix stale `.env.example` references (README, staging runbook, observability README), the Java 25 prerequisite, backend env vars, and the frontend/backend SPEC stack tables.
 - Docs: add Phase 3 (Codebase Explorer, Monaco `CodeEditor` shared with Phase 4) and Phase 7 (Game Shell) task specs, which can be worked on in parallel. Reserve Flyway versions V7 (P3-03) and V8 (P7-03). Record the decisions: Monaco bundled locally, overlays driven by nested routes, 100 XP plus a 50 XP first-attempt bonus, UTC days, streak counted on approved-task days.
 - Docs: link the Figma application design from README and the frontend SPEC.
+- Docs: fix drift. README points to the real repo and says backend tests run on H2, north_star closes the state management decision, ROADMAP no longer says task generation calls Ollama, and the staging runbook lists every environment variable and how `.env` reaches the host.
 
 - Allow `PATCH` in backend CORS methods so starting a task (`PATCH /api/tasks/{id}/status`) isn't rejected.
 - Add a CORS check to the staging smoke test (POST with the public `Origin` must reach auth) and document the Tailscale staging URL for `CORS_ORIGINS` and Auth0.
 
 - Fix staging `/api` 502s after backend redeploys: nginx now re-resolves `backend` via Docker DNS instead of caching its IP at startup.
 - Add `scripts/smoke-staging.sh` post-deploy smoke test (frontend, `/api` proxy, auth) and run it from the Jenkins health check stage.
+- Docker: run the backend image as non-root, add nginx security and cache headers, pin PostgreSQL to `16.15`, and remove the unused Quarkus Dockerfiles and native build config. Fix the frontend healthcheck, which could report unhealthy because `localhost` resolved to IPv6 while nginx listens on IPv4 only.
 
 - Add an importable Grafana backend overview dashboard for HTTP traffic, errors, latency, JVM metrics, logs, and traces, with service/environment filters.
 
