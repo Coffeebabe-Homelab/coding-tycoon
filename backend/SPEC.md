@@ -127,7 +127,8 @@ backend/src/main/java/dev/codingtycoon/
 { "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
 ```
 
-- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- `PATCH /api/tasks/{id}/status` only accepts player transitions on the caller's own tasks: `ASSIGNED → IN_PROGRESS`, `IN_PROGRESS → SUBMITTED`, `CHANGES_REQUESTED → SUBMITTED`. Another player's task returns `404`, and any other transition returns `422`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
 - `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
