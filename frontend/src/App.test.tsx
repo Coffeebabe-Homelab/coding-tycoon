@@ -10,7 +10,13 @@ import { LocationProbe } from './test/LocationProbe'
 vi.mock('@auth0/auth0-react', () => ({ useAuth0: vi.fn() }))
 
 const ROOM_ROUTES = {
-  'GET /api/profile': { id: 1, language: 'Java', framework: 'Spring Boot', seniority: 'Mid', topics: [] },
+  'GET /api/profile': {
+    id: 1,
+    language: 'Java',
+    framework: 'Spring Boot',
+    seniority: 'Mid',
+    topics: [],
+  },
   'GET /api/tasks/today': { status: 'IN_PROGRESS' },
   'GET /api/progress': {
     totalXp: 0,

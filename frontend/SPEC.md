@@ -30,8 +30,8 @@ If anything is unclear at any point, ask. Explaining is part of the process.
 | State (client) | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted (P7-02) |
 | Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) |
 | State (server) | Custom hooks over `fetchWithAuth`; React Query/SWR not adopted |
-| Linting | oxlint (`npm run lint`); ESLint config kept for editor integration |
-| Formatting | Prettier |
+| Linting | oxlint (`npm run lint`), the only linter |
+| Formatting | Prettier (`npm run format:check`, run in CI) |
 
 ---
 
@@ -110,15 +110,17 @@ Don't add a global store unless state truly can't live in the URL or a hook. Nev
 
 ## API Integration Pattern
 
-Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`.
+Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`. A missing token throws a `401` `ApiError` without calling the API.
 
 ```ts
 // lib/api.ts
 export const fetchWithAuth = async <T>(
   path: string,
-  token: string,
+  token: string | undefined,
   options?: RequestInit,
 ): Promise<T> => {
+  if (!token) throw new ApiError(401, 'No access token')
+
   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
     ...options,
     headers: {
@@ -247,7 +249,7 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 ## Auth0 Integration
 
 ```tsx
-// main.tsx
+// components/AuthProvider.tsx, rendered inside BrowserRouter
 <Auth0Provider
   domain={import.meta.env.VITE_AUTH0_DOMAIN}
   clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
@@ -255,23 +257,13 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
     redirect_uri: `${window.location.origin}/callback`,
     audience: import.meta.env.VITE_AUTH0_AUDIENCE,
   }}
+  onRedirectCallback={(appState) => navigate(appState?.returnTo ?? '/room', { replace: true })}
 >
-  <App />
-</Auth0Provider>
 ```
 
-```tsx
-// components/ProtectedRoute.tsx
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
-  if (isLoading) return <div>Loading...</div>
-  if (!isAuthenticated) {
-    loginWithRedirect()
-    return null
-  }
-  return <>{children}</>
-}
-```
+Deep links survive login. `ProtectedRoute` starts the redirect from an effect, never during render, and passes the current path and query as `appState.returnTo`. `AuthProvider` navigates back to it after login. `CallbackPage` shows Try again and Log out if Auth0 returns an error.
+
+Tokens stay in memory, so a hard refresh makes the SDK re-authenticate. If the browser blocks third-party cookies, that is a full redirect through Auth0, which then returns to the same page.
 
 Use `getAccessTokenSilently()` to retrieve the access token — always in hooks or `useEffect`, never at render time.
 

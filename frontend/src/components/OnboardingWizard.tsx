@@ -98,9 +98,7 @@ export function OnboardingWizard() {
         {/* Step 3 — Topics */}
         {step === 3 && (
           <div className="flex flex-col gap-6">
-            <h2 className="text-xl font-semibold text-text-primary">
-              Pick your topics
-            </h2>
+            <h2 className="text-xl font-semibold text-text-primary">Pick your topics</h2>
             <p className="text-sm text-text-muted">Select at least one topic to continue.</p>
 
             {topicsLoading && <p className="text-text-muted">Loading topics…</p>}

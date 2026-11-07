@@ -31,7 +31,9 @@ export default function CodebaseExplorerPage() {
           <p className="text-text-muted">Loading codebase…</p>
         ) : (
           <div className="flex flex-col items-start gap-4">
-            <p className="text-text-primary">There's no codebase to explore until you have a task.</p>
+            <p className="text-text-primary">
+              There's no codebase to explore until you have a task.
+            </p>
             <TextLink to="/room/task">Go to the task board</TextLink>
           </div>
         )}

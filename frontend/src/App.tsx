@@ -43,10 +43,7 @@ function App() {
         }
       />
       <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
-      <Route
-        path="/"
-        element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />}
-      />
+      <Route path="/" element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />} />
     </Routes>
   )
 }

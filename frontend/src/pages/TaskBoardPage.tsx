@@ -109,7 +109,6 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
         <ul className="flex flex-col gap-2">
           {criteriaLines.map((line, index) => (
             // Criteria lines are static content without stable keys — index is safe here
-            // eslint-disable-next-line react/no-array-index-key
             <li key={index} className="flex gap-2 text-text-primary">
               <span className="mt-1 shrink-0 text-accent" aria-hidden="true">
                 •

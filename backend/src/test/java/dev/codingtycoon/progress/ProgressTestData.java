@@ -70,15 +70,20 @@ public class ProgressTestData {
         return createTask(profileId, "Fixture task");
     }
 
-    @Transactional
+    /** Approved, as XP events belong to approved tasks and a player can only have one active task. */
     public Task createTask(Long profileId, String title) {
+        return createTask(profileId, title, TaskStatus.APPROVED);
+    }
+
+    @Transactional
+    public Task createTask(Long profileId, String title, TaskStatus status) {
         Task task = new Task();
         task.playerProfileId = profileId;
         task.title = title;
         task.description = "Fixture";
         task.acceptanceCriteria = "Fixture";
         task.difficulty = "Easy";
-        task.status = TaskStatus.SUBMITTED;
+        task.status = status;
         taskRepository.persist(task);
         return task;
     }

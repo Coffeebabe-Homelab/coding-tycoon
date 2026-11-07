@@ -52,7 +52,7 @@ public class TaskService {
      */
     @Transactional
     public Pair<Task, Boolean> getOrCreateTodayTask(String sub) {
-        PlayerProfile profile = requireProfile(sub);
+        PlayerProfile profile = requireLockedProfile(sub);
 
         return taskRepository.findTodayForProfile(profile.id)
                 .map(task -> new Pair<>(task, false))
@@ -79,32 +79,52 @@ public class TaskService {
     }
 
     /**
-     * Transitions a task to a new status, enforcing the allowed state machine rules.
+     * Applies a player's status change to one of their own tasks.
      * <p>Allowed transitions:</p>
      * <ul>
      *   <li>ASSIGNED → IN_PROGRESS</li>
      *   <li>IN_PROGRESS → SUBMITTED</li>
-     *   <li>SUBMITTED → APPROVED or CHANGES_REQUESTED</li>
      *   <li>CHANGES_REQUESTED → SUBMITTED</li>
-     *   <li>APPROVED → (none — terminal state)</li>
      * </ul>
-     * Reaching APPROVED awards the approval XP.
+     * Review verdicts are not player actions: see {@link #applyReviewVerdict}.
      *
+     * @param sub       the Auth0 subject claim identifying the player
      * @param taskId    the ID of the task to update
      * @param newStatus the desired target status
      * @return the updated task
-     * @throws NotFoundException      if no task with the given ID exists
+     * @throws NotFoundException      if the task doesn't exist or belongs to another player
      * @throws UnprocessableException if the transition from the current status to newStatus is not allowed
      */
     @Transactional
-    public Task transitionStatus(Long taskId, TaskStatus newStatus) {
+    public Task transitionStatus(String sub, Long taskId, TaskStatus newStatus) {
+        Long profileId = requireProfile(sub).id;
+        // 404 rather than 403, so the response doesn't reveal which task IDs exist.
+        Task task = taskRepository.findTaskById(taskId)
+                .filter(t -> profileId.equals(t.playerProfileId))
+                .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
+
+        changeStatus(task, newStatus, isPlayerTransition(task.status, newStatus));
+        return task;
+    }
+
+    /**
+     * Records the reviewer's verdict on a submitted task. Not exposed over HTTP: the review
+     * engine (Phase 5) is the only intended caller. Approval awards the XP.
+     *
+     * @param taskId  the ID of the reviewed task
+     * @param verdict APPROVED or CHANGES_REQUESTED
+     * @return the updated task
+     * @throws NotFoundException      if no task with the given ID exists
+     * @throws UnprocessableException if the task isn't SUBMITTED or the status isn't a verdict
+     */
+    @Transactional
+    public Task applyReviewVerdict(Long taskId, TaskStatus verdict) {
         Task task = taskRepository.findTaskById(taskId)
                 .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
 
-        validateTransition(task.status, newStatus);
-        task.status = newStatus;
-        taskRepository.save(task);
-        if (newStatus == TaskStatus.APPROVED) {
+        boolean isVerdict = verdict == TaskStatus.APPROVED || verdict == TaskStatus.CHANGES_REQUESTED;
+        changeStatus(task, verdict, task.status == TaskStatus.SUBMITTED && isVerdict);
+        if (verdict == TaskStatus.APPROVED) {
             progressService.awardForApproval(task);
         }
         return task;
@@ -121,7 +141,7 @@ public class TaskService {
      */
     @Transactional
     public Task generateTask(String sub) {
-        PlayerProfile profile = requireProfile(sub);
+        PlayerProfile profile = requireLockedProfile(sub);
 
         if (taskRepository.findTodayForProfile(profile.id).isPresent()) {
             throw new ConflictException("An active task already exists for this player");
@@ -157,6 +177,13 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
     }
 
+    /** Task creation checks then inserts. The lock makes parallel callers take turns, so the next one sees the new task. */
+    private PlayerProfile requireLockedProfile(String sub) {
+        PlayerProfile profile = requireProfile(sub);
+        profileRepository.lockForUpdate(profile.id);
+        return profile;
+    }
+
     private Task buildTaskFromSeed(Long profileId, SeedTask seed) {
         Task task = buildTask(profileId, seed.title(), seed.description(),
                 seed.acceptanceCriteria(), seed.difficulty(), seed.tags());
@@ -179,23 +206,20 @@ public class TaskService {
         return task;
     }
 
-    /**
-     * Validates that a transition from currentStatus to newStatus is permitted.
-     *
-     * @throws UnprocessableException if the transition is not allowed
-     */
-    private void validateTransition(TaskStatus current, TaskStatus next) {
-        boolean valid = switch (current) {
+    private boolean isPlayerTransition(TaskStatus current, TaskStatus next) {
+        return switch (current) {
             case ASSIGNED -> next == TaskStatus.IN_PROGRESS;
-            case IN_PROGRESS -> next == TaskStatus.SUBMITTED;
-            case SUBMITTED -> next == TaskStatus.APPROVED || next == TaskStatus.CHANGES_REQUESTED;
-            case CHANGES_REQUESTED -> next == TaskStatus.SUBMITTED;
-            case APPROVED -> false; // terminal
+            case IN_PROGRESS, CHANGES_REQUESTED -> next == TaskStatus.SUBMITTED;
+            case SUBMITTED, APPROVED -> false; // waiting for review, or terminal
         };
+    }
 
-        if (!valid) {
+    private void changeStatus(Task task, TaskStatus next, boolean allowed) {
+        if (!allowed) {
             throw new UnprocessableException(
-                    "Invalid status transition: " + current + " → " + next);
+                    "Invalid status transition: " + task.status + " → " + next);
         }
+        task.status = next;
+        taskRepository.save(task);
     }
 }

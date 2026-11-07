@@ -65,7 +65,7 @@ Rebranding, hover states, and future tweaks (adding a shadow, changing padding) 
 
 ## Tailwind: Class Ordering
 
-Class order must follow the Prettier Tailwind plugin sort. Do not hand-order classes. CI enforces this via `npm run lint`.
+CI checks formatting with Prettier (`npm run format:check`), but `prettier-plugin-tailwindcss` isn't installed, so class order isn't checked yet. Follow the order below.
 
 Base rule of thumb when reading or writing manually:
 ```

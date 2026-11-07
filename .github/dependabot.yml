@@ -16,6 +16,9 @@ updates:
       interval: monthly
     open-pull-requests-limit: 3
     groups:
+      # vitest and @vitest/coverage-v8 must share a version, or npm ci fails.
+      vitest:
+        patterns: [vitest, "@vitest/*"]
       minor-and-patch:
         update-types: [minor, patch]
 

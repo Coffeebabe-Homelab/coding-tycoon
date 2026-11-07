@@ -2,7 +2,7 @@ package dev.codingtycoon.task;
 
 /**
  * Represents all possible lifecycle states of a Task.
- * State transitions are enforced by TaskService.transitionStatus().
+ * State transitions are enforced by TaskService: transitionStatus() for players, applyReviewVerdict() for reviews.
  */
 public enum TaskStatus {
     /** Task has been created and assigned to the player but not yet started. */
