@@ -153,3 +153,4 @@ Backend tests use Quarkus Dev Services PostgreSQL 16 with the real Flyway migrat
 | [backend/SPEC.md](./backend/SPEC.md) | Backend architecture, API conventions, data model |
 | [frontend/SPEC.md](./frontend/SPEC.md) | Frontend architecture, component structure, state management |
 | [Figma design](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) | Source of the application's visual design |
+| [docs/design/DESIGN_SPEC.md](./docs/design/DESIGN_SPEC.md) | Copy of the Figma Design Spec: tokens, components, patterns, screens, decisions |

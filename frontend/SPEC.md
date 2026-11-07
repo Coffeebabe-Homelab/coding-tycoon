@@ -28,7 +28,7 @@ If anything is unclear at any point, ask. Explaining is part of the process.
 | Code editor | Monaco Editor via `@monaco-editor/react` (Phase 3; one shared `CodeEditor` for the explorer and the Phase 4 editor) |
 | Auth | `@auth0/auth0-react` |
 | State (client) | `useState` + custom hooks; open panels live in the URL (nested routes). Zustand not adopted (P7-02) |
-| Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) |
+| Design source | [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb); the spec is copied to [DESIGN_SPEC.md](../docs/design/DESIGN_SPEC.md) |
 | State (server) | Custom hooks over `fetchWithAuth`; React Query/SWR not adopted |
 | Linting | oxlint (`npm run lint`), the only linter |
 | Formatting | Prettier (`npm run format:check`, run in CI) |
