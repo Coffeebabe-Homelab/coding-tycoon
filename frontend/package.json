@@ -28,10 +28,10 @@
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.8",
     "@types/node": "^24.13.3",
-    "@vitest/coverage-v8": "5.1.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
@@ -41,8 +41,8 @@
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vitest": "5.1.0"
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
+    "vitest": "5.1.0"
   }
 }
