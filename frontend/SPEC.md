@@ -249,7 +249,7 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 ## Auth0 Integration
 
 ```tsx
-// main.tsx
+// components/AuthProvider.tsx, rendered inside BrowserRouter
 <Auth0Provider
   domain={import.meta.env.VITE_AUTH0_DOMAIN}
   clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
@@ -257,23 +257,13 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
     redirect_uri: `${window.location.origin}/callback`,
     audience: import.meta.env.VITE_AUTH0_AUDIENCE,
   }}
+  onRedirectCallback={(appState) => navigate(appState?.returnTo ?? '/room', { replace: true })}
 >
-  <App />
-</Auth0Provider>
 ```
 
-```tsx
-// components/ProtectedRoute.tsx
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
-  if (isLoading) return <div>Loading...</div>
-  if (!isAuthenticated) {
-    loginWithRedirect()
-    return null
-  }
-  return <>{children}</>
-}
-```
+Deep links survive login. `ProtectedRoute` starts the redirect from an effect, never during render, and passes the current path and query as `appState.returnTo`. `AuthProvider` navigates back to it after login. `CallbackPage` shows Try again and Log out if Auth0 returns an error.
+
+Tokens stay in memory, so a hard refresh makes the SDK re-authenticate. If the browser blocks third-party cookies, that is a full redirect through Auth0, which then returns to the same page.
 
 Use `getAccessTokenSilently()` to retrieve the access token — always in hooks or `useEffect`, never at render time.
 
