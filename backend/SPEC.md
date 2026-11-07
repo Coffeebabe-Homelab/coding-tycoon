@@ -303,6 +303,8 @@ ReviewAiPort reviewAiPort;
 when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 ```
 
+**Mocking convention:** use Mockito (`quarkus-junit5-mockito`, version from the Quarkus BOM), not hand-written fakes. In a `@QuarkusTest`, use `@InjectMock` to replace a bean. In a plain unit test, use `Mockito.mock(...)`.
+
 ---
 
 ## Authentication & Authorisation
