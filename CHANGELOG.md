@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Backend tests: replace the hand-written fakes in `TaskServiceTest` and `CodebaseServiceTest` with Mockito mocks, keeping the same scenarios.
 - Backend tests: add `quarkus-junit5-mockito` (test scope, version from the Quarkus BOM). Mocks replace hand-written fakes from now on; see the mocking convention in `backend/SPEC.md`.
 - CI: GitHub CI runs on `dev` pushes and PRs. Jenkins Validate now matches it (frontend build, backend `verify`) and sets its git identity repo-locally instead of with `git config --global`. Actions are SHA-pinned, and Dependabot opens monthly update PRs against `dev`. Document the real branch flow (`feat/*` → `dev` → `staging`).
 - Wire the Codebase Explorer into the room: the monitor hotspot opens `/room/codebase` as a wide overlay (nested route), replacing the standalone page.
