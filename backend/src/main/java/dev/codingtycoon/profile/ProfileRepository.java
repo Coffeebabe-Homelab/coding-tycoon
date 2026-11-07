@@ -23,4 +23,11 @@ public interface ProfileRepository {
      * @return the saved profile (with id populated)
      */
     PlayerProfile save(PlayerProfile profile);
+
+    /**
+     * Locks the profile row until the current transaction ends. Other callers wait here.
+     *
+     * @param profileId the ID of the profile to lock
+     */
+    void lockForUpdate(Long profileId);
 }

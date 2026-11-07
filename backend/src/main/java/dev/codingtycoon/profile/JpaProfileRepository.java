@@ -2,6 +2,7 @@ package dev.codingtycoon.profile;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
 
@@ -22,5 +23,10 @@ public class JpaProfileRepository implements ProfileRepository, PanacheRepositor
         // persistAndFlush ensures the entity gets an ID and is visible within the same transaction.
         persistAndFlush(profile);
         return profile;
+    }
+
+    @Override
+    public void lockForUpdate(Long profileId) {
+        findById(profileId, LockModeType.PESSIMISTIC_WRITE);
     }
 }
