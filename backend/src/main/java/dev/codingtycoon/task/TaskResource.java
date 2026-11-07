@@ -49,17 +49,18 @@ public class TaskResource {
     }
 
     /**
-     * Transitions a task to a new status.
-     * Enforces the state machine: invalid transitions return 422 Unprocessable Entity.
+     * Applies a player's status change to one of their own tasks.
+     * Review verdicts (APPROVED, CHANGES_REQUESTED) can't be set here.
      *
      * @param id      the task ID from the path
      * @param request the desired new status
-     * @return 200 OK with the updated task, or 422 for invalid transitions, 404 if task not found
+     * @return 200 OK with the updated task, 422 for a transition the player can't make,
+     *         404 if the task doesn't exist or belongs to another player
      */
     @PATCH
     @Path("/{id}/status")
     public Response updateStatus(@PathParam("id") Long id, @Valid UpdateTaskStatusRequest request) {
-        Task updated = taskService.transitionStatus(id, request.status);
+        Task updated = taskService.transitionStatus(jwt.getSubject(), id, request.status);
         return Response.ok(TaskResponse.from(updated)).build();
     }
 
