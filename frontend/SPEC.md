@@ -110,15 +110,17 @@ Don't add a global store unless state truly can't live in the URL or a hook. Nev
 
 ## API Integration Pattern
 
-Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`.
+Always use the `fetchWithAuth` helper. Never write raw `fetch` with `Authorization` headers in components. Non-2xx responses throw `ApiError` (with `status`), so hooks can branch on specific codes such as `404`. A missing token throws a `401` `ApiError` without calling the API.
 
 ```ts
 // lib/api.ts
 export const fetchWithAuth = async <T>(
   path: string,
-  token: string,
+  token: string | undefined,
   options?: RequestInit,
 ): Promise<T> => {
+  if (!token) throw new ApiError(401, 'No access token')
+
   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
     ...options,
     headers: {
