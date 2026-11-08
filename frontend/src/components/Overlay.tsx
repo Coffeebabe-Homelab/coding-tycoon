@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { trapFocus } from '../lib/focusTrap'
+import { Icon } from './Icon'
 
 interface OverlayProps {
   title: string
@@ -56,9 +57,9 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
             type="button"
             aria-label="Close panel"
             onClick={() => navigate('/room')}
-            className="rounded-md px-2 text-xl text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
+            className="rounded-md p-2 text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
           >
-            ×
+            <Icon name="x" />
           </button>
         </header>
         <div className={wide ? 'flex min-h-0 flex-1 flex-col' : 'overflow-y-auto p-6'}>
