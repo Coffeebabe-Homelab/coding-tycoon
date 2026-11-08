@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Design: the Input component's Default border in Figma now uses a new `border/input` token (`night/500`, `#6C6494`), which reaches the Design Spec's 3:1 rule on both the surface (3.4:1) and the input fill (3.1:1). `docs/design/DESIGN_SPEC.md` is updated to match. The code still needs the token.
+- Docs: update the Night Shift design plans after review. Phase 4 now waits only for Stage 1, `Button`, `Icon` and `PanelWindow`, and `ROADMAP.md` records that gate. The App Bar and standalone Profile get their own card, `Chip` moves to Stage 4, and `Input` moves to Phase 4. Button lists become searches, which adds the missed `CallbackPage` button.
 - Docs: add `docs/design/DESIGN_SPEC.md`, a copy of the Figma Design Spec page, so the spec is readable from a clone without Figma access. Figma stays the source of truth. Link it from `README.md` and `frontend/SPEC.md`.
 - CI: Jenkins Validate now runs the frontend build, so a compile error fails it, the same as GitHub Actions.
 - Frontend tooling: oxlint is now the only linter. Remove ESLint, `typescript-eslint`, their plugins and `eslint.config.js`, which CI never ran. GitHub Actions and Jenkins now run `npm run format:check` (Prettier), and `src` is formatted to pass it.
