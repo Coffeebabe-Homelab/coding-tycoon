@@ -30,8 +30,8 @@ export function Hotspot({ label, onActivate, children }: HotspotProps) {
       onKeyDown={handleKeyDown}
       className={
         disabled
-          ? 'cursor-not-allowed opacity-60 hover:opacity-80 focus:opacity-80 focus:outline-none'
-          : 'cursor-pointer transition hover:brightness-125 hover:drop-shadow-hotspot focus:brightness-125 focus:outline-none focus:drop-shadow-hotspot'
+          ? 'cursor-not-allowed opacity-60 hover:opacity-80 focus-visible:opacity-80'
+          : 'cursor-pointer transition hover:brightness-125 hover:drop-shadow-hotspot focus-visible:brightness-125 focus-visible:drop-shadow-hotspot'
       }
     >
       <title>{label}</title>

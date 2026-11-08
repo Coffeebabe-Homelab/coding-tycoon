@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ancestorFolders, type FileTreeNode } from '../lib/fileTree'
 
 const ROW_CLASSES =
-  'flex w-full items-center gap-2 rounded px-2 py-1 text-left font-mono text-sm hover:bg-bg-elevated focus:bg-bg-elevated focus:outline-none focus:ring-2 focus:ring-accent'
+  'flex w-full items-center gap-2 rounded-md px-2 py-1 text-left font-mono text-sm hover:bg-bg-elevated'
 
 const GLYPH_BY_EXTENSION: Record<string, string> = {
   java: 'J',

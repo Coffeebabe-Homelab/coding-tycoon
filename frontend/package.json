@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.30.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource-variable/pixelify-sans": "5.3.0",
+    "@fontsource-variable/space-grotesk": "5.3.0",
     "@monaco-editor/react": "4.7.0",
     "monaco-editor": "0.57.0",
     "react": "^19.3.1",

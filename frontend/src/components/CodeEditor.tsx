@@ -15,6 +15,16 @@ self.MonacoEnvironment = {
 loader.config({ monaco })
 
 const THEME_NAME = 'coding-tycoon-dark'
+const FONT_SIZE = 13
+const LINE_HEIGHT = 20
+
+const SYNTAX_TOKENS: Record<string, string> = {
+  keyword: '--color-accent-hover',
+  type: '--color-info',
+  annotation: '--color-warning',
+  string: '--color-success',
+  comment: '--color-text-muted',
+}
 
 /** Reads a design token from tokens.css so the editor follows the app theme. */
 function token(name: string): string {
@@ -23,22 +33,33 @@ function token(name: string): string {
 
 function defineTheme(): void {
   const colors: Record<string, string> = {
-    'editor.background': token('--color-bg-surface'),
+    'editor.background': token('--color-bg-base'),
     'editor.foreground': token('--color-text-primary'),
     'editor.lineHighlightBackground': token('--color-bg-elevated'),
     'editor.selectionBackground': token('--color-accent-subtle'),
     'editorLineNumber.foreground': token('--color-text-muted'),
     'editorLineNumber.activeForeground': token('--color-text-primary'),
-    'editorCursor.foreground': token('--color-accent-hover'),
+    'editorCursor.foreground': token('--color-accent'),
   }
   // Skip tokens that aren't emitted so Monaco keeps its vs-dark default for them.
   const definedColors = Object.fromEntries(Object.entries(colors).filter(([, value]) => value))
+  // Monaco rejects a leading # in rule colours, unlike the colours map above.
+  const rules = Object.entries(SYNTAX_TOKENS)
+    .map(([name, cssVar]) => ({ token: name, foreground: token(cssVar).replace('#', '') }))
+    .filter((rule) => rule.foreground)
   monaco.editor.defineTheme(THEME_NAME, {
     base: 'vs-dark',
     inherit: true,
-    rules: [],
+    rules,
     colors: definedColors,
   })
+}
+
+/** Monaco caches glyph widths: measured with a fallback font, the selection drifts from the text. */
+function remeasureOnceFontLoads(): void {
+  void document.fonts
+    .load(`${FONT_SIZE}px "JetBrains Mono Variable"`)
+    .then(() => monaco.editor.remeasureFonts())
 }
 
 export interface CodeEditorProps {
@@ -63,13 +84,16 @@ export function CodeEditor({ value, language, readOnly, onChange, ariaLabel }: C
         value={value}
         theme={THEME_NAME}
         beforeMount={defineTheme}
+        onMount={remeasureOnceFontLoads}
         onChange={(next) => onChange?.(next ?? '')}
         options={{
           readOnly,
           domReadOnly: readOnly,
           ariaLabel,
           minimap: { enabled: false },
-          fontSize: 14,
+          fontFamily: token('--font-mono'),
+          fontSize: FONT_SIZE,
+          lineHeight: LINE_HEIGHT,
           wordWrap: 'on',
           scrollBeyondLastLine: false,
         }}

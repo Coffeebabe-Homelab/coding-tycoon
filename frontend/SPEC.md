@@ -145,54 +145,83 @@ const token = await getAccessTokenSilently()
 
 ## Design Tokens & Theming
 
-**Branding is not defined yet.** Token values below are placeholders. When branding is finalised, only `src/styles/tokens.css` needs changing — no component files.
+The visual identity is Night Shift, defined in Figma ([`docs/design/DESIGN_SPEC.md`](../docs/design/DESIGN_SPEC.md) is a readable copy). Figma variables change first, then `src/styles/tokens.css` in the same PR. Components only use token names, so a value change needs no component edits.
 
 For the full rules on how to use tokens (what's forbidden, componentisation rules, responsive conventions, accessibility requirements), see [`CONVENTIONS.md`](../CONVENTIONS.md).
 
 ### Token file — `src/styles/tokens.css`
 
 ```css
-@theme {
+@theme static {
   /* Backgrounds */
-  --color-bg-base:       #030712;   /* page / room background */
-  --color-bg-surface:    #111827;   /* panels, cards */
-  --color-bg-elevated:   #1f2937;   /* inputs, hover surfaces */
+  --color-bg-base:          #0b0918;  /* page / room background */
+  --color-bg-surface:       #141127;  /* panels, cards */
+  --color-bg-elevated:      #1e1a38;  /* inputs, hover surfaces */
 
   /* Borders */
-  --color-border:        #374151;
+  --color-border:           #2e2852;
+  --color-border-strong:    #433b70;
+  --color-border-input:     #6c6494;  /* default input strokes */
 
   /* Accent */
-  --color-accent:        #9333ea;   /* primary interactive */
-  --color-accent-hover:  #a855f7;
-  --color-accent-subtle: #581c87;   /* badge / chip backgrounds */
+  --color-accent:           #ff8a3d;  /* primary interactive */
+  --color-accent-hover:     #ffa366;
+  --color-accent-subtle:    #3d2214;  /* badge / chip backgrounds */
+  --color-accent-on-subtle: #ffb98a;  /* text on accent-subtle */
+  --color-accent-ink:       #1b0f06;  /* text on solid accent */
 
-  /* States */
-  --color-success:       #4ade80;
-  --color-warning:       #facc15;
-  --color-danger:        #f87171;
+  /* States, each with a *-subtle background */
+  --color-info:             #4cc9f0;  /* focus ring */
+  --color-success:          #4be3a0;
+  --color-warning:          #ffd166;
+  --color-danger:           #ff6b81;
 
   /* Text */
-  --color-text-primary:  #f3f4f6;
-  --color-text-muted:    #9ca3af;
+  --color-text-primary:     #f3f0ff;
+  --color-text-muted:       #a9a2c9;
 
-  /* Room scene (Phase 7): --color-room-floor, -floor-line, -wall-left, -wall-right, -trim,
-     -desk-top, -desk-side, -monitor, -screen, -board, -note, -door, -chair,
-     -avatar-skin, -avatar-hair, -avatar-shirt; plus --drop-shadow-hotspot (hover/focus glow) */
-
-  /* Typography — swap here only */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Also: --color-rgb-magenta, --color-rgb-violet (room lighting); --shadow-card, -overlay,
+     -glow-accent; the Phase 7 room scene --color-room-* set and --drop-shadow-hotspot */
 }
 ```
+
+`static` makes Tailwind emit every variable, because `CodeEditor` reads them at runtime.
+
+### Radius
+
+| Token | Value | Use |
+|---|---|---|
+| `rounded-sm` | 4px | Difficulty tags |
+| `rounded-md` | 8px | Buttons, inputs |
+| `rounded-lg` | 12px | Cards |
+| `rounded-xl` | 16px | Panels and windows |
+| `rounded-full` | 999px | Pills |
+
+### Typography
+
+Three variable fonts, self-hosted through pinned `@fontsource-variable` packages and imported in `main.tsx`, so the app makes no third-party font requests.
+
+| Class | Font | Use |
+|---|---|---|
+| `font-display` | Pixelify Sans | Logo, game numbers |
+| `font-sans` | Space Grotesk | Default for all interface text |
+| `font-mono` | JetBrains Mono | Code |
+
+Named text classes set size, line height, weight and tracking together: `text-display-xl`, `-display-l`, `-display-m`, `text-h1`, `-h2`, `-h3`, `text-body-l`, `-body-m`, `text-label-m`, `-label-s`, `text-overline`, `text-code-m`, `-code-s`. Use them for new work. Existing components move over when they are next rebuilt.
+
+### Focus
+
+One rule in `src/index.css` draws a 2px `info` ring with a 2px gap on `:focus-visible`. Don't add `focus:` classes to controls.
 
 ### Common component patterns
 
 | Component | Class pattern |
 |---|---|
 | Page background | `bg-bg-base` |
-| Panel / card | `rounded-xl border border-border bg-bg-surface p-4` |
-| Primary button | `rounded-lg bg-accent px-4 py-2 text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent` |
-| Badge / chip (selected) | `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-hover` |
+| Panel | `rounded-xl border border-border bg-bg-surface p-4` |
+| Card | `rounded-lg border border-border bg-bg-elevated p-4` |
+| Primary button | `rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover` |
+| Badge / chip (selected) | `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle` |
 | Badge / chip (unselected) | `rounded-full bg-bg-elevated px-2 py-0.5 text-xs text-text-muted` |
 | Body text | `text-text-primary` |
 | Muted text | `text-text-muted` |
@@ -226,7 +255,9 @@ Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language
 - `loader.config({ monaco })` so the editor comes from the bundle, not jsDelivr
 - `self.MonacoEnvironment.getWorker` with Vite `?worker` imports (editor worker, JSON worker)
 - the `coding-tycoon-dark` theme, built on `vs-dark` from the `tokens.css` colour variables
-- options: no minimap, font size 14, word wrap, `scrollBeyondLastLine: false`
+- `editor.background` is `bg-base`, and syntax colours come from tokens (keyword `accent-hover`, type `info`, annotation `warning`, string `success`, comment `text-muted`)
+- options: no minimap, JetBrains Mono at 13/20, word wrap, `scrollBeyondLastLine: false`
+- `monaco.editor.remeasureFonts()` once JetBrains Mono has loaded, because Monaco caches glyph widths
 
 Pages render `LazyCodeEditor` (`React.lazy` + `Suspense` with a "Loading editor…" message), which keeps Monaco in its own build chunks.
 
@@ -332,6 +363,6 @@ test('shows task title', () => {
 
 - All interactive elements must be keyboard-accessible (focusable, `Enter`/`Space` triggers action)
 - ARIA roles for game panels: `role="dialog"` for overlays, `aria-label` on icon-only buttons
-- Colour contrast: minimum 4.5:1 for body text (Tailwind gray-200 on gray-900 meets this)
+- Colour contrast: minimum 4.5:1 for text, 3:1 for UI parts. Text on solid `accent` uses `accent-ink` (8.0:1), never `text-primary` (2.09:1). The checked Figma pairs are in [`PLAN-design-foundation.md`](../docs/design/PLAN-design-foundation.md)
 - Images need `alt` text; decorative images use `alt=""`
 - Monaco Editor: the editor container must have an `aria-label`
