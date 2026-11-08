@@ -134,7 +134,7 @@ export function OnboardingWizard() {
             <button
               type="button"
               onClick={() => setStep((s) => s + 1)}
-              className="rounded-lg bg-accent px-6 py-2 text-sm text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+              className="rounded-lg bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
             >
               Next
             </button>
@@ -145,7 +145,7 @@ export function OnboardingWizard() {
               type="button"
               onClick={handleFinish}
               disabled={saving || selectedTopicIds.length === 0}
-              className="rounded-lg bg-accent px-6 py-2 text-sm text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Finish'}
             </button>

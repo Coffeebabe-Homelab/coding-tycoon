@@ -72,7 +72,7 @@ export default function ProfilePage() {
                   {profile.topics.map((topic) => (
                     <span
                       key={topic.id}
-                      className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-hover"
+                      className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle"
                     >
                       {topic.name}
                     </span>
@@ -85,7 +85,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={enterEditMode}
-                className="rounded-lg bg-accent px-4 py-2 text-sm text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+                className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 Edit
               </button>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving || editTopicIds.length === 0}
-                className="rounded-lg bg-accent px-4 py-2 text-sm text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>

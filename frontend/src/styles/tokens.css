@@ -6,41 +6,41 @@
  * Components reference semantic token names (bg-bg-surface, text-text-primary, etc.)
  * — never raw palette values (bg-gray-900, text-white, etc.).
  *
- * When branding is finalised: update the values below. No component files need changing.
+ * Values mirror the semantic variables in Figma (Night Shift). Change Figma first, then this file.
  */
 
 /* `static` emits every variable: CodeEditor reads them at runtime, so unused ones must still exist. */
 @theme static {
   /* --- Backgrounds --- */
-  --color-bg-base: #030712; /* page / room background */
-  --color-bg-surface: #111827; /* panels, cards */
-  --color-bg-elevated: #1f2937; /* inputs, hover surfaces */
+  --color-bg-base: #0b0918; /* page / room background */
+  --color-bg-surface: #141127; /* panels, cards */
+  --color-bg-elevated: #1e1a38; /* inputs, hover surfaces */
 
   /* --- Borders --- */
-  --color-border: #374151;
+  --color-border: #2e2852;
   --color-border-strong: #433b70;
   --color-border-input: #6c6494; /* default input strokes: reaches 3:1 */
 
   /* --- Accent (primary interactive colour) --- */
-  --color-accent: #9333ea;
-  --color-accent-hover: #a855f7;
-  --color-accent-subtle: #581c87; /* accent backgrounds: badges, selected chips */
+  --color-accent: #ff8a3d;
+  --color-accent-hover: #ffa366;
+  --color-accent-subtle: #3d2214; /* accent backgrounds: badges, selected chips */
   --color-accent-on-subtle: #ffb98a; /* text on accent-subtle */
   --color-accent-ink: #1b0f06; /* text on solid accent */
 
   /* --- Semantic states --- */
   --color-info: #4cc9f0; /* focus ring */
   --color-info-subtle: #0e2a36;
-  --color-success: #4ade80;
+  --color-success: #4be3a0;
   --color-success-subtle: #0f2e24;
-  --color-warning: #facc15;
+  --color-warning: #ffd166;
   --color-warning-subtle: #33280f;
-  --color-danger: #f87171;
+  --color-danger: #ff6b81;
   --color-danger-subtle: #3a1520;
 
   /* --- Text --- */
-  --color-text-primary: #f3f4f6;
-  --color-text-muted: #9ca3af;
+  --color-text-primary: #f3f0ff;
+  --color-text-muted: #a9a2c9;
 
   /* --- Decorative (room lighting) --- */
   --color-rgb-magenta: #e84df5;
@@ -67,7 +67,7 @@
   --color-room-chair: #334155;
   --color-room-avatar-skin: #f5d0a9;
   --color-room-avatar-hair: #3f2a1d;
-  --color-room-avatar-shirt: #9333ea;
+  --color-room-avatar-shirt: var(--color-accent);
   --drop-shadow-hotspot: 0 0 8px var(--color-accent); /* hover/focus glow on room objects */
 
   /* --- Typography --- */

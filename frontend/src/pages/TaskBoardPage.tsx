@@ -8,11 +8,11 @@ import type { Task } from '../types/task'
 function difficultyClasses(difficulty: string): string {
   switch (difficulty.toLowerCase()) {
     case 'easy':
-      return 'bg-success/20 text-success'
+      return 'bg-success-subtle text-success'
     case 'medium':
-      return 'bg-warning/20 text-warning'
+      return 'bg-warning-subtle text-warning'
     case 'hard':
-      return 'bg-danger/20 text-danger'
+      return 'bg-danger-subtle text-danger'
     default:
       return 'bg-bg-elevated text-text-muted'
   }
@@ -59,7 +59,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
           {task.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-hover"
+              className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle"
             >
               {tag}
             </span>
@@ -125,7 +125,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
           type="button"
           onClick={handleStart}
           disabled={isStarting}
-          className="rounded-lg bg-accent px-6 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-accent px-6 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isStarting ? 'Starting…' : 'Start task'}
         </button>

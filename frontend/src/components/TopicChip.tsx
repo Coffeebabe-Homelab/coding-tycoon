@@ -14,7 +14,7 @@ export function TopicChip({ label, selected, onClick }: TopicChipProps) {
       type="button"
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-sm transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent ${
-        selected ? 'bg-accent-subtle text-accent-hover' : 'bg-bg-elevated text-text-muted'
+        selected ? 'bg-accent-subtle text-accent-on-subtle' : 'bg-bg-elevated text-text-muted'
       }`}
     >
       {label}
