@@ -9,7 +9,8 @@
  * When branding is finalised: update the values below. No component files need changing.
  */
 
-@theme {
+/* `static` emits every variable: CodeEditor reads them at runtime, so unused ones must still exist. */
+@theme static {
   /* --- Backgrounds --- */
   --color-bg-base: #030712; /* page / room background */
   --color-bg-surface: #111827; /* panels, cards */
@@ -17,20 +18,38 @@
 
   /* --- Borders --- */
   --color-border: #374151;
+  --color-border-strong: #433b70;
+  --color-border-input: #6c6494; /* default input strokes: reaches 3:1 */
 
   /* --- Accent (primary interactive colour) --- */
   --color-accent: #9333ea;
   --color-accent-hover: #a855f7;
   --color-accent-subtle: #581c87; /* accent backgrounds: badges, selected chips */
+  --color-accent-on-subtle: #ffb98a; /* text on accent-subtle */
+  --color-accent-ink: #1b0f06; /* text on solid accent */
 
   /* --- Semantic states --- */
+  --color-info: #4cc9f0; /* focus ring */
+  --color-info-subtle: #0e2a36;
   --color-success: #4ade80;
+  --color-success-subtle: #0f2e24;
   --color-warning: #facc15;
+  --color-warning-subtle: #33280f;
   --color-danger: #f87171;
+  --color-danger-subtle: #3a1520;
 
   /* --- Text --- */
   --color-text-primary: #f3f4f6;
   --color-text-muted: #9ca3af;
+
+  /* --- Decorative (room lighting) --- */
+  --color-rgb-magenta: #e84df5;
+  --color-rgb-violet: #7b5cff;
+
+  /* --- Elevation --- */
+  --shadow-card: 0 4px 12px rgb(0 0 0 / 0.35);
+  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 0.55);
+  --shadow-glow-accent: 0 0 24px rgb(255 138 61 / 0.45);
 
   /* --- Room scene (game/RoomScene.tsx, game/Avatar.tsx) --- */
   --color-room-floor: #1e293b;
