@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Button, buttonClasses } from './Button'
+import { Button } from './Button'
+import { buttonClasses } from './buttonClasses'
 
 describe('Button', () => {
   it('renders its label and defaults to type="button" so it never submits a form', () => {

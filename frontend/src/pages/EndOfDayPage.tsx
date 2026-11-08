@@ -5,7 +5,7 @@ import { useProgress } from '../hooks/useProgress'
 import { useTask } from '../hooks/useTask'
 import type { Progress } from '../types/progress'
 import type { TaskStatus } from '../types/task'
-import { buttonClasses } from '../components/Button'
+import { buttonClasses } from '../components/buttonClasses'
 import { Button } from '../components/Button'
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
