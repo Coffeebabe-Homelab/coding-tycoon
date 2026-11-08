@@ -213,6 +213,18 @@ Named text classes set size, line height, weight and tracking together: `text-di
 
 One rule in `src/index.css` draws a 2px `info` ring with a 2px gap on `:focus-visible`. Don't add `focus:` classes to controls.
 
+### UI primitives
+
+One Figma component set is one React component, and its variants are props. Prop names follow the Design Spec › 11 handoff table. Primitives are presentational. Add other Figma components when something first uses them.
+
+| Component | Figma | Usage |
+|---|---|---|
+| `Button` | 8:31 | `<Button variant="primary\|secondary\|danger" disabled />`. Primary is the default, and `type` defaults to `"button"` |
+| `buttonClasses(variant)` | 8:31 | For a router `Link` styled as a button, which must stay an anchor |
+| `Icon` | 7:217 | `<Icon name="x" />`. 16px, inherits the text colour, hidden from screen readers by default. `flame` and the `branch` node keep their Figma colours |
+| `Difficulty` | 8:106 | `<Difficulty level={task.difficulty} />`. Matches any case, and unknown values are neutral |
+| `StatusBadge` | 8:96 | `<StatusBadge status={task.status} />`. Always a dot and a word |
+
 ### Common component patterns
 
 | Component | Class pattern |
@@ -220,7 +232,7 @@ One rule in `src/index.css` draws a 2px `info` ring with a 2px gap on `:focus-vi
 | Page background | `bg-bg-base` |
 | Panel | `rounded-xl border border-border bg-bg-surface p-4` |
 | Card | `rounded-lg border border-border bg-bg-elevated p-4` |
-| Primary button | `rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover` |
+| Button | `<Button>` (see UI primitives) |
 | Badge / chip (selected) | `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle` |
 | Badge / chip (unselected) | `rounded-full bg-bg-elevated px-2 py-0.5 text-xs text-text-muted` |
 | Body text | `text-text-primary` |
@@ -273,7 +285,7 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 - The open file lives in the URL (`?file=<path>`), so refresh, deep links and Back keep it. Without `?file`, the first focus file opens (else the first file).
 - `components/FileTree.tsx`: collapsible folders built from native buttons (Tab/Enter/Space), text glyphs per file type, focus files in `text-warning`, folders leading to focus files start expanded.
 - 404 on the file list shows "no task yet" with a link to the Task Board. The Task Board lists the task's `focusFiles` as explorer deep links plus an "Explore codebase" link.
-- `components/TextLink.tsx`: the shared inline accent link (paired hover/focus).
+- `components/TextLink.tsx`: the shared inline accent link.
 
 ---
 
