@@ -129,13 +129,9 @@ export default function ProfilePage() {
             {saveError && <p className="text-sm text-danger">{saveError}</p>}
 
             <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary"
-              >
+              <Button variant="secondary" onClick={cancelEdit}>
                 Cancel
-              </button>
+              </Button>
               <Button onClick={handleSave} disabled={saving || editTopicIds.length === 0}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>

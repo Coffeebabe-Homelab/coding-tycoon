@@ -28,13 +28,12 @@ export default function CallbackPage() {
         <p className="text-text-primary">We couldn't log you in.</p>
         <div className="flex gap-3">
           <Button onClick={() => loginWithRedirect()}>Try again</Button>
-          <button
-            type="button"
-            className="rounded-md border border-border px-6 py-2 text-sm text-text-muted transition-colors hover:text-text-primary"
+          <Button
+            variant="secondary"
             onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
           >
             Log out
-          </button>
+          </Button>
         </div>
       </div>
     </div>

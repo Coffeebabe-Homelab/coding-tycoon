@@ -122,14 +122,9 @@ export function OnboardingWizard() {
 
         {/* Navigation */}
         <div className="flex items-center justify-between pt-2">
-          <button
-            type="button"
-            onClick={() => setStep((s) => s - 1)}
-            disabled={step === 1}
-            className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
-          >
+          <Button variant="secondary" onClick={() => setStep((s) => s - 1)} disabled={step === 1}>
             Back
-          </button>
+          </Button>
 
           {step < TOTAL_STEPS && <Button onClick={() => setStep((s) => s + 1)}>Next</Button>}
 

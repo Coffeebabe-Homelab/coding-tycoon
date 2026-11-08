@@ -128,13 +128,9 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       )}
 
       {task.status === 'IN_PROGRESS' && (
-        <button
-          type="button"
-          disabled
-          className="rounded-md bg-bg-elevated px-6 py-2 text-sm font-medium text-success disabled:cursor-not-allowed"
-        >
+        <Button variant="secondary" disabled>
           Continue
-        </button>
+        </Button>
       )}
     </article>
   )

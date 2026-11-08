@@ -6,6 +6,7 @@ import { useTask } from '../hooks/useTask'
 import type { Progress } from '../types/progress'
 import type { TaskStatus } from '../types/task'
 import { buttonClasses } from '../components/Button'
+import { Button } from '../components/Button'
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
   ASSIGNED: 'Not started',
@@ -109,13 +110,12 @@ export default function EndOfDayPage() {
           )}
           <ProgressStats progress={progress} />
           <div className="flex justify-end gap-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-              className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary"
             >
               Log out
-            </button>
+            </Button>
             <Link to="/room" className={buttonClasses('primary')}>
               Back to room
             </Link>
