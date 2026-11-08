@@ -82,4 +82,48 @@
   --font-display: 'Pixelify Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  /* Named text styles from Figma: one class sets size, line height, weight and tracking. */
+  --text-display-xl: 3rem;
+  --text-display-xl--line-height: 3.5rem;
+  --text-display-xl--font-weight: 700;
+  --text-display-l: 2rem;
+  --text-display-l--line-height: 2.5rem;
+  --text-display-l--font-weight: 600;
+  --text-display-m: 1.25rem;
+  --text-display-m--line-height: 1.75rem;
+  --text-display-m--font-weight: 500;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 2.25rem;
+  --text-h1--font-weight: 700;
+  --text-h1--letter-spacing: -0.5px;
+  --text-h2: 1.25rem;
+  --text-h2--line-height: 1.75rem;
+  --text-h2--font-weight: 700;
+  --text-h2--letter-spacing: -0.25px;
+  --text-h3: 1rem;
+  --text-h3--line-height: 1.5rem;
+  --text-h3--font-weight: 500;
+  --text-body-l: 1rem;
+  --text-body-l--line-height: 1.5rem;
+  --text-body-l--font-weight: 400;
+  --text-body-m: 0.875rem;
+  --text-body-m--line-height: 1.25rem;
+  --text-body-m--font-weight: 400;
+  --text-label-m: 0.875rem;
+  --text-label-m--line-height: 1.25rem;
+  --text-label-m--font-weight: 500;
+  --text-label-s: 0.75rem;
+  --text-label-s--line-height: 1rem;
+  --text-label-s--font-weight: 500;
+  --text-overline: 0.75rem;
+  --text-overline--line-height: 1rem;
+  --text-overline--font-weight: 700;
+  --text-overline--letter-spacing: 1.2px;
+  --text-code-m: 0.8125rem;
+  --text-code-m--line-height: 1.25rem;
+  --text-code-m--font-weight: 400;
+  --text-code-s: 0.75rem;
+  --text-code-s--line-height: 1rem;
+  --text-code-s--font-weight: 400;
 }
