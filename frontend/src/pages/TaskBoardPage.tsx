@@ -5,6 +5,7 @@ import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 import { Button } from '../components/Button'
 import { Difficulty } from '../components/Difficulty'
+import { StatusBadge } from '../components/StatusBadge'
 
 interface TaskDetailProps {
   task: Task
@@ -31,11 +32,12 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
   return (
     <article>
-      {/* Header row — title + difficulty badge */}
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <h3 className="text-2xl font-semibold text-text-primary">{task.title}</h3>
+      {/* Metadata row above the title, as in Figma 14:182 */}
+      <div className="mb-4 flex items-center gap-2">
         <Difficulty level={task.difficulty} />
+        <StatusBadge status={task.status} />
       </div>
+      <h3 className="mb-4 text-2xl font-semibold text-text-primary">{task.title}</h3>
 
       {/* Tags */}
       {task.tags.length > 0 && (
