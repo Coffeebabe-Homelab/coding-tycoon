@@ -96,17 +96,17 @@ Changed: `frontend/src/App.tsx`, `frontend/src/components/Overlay.tsx`, `fronten
 
 # Part B: App Bar and standalone Profile (doesn't block Phase 4)
 
-**Card:** [App Bar and Profile](https://trello.com/c/Jgp2Utrw). Start any time after part A, and no later than Phase 6's Profile work.
-**Needs:** part A merged. Decision D7.
+**Cards:** [App Bar and Profile](https://trello.com/c/Jgp2Utrw), [avatar menu](https://trello.com/c/znLbZHWb). Start any time after part A, and no later than Phase 6's Profile work.
+**Needs:** part A merged.
 
 ## Steps
 
 ### 1. `AppBar` (replaces `RoomHud`)
 - [ ] 61px high, `bg-bg-surface`, bottom border. Logo in `font-display`, breadcrumb "Room / <panel>", streak pill with `flame`, XP pill, avatar.
 - [ ] Keep the "wrap up the day" link after an approval.
-- [ ] Level: show the placeholder "LV X" next to the real total XP (D7). No backend change.
-- [ ] Apply D7 for Log out.
-- [ ] Keep a route to Profile from the avatar. `RoomHud` holds the only Profile link today, and the P hotspot and shortcut don't exist yet (Main Room hub, card 37).
+- [ ] Level (D7): add `level` to `ProgressResponse` as a string, with the mock value `"X"` set in `ProgressService`. Add it to `types/progress.ts`, and show "LV {level}" next to the real total XP.
+- [ ] Log out (D7): the avatar opens a small menu, on [its own card](https://trello.com/c/znLbZHWb). It must ship with or before this part.
+- [ ] Keep a route to Profile in the avatar menu. `RoomHud` holds the only Profile link today, and the P hotspot and shortcut don't exist yet (Main Room hub, card 37).
 - [ ] The bar stays inert while a panel is open.
 - [ ] Tests: breadcrumb per route; hides stats when `progress` is null (as `RoomHud` does); wrap-up link appears only after an approval; Log out and Profile reachable from the room.
 
@@ -116,15 +116,15 @@ Changed: `frontend/src/App.tsx`, `frontend/src/components/Overlay.tsx`, `fronten
 - [ ] Tests: `/profile` renders; `/room/profile` redirects; unauthenticated access stays protected.
 
 ### 3. Docs
-- [ ] `frontend/SPEC.md`: routing and shell component tables. `CHANGELOG.md`.
+- [ ] `frontend/SPEC.md`: routing and shell component tables. `backend/SPEC.md`: `level` in the progress response, marked as a mock. `CHANGELOG.md`.
 
 ## Files affected
 New: `frontend/src/components/AppBar.tsx`, tests.
-Changed: `frontend/src/App.tsx`, `frontend/src/pages/{GameRoomPage,ProfilePage}.tsx`, `frontend/SPEC.md`, `CHANGELOG.md`.
+Changed: `frontend/src/App.tsx`, `frontend/src/pages/{GameRoomPage,ProfilePage}.tsx`, `frontend/src/types/progress.ts`, `backend/src/main/java/dev/codingtycoon/progress/{ProgressResponse,ProgressService}.java` and their tests, `frontend/SPEC.md`, `backend/SPEC.md`, `CHANGELOG.md`.
 Removed: `frontend/src/game/RoomHud.tsx`.
 
 ## Verification
-- `npm test`, `npm run test:coverage`, `npm run lint`, `npm run build` pass.
+- `npm test`, `npm run test:coverage`, `npm run lint`, `npm run build` pass. `./mvnw verify` passes.
 - Compare the bar with Figma 46:9 at 1440×900, and check 1280 wide.
 - Deep link `/profile` works after login.
 
