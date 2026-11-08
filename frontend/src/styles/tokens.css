@@ -51,6 +51,13 @@
   --shadow-overlay: 0 16px 48px rgb(0 0 0 / 0.55);
   --shadow-glow-accent: 0 0 24px rgb(255 138 61 / 0.45);
 
+  /* --- Radius --- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
   /* --- Room scene (game/RoomScene.tsx, game/Avatar.tsx) --- */
   --color-room-floor: #1e293b;
   --color-room-floor-line: #334155;

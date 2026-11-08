@@ -28,14 +28,14 @@ export default function CallbackPage() {
         <div className="flex gap-3">
           <button
             type="button"
-            className="rounded-lg bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+            className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
             onClick={() => loginWithRedirect()}
           >
             Try again
           </button>
           <button
             type="button"
-            className="rounded-lg border border-border px-6 py-2 text-sm text-text-muted transition-colors hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            className="rounded-md border border-border px-6 py-2 text-sm text-text-muted transition-colors hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
             onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
           >
             Log out
