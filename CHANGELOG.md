@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Frontend: apply the Night Shift foundation. Colours, radius and shadows now match Figma, including the missing tokens (`border-input`, `accent-ink`, the `*-subtle` set). Text on solid accent uses `accent-ink`, because the new orange fails contrast with light text. One global `:focus-visible` ring replaces the per-component `focus:` classes. Pixelify Sans, Space Grotesk and JetBrains Mono are self-hosted, and the 13 Figma text styles are available as classes. Monaco uses the Night Shift colours and Code/M type.
 - Design: the Input component's Default border in Figma now uses a new `border/input` token (`night/500`, `#6C6494`), which reaches the Design Spec's 3:1 rule on both the surface (3.4:1) and the input fill (3.1:1). `docs/design/DESIGN_SPEC.md` is updated to match. The code still needs the token.
 - Docs: record the owner's answers to design decisions D1–D11. Panel tabs now start from where they were left, kept alive with React's `<Activity>`. `AGENTS.md` notes that the plans in `docs/design` are the task spec for design work.
 - Docs: update the Night Shift design plans after review. Phase 4 now waits only for Stage 1, `Button`, `Icon` and `PanelWindow`, and `ROADMAP.md` records that gate. The App Bar and standalone Profile get their own card, `Chip` moves to Stage 4, and `Input` moves to Phase 4. Button lists become searches, which adds the missed `CallbackPage` button.
