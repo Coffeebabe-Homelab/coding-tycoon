@@ -3,6 +3,7 @@ import { useTask } from '../hooks/useTask'
 import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
+import { Button } from '../components/Button'
 
 /** Maps a difficulty string to its badge colour classes. */
 function difficultyClasses(difficulty: string): string {
@@ -121,14 +122,9 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
       {/* Action */}
       {task.status === 'ASSIGNED' && (
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={isStarting}
-          className="rounded-md bg-accent px-6 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button onClick={handleStart} disabled={isStarting}>
           {isStarting ? 'Starting…' : 'Start task'}
-        </button>
+        </Button>
       )}
 
       {task.status === 'IN_PROGRESS' && (

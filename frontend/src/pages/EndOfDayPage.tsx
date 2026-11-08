@@ -5,6 +5,7 @@ import { useProgress } from '../hooks/useProgress'
 import { useTask } from '../hooks/useTask'
 import type { Progress } from '../types/progress'
 import type { TaskStatus } from '../types/task'
+import { buttonClasses } from '../components/Button'
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
   ASSIGNED: 'Not started',
@@ -115,10 +116,7 @@ export default function EndOfDayPage() {
             >
               Log out
             </button>
-            <Link
-              to="/room"
-              className="rounded-md bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
-            >
+            <Link to="/room" className={buttonClasses('primary')}>
               Back to room
             </Link>
           </div>

@@ -3,6 +3,7 @@ import { SelectionCard } from './SelectionCard'
 import { TopicChip } from './TopicChip'
 import { useTopics } from '../hooks/useTopics'
 import { useCreateProfile } from '../hooks/useCreateProfile'
+import { Button } from './Button'
 
 const TOTAL_STEPS = 3
 
@@ -130,25 +131,12 @@ export function OnboardingWizard() {
             Back
           </button>
 
-          {step < TOTAL_STEPS && (
-            <button
-              type="button"
-              onClick={() => setStep((s) => s + 1)}
-              className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
-            >
-              Next
-            </button>
-          )}
+          {step < TOTAL_STEPS && <Button onClick={() => setStep((s) => s + 1)}>Next</Button>}
 
           {step === TOTAL_STEPS && (
-            <button
-              type="button"
-              onClick={handleFinish}
-              disabled={saving || selectedTopicIds.length === 0}
-              className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <Button onClick={handleFinish} disabled={saving || selectedTopicIds.length === 0}>
               {saving ? 'Saving…' : 'Finish'}
-            </button>
+            </Button>
           )}
         </div>
 
