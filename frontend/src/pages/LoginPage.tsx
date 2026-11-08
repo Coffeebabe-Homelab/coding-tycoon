@@ -7,7 +7,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-base">
       <div className="flex flex-col items-center gap-6 rounded-xl border border-border bg-bg-surface p-10">
-        <h1 className="text-3xl font-bold text-text-primary">Coding Tycoon</h1>
+        <h1 className="font-display text-3xl font-bold text-text-primary">Coding Tycoon</h1>
         <p className="text-sm text-text-muted">Learn real developer skills. One day at a time.</p>
         <button
           type="button"

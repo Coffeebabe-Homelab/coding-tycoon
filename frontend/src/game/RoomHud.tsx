@@ -17,16 +17,20 @@ export function RoomHud({ email, profilePath, endOfDayPath, progress, onLogout }
   return (
     <header className="flex items-center justify-between gap-6 border-b border-border bg-bg-surface px-6 py-3">
       <div className="flex items-center gap-6">
-        <span className="font-semibold text-text-primary">Coding Tycoon</span>
+        <span className="font-display text-xl font-medium uppercase text-accent">
+          Coding Tycoon
+        </span>
         {progress && (
           <dl className="flex items-center gap-4 text-sm">
             <div className="flex gap-1">
               <dt className="text-text-muted">XP</dt>
-              <dd className="font-semibold text-text-primary">{progress.totalXp}</dd>
+              <dd className="font-display font-semibold text-text-primary">{progress.totalXp}</dd>
             </div>
             <div className="flex gap-1">
               <dt className="text-text-muted">Streak</dt>
-              <dd className="font-semibold text-text-primary">{progress.currentStreak} d</dd>
+              <dd className="font-display font-semibold text-text-primary">
+                {progress.currentStreak} d
+              </dd>
             </div>
           </dl>
         )}

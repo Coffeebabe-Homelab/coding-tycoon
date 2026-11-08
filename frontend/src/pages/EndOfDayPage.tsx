@@ -74,7 +74,7 @@ function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-bg-elevated p-4">
       <dt className="text-sm text-text-muted">{label}</dt>
-      <dd className="text-2xl font-semibold text-text-primary">{value}</dd>
+      <dd className="font-display text-2xl font-semibold text-text-primary">{value}</dd>
     </div>
   )
 }
