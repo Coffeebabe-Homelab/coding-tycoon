@@ -141,6 +141,8 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 
 **Goal:** Player writes their implementation in Monaco, then commits and pushes via the virtual VCS.
 
+**Design gate:** don't start until Design Stage 1, `Button`, `Icon` and `PanelWindow` are merged. Build the UI to Figma Screens 5, 6a and 6b. See [the design plan](docs/design/PLAN-design-implementation.md#phase-4-overlap).
+
 ### Tasks
 - [ ] Monaco Editor integration in frontend (target file pre-loaded, editable)
 - [ ] `GET /api/submissions/template` — returns the file the player needs to edit (with TODOs)

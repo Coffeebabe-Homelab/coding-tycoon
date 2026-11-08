@@ -14,7 +14,7 @@ export function SelectionCard({ label, selected, onClick }: SelectionCardProps) 
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border px-6 py-3 text-sm font-medium transition-colors hover:border-accent focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent ${
+      className={`rounded-lg border px-6 py-3 text-sm font-medium transition-colors hover:border-accent ${
         selected
           ? 'border-accent bg-accent-subtle text-text-primary'
           : 'border-border bg-bg-elevated text-text-muted'

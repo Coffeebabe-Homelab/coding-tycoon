@@ -36,8 +36,8 @@ If the same combination of 5+ utility classes appears more than twice, extract i
 
 ❌ **Bad** — same string copy-pasted:
 ```tsx
-<button className="rounded-lg bg-accent px-4 py-2 text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent">Save</button>
-<button className="rounded-lg bg-accent px-4 py-2 text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent">Submit</button>
+<button className="rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover">Save</button>
+<button className="rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover">Submit</button>
 ```
 
 ✅ **Good** — one component, one place to update:
@@ -46,7 +46,7 @@ If the same combination of 5+ utility classes appears more than twice, extract i
 export function Button({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className="rounded-lg bg-accent px-4 py-2 text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+      className="rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover"
       {...props}
     >
       {children}
@@ -100,14 +100,19 @@ Write base (unprefixed) classes for desktop. Use `lg:` and `xl:` sparingly for w
 
 ---
 
-## Tailwind: hover and focus Together
+## Tailwind: hover and focus
 
-Every interactive element (`button`, `a`, anything with `onClick`) **must** have both `hover:` and `focus:` states. Shipping `hover:` without `focus:` breaks keyboard navigation and fails accessibility.
+Every interactive element (`button`, `a`, anything with `onClick`) needs a `hover:` state. The keyboard focus ring comes from one `:focus-visible` rule in `src/index.css`, so don't add `focus:` classes or `focus:outline-none` to controls.
 
 ```tsx
-// ✅ correct — keyboard and mouse both covered
-<button className="bg-accent hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent">
+// ✅ correct: the global rule draws the ring for keyboard users
+<button className="bg-accent text-accent-ink hover:bg-accent-hover">
+
+// ❌ removes or replaces the shared ring
+<button className="bg-accent focus:outline-none focus:ring-2 focus:ring-accent">
 ```
+
+Exception: a panel that only receives focus from script, such as `Overlay`, keeps `focus:outline-none`. It isn't a control.
 
 ---
 
@@ -147,18 +152,15 @@ Export components as named exports, not default exports, except for page-level c
 ## Accessibility: Non-Negotiable Baseline
 
 - Every interactive element must be keyboard-accessible: focusable, triggered by `Enter` or `Space`
-- `hover:` and `focus:` states must always be paired (see above)
+- Interactive elements have a `hover:` state and keep the global `:focus-visible` ring (see above)
 - Icon-only buttons must have `aria-label`
 - Overlay panels use `role="dialog"` and `aria-label`
 - Images: `alt` text always; decorative images use `alt=""`
-- Minimum colour contrast: 4.5:1 for body text — the token defaults meet this, don't regress it when rebranding
+- Minimum colour contrast: 4.5:1 for text, 3:1 for UI parts. Text on solid `accent` uses `text-accent-ink`
 - Monaco Editor containers must have `aria-label`
 
 ---
 
-## What "Branding is not defined yet" means in practice
+## Changing a design token
 
-Current token values in `tokens.css` are reasonable dark-mode placeholders. Until branding is finalised:
-- Use the token classes as defined — do not improvise one-off colours
-- Do not add new tokens without discussing first
-- When branding is ready, the owner updates `tokens.css` values — every component updates automatically
+Figma variables are the source of truth. Change Figma first, then `tokens.css`, in the same PR. Use the token classes as defined and don't improvise one-off colours.

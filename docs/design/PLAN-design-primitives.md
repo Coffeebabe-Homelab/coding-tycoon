@@ -3,10 +3,12 @@
 Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
 ## Goal
-Build the six primitives that have a use today or in Phase 4, replace the copied class strings, and test them.
+Build the four primitives that have a use today, replace the copied class strings, and test them. Only `Button` and `Icon` must be merged before Phase 4. `Difficulty` and `StatusBadge` must exist by the time Phase 4 builds Screen 5. Build `Button` and `Icon` first.
+
+`Chip` moved to [Stage 4](PLAN-design-screens.md), its first user. `Input` waits for Phase 4 (see the end of this plan). Other Figma components follow D9's first-use rule.
 
 **Card:** [primitives](https://trello.com/c/Bu7ggkjA)
-**Needs:** Stage 1 merged. Decisions D4, D9, D10. Vitest and React Testing Library are already on `dev` (PR #26).
+**Needs:** Stage 1 merged. Vitest and React Testing Library are already on `dev` (PR #26).
 
 ## Constraints
 - Prop names follow Design Spec › 11 (48:295). One Figma set = one React component; variants = props.
@@ -28,7 +30,7 @@ Build the six primitives that have a use today or in Phase 4, replace the copied
 
 - All: `rounded-md`, `px-4 py-2`, `label-m`. Disabled: 40% opacity, `cursor-not-allowed`.
 - `EndOfDayPage` has a `Link` styled as a primary button, so export `buttonClasses(variant)` for it. A `Link` shouldn't become a `<button>`.
-- [ ] Migrate the 7 primary uses, then the 3 secondary copies (`OnboardingWizard`, `ProfilePage`, `EndOfDayPage`) and the disabled `TaskBoardPage` "Continue" button.
+- [ ] Migrate every match of the solid accent search in the [foundation plan](PLAN-design-foundation.md#searches), including `CallbackPage`'s "Try again". Then migrate the secondary copies (`OnboardingWizard`, `ProfilePage`, `EndOfDayPage`, `CallbackPage`'s "Log out") and the disabled `TaskBoardPage` "Continue" button.
 - [ ] Tests: renders its label; click fires; disabled doesn't fire; default `type`; passes through `aria-*`.
 
 ### 2. `Icon` (Figma 7:217)
@@ -44,44 +46,35 @@ Build the six primitives that have a use today or in Phase 4, replace the copied
 - [ ] Tests: each level; mixed case; unknown value.
 
 ### 4. `StatusBadge` (Figma 8:96)
-- [ ] `<StatusBadge status="APPROVED" />`, typed with `TaskStatus`. Pill, 6px dot, `overline` label: Assigned info, In Progress warning, Submitted accent (`accent-subtle` + `accent-on-subtle`), Approved success, Changes Requested danger. Always text and dot, never colour alone.
+- [ ] `<StatusBadge status="APPROVED" />`, typed with `TaskStatus`. Pill, 6px dot, `label-s` label (Design Spec § 04 assigns Label/S to badges): Assigned info, In Progress warning, Submitted accent (`accent-subtle` + `accent-on-subtle`), Approved success, Changes Requested danger. Always text and dot, never colour alone.
 - [ ] Use it in the `TaskBoardPage` header, matching Figma 14:182.
 - [ ] Tests: the label for all five statuses.
 
-### 5. `Chip` (Figma 8:77)
-- [ ] Replaces `TopicChip`. Unselected and Selected only (Selected has the `check` icon and accent border). Locked and Strength wait for their screens.
-- [ ] Renders a `<button aria-pressed>` when it has `onClick`, otherwise a plain element for read-only tags.
-- [ ] Replace the 2 inline tag strings in `TaskBoardPage` and `ProfilePage`.
-- [ ] Tests: `aria-pressed` follows `selected`; click toggles; read-only renders no button.
-
-### 6. `Input` (Figma 8:55)
-- [ ] `<Input label helper error disabled multiline />`: label above (`label-s`, muted), helper or error below, `bg-bg-elevated`, `rounded-md`, `px-3 py-2`, `body-m`. Border per D4; error border `danger`.
-- [ ] `multiline` renders a `<textarea>`, because the commit message in 6a is two lines.
-- [ ] Label linked to the field; error sets `aria-invalid` and `aria-describedby`.
-- [ ] No current call site: Phase 4 is the first user, so check the API against 32:478 first.
-- [ ] Tests: label association; typing fires `onChange`; error wiring; disabled; `multiline`.
-
-### 7. Docs
+### 5. Docs
 - [ ] `frontend/SPEC.md`: primitives table and pattern table. `CHANGELOG.md`.
 - [ ] Update CONVENTIONS' Button example.
 
 ## Files affected
-New in `frontend/src/components/`: `Button.tsx`, `Icon.tsx`, `Difficulty.tsx`, `StatusBadge.tsx`, `Chip.tsx`, `Input.tsx`, plus their tests. Removed: `TopicChip.tsx`.
-Changed: `frontend/src/components/{Overlay,OnboardingWizard}.tsx`, `frontend/src/pages/{EndOfDayPage,LoginPage,ProfilePage,TaskBoardPage}.tsx`, `frontend/SPEC.md`, `CONVENTIONS.md`, `CHANGELOG.md`.
+New in `frontend/src/components/`: `Button.tsx`, `Icon.tsx`, `Difficulty.tsx`, `StatusBadge.tsx`, plus their tests.
+Changed: `frontend/src/components/{Overlay,OnboardingWizard}.tsx`, `frontend/src/pages/{CallbackPage,EndOfDayPage,LoginPage,ProfilePage,TaskBoardPage}.tsx`, `frontend/SPEC.md`, `CONVENTIONS.md`, `CHANGELOG.md`.
 
 ## Verification
-- `npm test`, `npm run lint`, `npm run build` pass. Coverage on the new components meets the 80% target, all branches included.
-- Search finds no `bg-accent` outside `Button`, and no `difficultyClasses`.
+- `npm test`, `npm run test:coverage`, `npm run lint`, `npm run build` pass. Coverage on the new components meets the 80% target, all branches included.
+- The solid accent search finds nothing outside `Button`. No `difficultyClasses` remains.
 - Visual check of each variant against the Figma component frames, using the real pages. No Storybook.
-- Keyboard: Tab, Enter and Space work on Button and Chip; focus ring shows.
-- Existing flows still work: log in, onboarding, start a task, edit profile, end of day.
-
-## Risks
-- `Input` has no user until Phase 4, so its API may need a tweak then. Keep it small.
-- `Chip` as both toggle and read-only is the one dual-purpose component. If it gets awkward, split it.
+- Keyboard: Tab, Enter and Space work on Button; focus ring shows.
+- Existing flows still work: log in, the login error screen, onboarding, start a task, edit profile, end of day.
 
 ## Done when
-1. All six primitives exist, tested and used by every matching call site.
+1. All four primitives exist, tested and used by every matching call site.
 2. No copied primary or secondary button class strings remain.
-3. SPEC lists the primitives.
-4. Card [primitives](https://trello.com/c/Bu7ggkjA) is moved per the AGENTS.md workflow. It stays open, or gets split, for the remaining Figma components.
+3. `frontend/SPEC.md` lists the primitives.
+4. Card [primitives](https://trello.com/c/Bu7ggkjA) is moved per the `AGENTS.md` workflow. It stays open, or gets split, for the remaining Figma components.
+
+## Deferred to Phase 4: `Input` (Figma 8:55)
+Kept here so Phase 4 can pick it up.
+- [ ] `<Input label helper error disabled multiline />`: label above (`label-s`, muted), helper or error below, `bg-bg-elevated`, `rounded-md`, `px-3 py-2`, `body-m`. Border `border-input` (D4), error border `danger`, disabled border `border`.
+- [ ] `multiline` renders a `<textarea>`, because the commit message in 6a is two lines.
+- [ ] Label linked to the field; error sets `aria-invalid` and `aria-describedby`.
+- [ ] Check the API against 32:478 first.
+- [ ] Tests: label association; typing fires `onChange`; error wiring; disabled; `multiline`.
