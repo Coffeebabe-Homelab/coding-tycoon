@@ -4,20 +4,7 @@ import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 import { Button } from '../components/Button'
-
-/** Maps a difficulty string to its badge colour classes. */
-function difficultyClasses(difficulty: string): string {
-  switch (difficulty.toLowerCase()) {
-    case 'easy':
-      return 'bg-success-subtle text-success'
-    case 'medium':
-      return 'bg-warning-subtle text-warning'
-    case 'hard':
-      return 'bg-danger-subtle text-danger'
-    default:
-      return 'bg-bg-elevated text-text-muted'
-  }
-}
+import { Difficulty } from '../components/Difficulty'
 
 interface TaskDetailProps {
   task: Task
@@ -47,11 +34,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       {/* Header row — title + difficulty badge */}
       <div className="mb-4 flex items-start justify-between gap-4">
         <h3 className="text-2xl font-semibold text-text-primary">{task.title}</h3>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${difficultyClasses(task.difficulty)}`}
-        >
-          {task.difficulty}
-        </span>
+        <Difficulty level={task.difficulty} />
       </div>
 
       {/* Tags */}
