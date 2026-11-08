@@ -8,7 +8,7 @@ Build the four primitives that have a use today, replace the copied class string
 `Chip` moved to [Stage 4](PLAN-design-screens.md), its first user. `Input` waits for Phase 4 (see the end of this plan). Other Figma components follow D9's first-use rule.
 
 **Card:** [primitives](https://trello.com/c/Bu7ggkjA)
-**Needs:** Stage 1 merged. Decisions D9, D10. Vitest and React Testing Library are already on `dev` (PR #26).
+**Needs:** Stage 1 merged. Vitest and React Testing Library are already on `dev` (PR #26).
 
 ## Constraints
 - Prop names follow Design Spec › 11 (48:295). One Figma set = one React component; variants = props.
@@ -72,8 +72,8 @@ Changed: `frontend/src/components/{Overlay,OnboardingWizard}.tsx`, `frontend/src
 4. Card [primitives](https://trello.com/c/Bu7ggkjA) is moved per the `AGENTS.md` workflow. It stays open, or gets split, for the remaining Figma components.
 
 ## Deferred to Phase 4: `Input` (Figma 8:55)
-Kept here so Phase 4 can pick it up. D4: use `border-strong` and log the exception in 12 · Decisions.
-- [ ] `<Input label helper error disabled multiline />`: label above (`label-s`, muted), helper or error below, `bg-bg-elevated`, `rounded-md`, `px-3 py-2`, `body-m`. Border `border-strong`; error border `danger`.
+Kept here so Phase 4 can pick it up.
+- [ ] `<Input label helper error disabled multiline />`: label above (`label-s`, muted), helper or error below, `bg-bg-elevated`, `rounded-md`, `px-3 py-2`, `body-m`. Border `border-input` (D4), error border `danger`, disabled border `border`.
 - [ ] `multiline` renders a `<textarea>`, because the commit message in 6a is two lines.
 - [ ] Label linked to the field; error sets `aria-invalid` and `aria-describedby`.
 - [ ] Check the API against 32:478 first.

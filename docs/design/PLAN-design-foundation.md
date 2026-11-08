@@ -19,7 +19,7 @@ Source: Figma variables on 7:2, naming rule from 48:295.
 ```css
 @theme static {
   --color-bg-base: #0b0918;  --color-bg-surface: #141127;  --color-bg-elevated: #1e1a38;
-  --color-border: #2e2852;   --color-border-strong: #433b70;
+  --color-border: #2e2852;   --color-border-strong: #433b70;   --color-border-input: #6c6494;
 
   --color-accent: #ff8a3d;   --color-accent-hover: #ffa366;
   --color-accent-subtle: #3d2214;  --color-accent-on-subtle: #ffb98a;  --color-accent-ink: #1b0f06;
@@ -66,7 +66,8 @@ Calculated with the WCAG 2.1 formula from the Figma values. The Design Spec tabl
 | `danger` at 20% tint on `bg-surface` with `danger` text (today's Hard badge) | 4.99 | Passes, replaced by `danger-subtle` |
 | `info` ring on `bg-surface` | 9.59 | Passes 3.0 |
 | `info` ring on `accent` | 1.22 | Fails if it touches the button, which is why the 2px offset matters |
-| `border` / `border-strong` on `bg-surface` | 1.35 / 1.84 | Under the Design Spec's 3:1 rule for UI parts (D4) |
+| `border-input` on `bg-surface` / `bg-elevated` | 3.41 / 3.09 | Passes 3:1 for input boundaries (D4) |
+| `border` / `border-strong` on `bg-surface` | 1.35 / 1.84 | Under 3:1, so not used for input boundaries, except a disabled input's `border`, which is exempt |
 
 ## Searches
 These replace hand-made lists, which go stale. Run them from the repo root when the work starts and again before the PR. Counts are from `dev` 25b7bb0.
@@ -80,7 +81,7 @@ These replace hand-made lists, which go stale. Run them from the repo root when 
 ## Steps
 
 ### 1. Add new tokens (no visual change)
-- [ ] Add `border-strong`, `accent-on-subtle`, `accent-ink`, `info`, all `*-subtle`, `rgb-*` and shadows. Switch to `@theme static`.
+- [ ] Add `border-strong`, `border-input`, `accent-on-subtle`, `accent-ink`, `info`, all `*-subtle`, `rgb-*` and shadows. Switch to `@theme static`.
 
 ### 2. Apply colour values and fix contrast (one commit)
 - [ ] Update the 12 existing values to Figma.

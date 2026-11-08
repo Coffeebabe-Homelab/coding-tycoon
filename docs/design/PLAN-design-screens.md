@@ -6,7 +6,7 @@ Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 Bring Login and the onboarding wizard in line with Figma section 1. These are the only screens the current cards ask to compare; other screens need their own cards.
 
 **Card:** [routes](https://trello.com/c/LXw2xTF7)
-**Needs:** Stage 2 merged, decision D8. Independent of Stage 3: these screens have no App Bar.
+**Needs:** Stage 2 merged. Independent of Stage 3: these screens have no App Bar.
 **Figma:** section 11:2. Frames 1a Login 11:3, 1b Stack 11:25, 1c Level 11:78, 1d Topics 11:139. Components Selection Card 10:127, Stepper Step 10:145.
 
 ## Constraints
@@ -18,7 +18,7 @@ Bring Login and the onboarding wizard in line with Figma section 1. These are th
 
 ### 1. Login (1a)
 - [ ] Split layout: left panel on `bg-bg-surface` with logo (`font-display`, `text-accent`), headline, tagline, one primary `Button` ("Log in"), and the Auth0 note. Right side on `bg-bg-base` with the art and "Your desk is waiting."
-- [ ] Add the art per D8. If exported from Figma, store it locally and use `alt=""`; never reference a temporary Figma URL.
+- [ ] Export the art from Figma as an SVG (D8). Store it locally and use `alt=""`; never reference a temporary Figma URL.
 - [ ] Tests: the button calls `loginWithRedirect`; title and button are accessible.
 
 ### 2. `StepperStep` (10:145)
