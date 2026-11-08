@@ -11,7 +11,7 @@ export default function LoginPage() {
         <p className="text-sm text-text-muted">Learn real developer skills. One day at a time.</p>
         <button
           type="button"
-          className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent"
+          className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
           onClick={() => loginWithRedirect()}
         >
           Log in

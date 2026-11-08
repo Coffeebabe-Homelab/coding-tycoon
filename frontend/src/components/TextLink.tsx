@@ -4,7 +4,7 @@ import { Link, type LinkProps } from 'react-router-dom'
 export function TextLink({ className = '', ...props }: LinkProps) {
   return (
     <Link
-      className={`text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:outline-none focus:underline ${className}`}
+      className={`text-sm text-accent transition-colors hover:text-accent-hover ${className}`}
       {...props}
     />
   )

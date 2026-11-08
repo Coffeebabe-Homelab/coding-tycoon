@@ -56,7 +56,7 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
             type="button"
             aria-label="Close panel"
             onClick={() => navigate('/room')}
-            className="rounded-md px-2 text-xl text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary focus:bg-bg-elevated focus:text-text-primary focus:ring-2 focus:ring-accent focus:outline-none"
+            className="rounded-md px-2 text-xl text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
           >
             ×
           </button>

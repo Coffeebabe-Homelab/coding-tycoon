@@ -10,8 +10,7 @@ interface RoomHudProps {
   onLogout: () => void
 }
 
-const HUD_LINK_CLASS =
-  'text-sm text-accent transition-colors hover:text-accent-hover focus:text-accent-hover focus:underline focus:outline-none'
+const HUD_LINK_CLASS = 'text-sm text-accent transition-colors hover:text-accent-hover'
 
 /** Slim strip above the room: XP, streak, who is playing, profile link and log out. */
 export function RoomHud({ email, profilePath, endOfDayPath, progress, onLogout }: RoomHudProps) {

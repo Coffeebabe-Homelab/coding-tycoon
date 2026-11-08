@@ -125,7 +125,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
           type="button"
           onClick={handleStart}
           disabled={isStarting}
-          className="rounded-md bg-accent px-6 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-accent px-6 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isStarting ? 'Starting…' : 'Start task'}
         </button>
@@ -135,7 +135,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
         <button
           type="button"
           disabled
-          className="rounded-md bg-bg-elevated px-6 py-2 text-sm font-medium text-success focus:outline-none disabled:cursor-not-allowed"
+          className="rounded-md bg-bg-elevated px-6 py-2 text-sm font-medium text-success disabled:cursor-not-allowed"
         >
           Continue
         </button>

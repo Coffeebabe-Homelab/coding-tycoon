@@ -111,13 +111,13 @@ export default function EndOfDayPage() {
             <button
               type="button"
               onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-              className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none"
+              className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary"
             >
               Log out
             </button>
             <Link
               to="/room"
-              className="rounded-md bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover focus:bg-accent-hover focus:ring-2 focus:ring-accent focus:outline-none"
+              className="rounded-md bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
             >
               Back to room
             </Link>
