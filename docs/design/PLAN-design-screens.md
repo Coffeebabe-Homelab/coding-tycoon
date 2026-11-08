@@ -36,21 +36,31 @@ Bring Login and the onboarding wizard in line with Figma section 1. These are th
 - [ ] Topics load failure: Figma lists this as an open question (13). Keep today's inline error text unless you decide otherwise.
 - [ ] Tests: step navigation; Back disabled on step 1; Finish disabled with no topic; saving state; save error shown.
 
-### 5. Docs
+### 5. `Chip` (Figma 8:77)
+Moved from Stage 2. Build it before step 4 needs it.
+- [ ] Replaces `TopicChip`. Unselected and Selected only (Selected has the `check` icon and accent border). Locked and Strength wait for their screens.
+- [ ] Renders a `<button aria-pressed>` when it has `onClick`, otherwise a plain element for read-only tags.
+- [ ] Interactive chips are at least 32px high (Design Spec § 10). `TopicChip` computes to 28px today.
+- [ ] Replace the 2 inline tag strings in `TaskBoardPage` and `ProfilePage`.
+- [ ] Tests: `aria-pressed` follows `selected`; click toggles; read-only renders no button.
+
+### 6. Docs
 - [ ] `frontend/SPEC.md` if component structure changes. `CHANGELOG.md`.
 
 ## Files affected
-New: `frontend/src/components/StepperStep.tsx`, the login art asset, tests.
-Changed: `frontend/src/pages/{LoginPage,OnboardingPage}.tsx`, `frontend/src/components/{OnboardingWizard,SelectionCard}.tsx`, `frontend/SPEC.md`, `CHANGELOG.md`.
+New: `frontend/src/components/{StepperStep,Chip}.tsx`, the login art asset, tests.
+Changed: `frontend/src/pages/{LoginPage,OnboardingPage,TaskBoardPage,ProfilePage}.tsx`, `frontend/src/components/{OnboardingWizard,SelectionCard}.tsx`, `frontend/SPEC.md`, `CHANGELOG.md`.
+Removed: `frontend/src/components/TopicChip.tsx`.
 
 ## Verification
-- `npm test`, `npm run lint`, `npm run build` pass.
+- `npm test`, `npm run test:coverage`, `npm run lint`, `npm run build` pass.
 - Side-by-side with frames 11:3, 11:25, 11:78 and 11:139 at 1440×900, then check 1280 wide.
 - Real flow on a new account: log in → three steps → room. Profile data saved as before. Keyboard-only run through the wizard.
 
 ## Risks
 - A real first-login test needs a fresh Auth0 user. Plan for this on staging or use a mocked hook test plus one manual run.
 - `SelectionCard` is also used by `ProfilePage`, so recheck profile editing after the variant change.
+- `Chip` is both a toggle and a read-only tag. If that gets awkward, split it.
 
 ## Done when
 1. Login and all three wizard steps match their Figma frames at 1440×900 and work at 1280.

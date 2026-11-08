@@ -28,3 +28,5 @@ backend/.quarkus/
 
 # Claude Code local state (agent worktrees)
 .claude/
+
+egm_context

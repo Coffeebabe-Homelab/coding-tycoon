@@ -3,7 +3,7 @@
 > **Copy of the [Design Spec page in Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=44-2), so the spec is readable without Figma access.**
 >
 > - **Figma is the source of truth.** If this file and Figma disagree, Figma wins.
-> - **Copied on:** 2026-11-07. The Figma page was last updated on 2026-11-06.
+> - **Copied on:** 2026-11-08. The Figma page was last updated on 2026-11-08.
 > - **Not included:** live component previews, colour swatches, icon artwork and the screen designs. Open Figma for those.
 > - **Keeping it current:** when the Figma page changes, update this file in the same PR.
 
@@ -22,7 +22,7 @@ The source of truth for how Coding Tycoon looks, reads and behaves. Designers an
 | Tokens in code | `frontend/src/styles/tokens.css` — Tailwind v4 `@theme`, mirrors the Figma variables 1:1 |
 | Product vision | `north_star.md` (repo + Claude project) · delivery plan: `ROADMAP.md` |
 | Work tracking | Trello board “Coding Tycoon” — design work as “Figma: …” cards |
-| Last updated | 2026-11-06 |
+| Last updated | 2026-11-08 |
 
 ### File map
 
@@ -137,7 +137,8 @@ Two variable collections: Primitives (raw palette, named after the room: night, 
 | `bg/surface` | `#141127` | night/900 | Panels, cards, modals, App Bar |
 | `bg/elevated` | `#1E1A38` | night/800 | Inputs, rows, hover, active editor line |
 | `border/default` | `#2E2852` | night/700 | Dividers, card and panel strokes |
-| `border/strong` | `#433B70` | night/600 | Input strokes, overlays, empty progress dots |
+| `border/strong` | `#433B70` | night/600 | Overlays, empty progress dots |
+| `border/input` | `#6C6494` | night/500 | Default input strokes |
 
 ### Accent
 
@@ -218,6 +219,8 @@ Body text needs ≥ 4.5:1, large text and UI parts ≥ 3:1.
 | `danger/default` | `danger/subtle` | 5.9 : 1 | Pass — body text |
 | `info/default` | `info/subtle` | 7.8 : 1 | Pass — body text |
 | `info/default` | `bg/surface` | 9.6 : 1 | Pass — body text |
+| `border/input` | `bg/surface` | 3.4 : 1 | Pass — UI part |
+| `border/input` | `bg/elevated` | 3.1 : 1 | Pass — UI part |
 
 > **Text on a solid accent:** Use `accent/ink` on `accent/default` (primary buttons, today’s streak dot). `text/primary` on accent fails contrast. The current frontend uses `text-primary` on `bg-accent`; Trello tracks the fix.
 
@@ -546,6 +549,7 @@ Rule: replace “/” with “-”, prefix with the Tailwind namespace, drop “
 | `bg/surface` | `--color-bg-surface` | `bg-bg-surface` |
 | `border/default` | `--color-border` | `border-border` |
 | `border/strong` | `--color-border-strong` | `border-border-strong` |
+| `border/input` | `--color-border-input` | `border-border-input` |
 | `accent/default` | `--color-accent` | `bg-accent` `text-accent` |
 | `accent/on-subtle` | `--color-accent-on-subtle` | `text-accent-on-subtle` |
 | `accent/ink` | `--color-accent-ink` | `text-accent-ink` |
@@ -621,6 +625,7 @@ Newest last. Add a row whenever a decision changes the look, flow or rules — w
 | 2026-11-06 | Task Card wraps instead of clipping | Badges stay readable in narrow Kanban columns | Accepted |
 | 2026-11-06 | Text on solid accent uses `accent/ink` | `text/primary` on accent is ~2:1 contrast | Accepted · code pending |
 | 2026-11-06 | This page is the design spec | One place for conventions, rules and decisions, next to the designs | Accepted |
+| 2026-11-08 | Input default border uses `border/input` | `border/strong` is only 1.8:1. The new token reaches 3.4:1 on the surface and 3.1:1 on the input fill. Disabled inputs keep `border/default`, as WCAG exempts them | Accepted · code pending |
 
 ## 13 · Open questions
 
