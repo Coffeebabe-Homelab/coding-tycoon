@@ -1,4 +1,4 @@
-import { useNavigate, useOutlet } from 'react-router-dom'
+import { Outlet, useMatch, useNavigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { RoomHud } from '../game/RoomHud'
 import { RoomScene } from '../game/RoomScene'
@@ -12,8 +12,8 @@ import { useSessionFlow } from '../hooks/useSessionFlow'
 export default function GameRoomPage() {
   const { user, logout } = useAuth0()
   const navigate = useNavigate()
-  const panel = useOutlet()
-  const isPanelOpen = panel !== null
+  // From the URL: the panel window's layout route always matches, so an outlet check can't tell.
+  const isPanelOpen = useMatch('/room') === null
   // Refetch when a panel opens or closes so the HUD matches what the panel just showed.
   const { progress } = useProgress(isPanelOpen)
   useSessionFlow()
@@ -36,7 +36,7 @@ export default function GameRoomPage() {
           />
         </main>
       </div>
-      {panel}
+      <Outlet />
     </div>
   )
 }

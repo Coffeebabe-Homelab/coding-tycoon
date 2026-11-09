@@ -1,4 +1,5 @@
-import Editor, { loader } from '@monaco-editor/react'
+import { useLayoutEffect, useRef, useState } from 'react'
+import Editor, { loader, type OnMount } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
@@ -76,15 +77,37 @@ export interface CodeEditorProps {
  * Load it through `LazyCodeEditor` so Monaco stays out of the initial bundle.
  */
 export function CodeEditor({ value, language, readOnly, onChange, ariaLabel }: CodeEditorProps) {
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+  const savedView = useRef<monaco.editor.ICodeEditorViewState | null>(null)
+  const [editorKey, setEditorKey] = useState(0)
+
+  // Hiding a tab runs effect cleanups. The Monaco wrapper then destroys its editor and crashes if
+  // shown again, so save the view first (layout cleanups run before the wrapper's) and replace it.
+  useLayoutEffect(
+    () => () => {
+      if (editorRef.current) savedView.current = editorRef.current.saveViewState()
+      editorRef.current = null
+      setEditorKey((key) => key + 1)
+    },
+    [],
+  )
+
+  const handleMount: OnMount = (editor) => {
+    editorRef.current = editor
+    if (savedView.current) editor.restoreViewState(savedView.current)
+    remeasureOnceFontLoads()
+  }
+
   return (
     <div className="h-full w-full" aria-label={ariaLabel} role="region">
       <Editor
+        key={editorKey}
         height="100%"
         language={language}
         value={value}
         theme={THEME_NAME}
         beforeMount={defineTheme}
-        onMount={remeasureOnceFontLoads}
+        onMount={handleMount}
         onChange={(next) => onChange?.(next ?? '')}
         options={{
           readOnly,

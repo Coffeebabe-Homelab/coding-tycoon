@@ -26,11 +26,13 @@ export function useTask(): {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setIsLoading(true)
-    setError(null)
+    // Refetches keep showing the current task until the new one arrives, so no loading reset here.
     getAccessTokenSilently()
       .then((token) => fetchWithAuth<Task>('/api/tasks/today', token))
-      .then(setTask)
+      .then((result) => {
+        setTask(result)
+        setError(null)
+      })
       .catch(() => setError("Failed to load today's task"))
       .finally(() => setIsLoading(false))
     // getAccessTokenSilently is stable — no re-render risk

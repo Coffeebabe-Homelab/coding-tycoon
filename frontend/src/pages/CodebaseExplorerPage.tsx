@@ -1,32 +1,48 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useCodebase } from '../hooks/useCodebase'
 import { buildFileTree } from '../lib/fileTree'
 import { languageForPath } from '../lib/language'
 import { FileTree } from '../components/FileTree'
 import { LazyCodeEditor } from '../components/LazyCodeEditor'
-import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 
-const TITLE = 'Codebase Explorer'
-
 /**
- * Read-only browser for the active task's codebase, shown as an overlay over the room.
- * The open file lives in `?file=` so refreshes, deep links and the back button keep it.
+ * Read-only browser for the active task's codebase, shown as a panel tab.
+ * The open file lives in `?file=` so refreshes and deep links keep it. A link without `?file=`,
+ * such as the tab, reopens the file the player last had open.
  */
 export default function CodebaseExplorerPage() {
   const { files, focusFiles, openFile, current, isLoading, error, noActiveTask } = useCodebase()
   const [searchParams, setSearchParams] = useSearchParams()
   const tree = useMemo(() => buildFileTree(files), [files])
-  const selectedPath = searchParams.get('file') ?? focusFiles[0] ?? files[0] ?? null
+  const fileParam = searchParams.get('file')
+  const [lastFile, setLastFile] = useState<string | null>(null)
+  // Other tabs' URLs have no `file`, so this only follows the explorer's own selection.
+  if (fileParam && fileParam !== lastFile) setLastFile(fileParam)
+
+  // A new task can remove the remembered file, so anything from before must still be in the list.
+  const selectedPath =
+    [fileParam, lastFile].find((path) => path && files.includes(path)) ??
+    focusFiles[0] ??
+    files[0] ??
+    null
 
   useEffect(() => {
     if (selectedPath) void openFile(selectedPath)
   }, [selectedPath, openFile])
 
+  // Effects don't run while hidden, so this can't touch another tab's URL.
+  // Keeps the URL naming the open file, so a refresh after a restore shows the same file.
+  useEffect(() => {
+    if (selectedPath && selectedPath !== fileParam) {
+      setSearchParams({ file: selectedPath }, { replace: true })
+    }
+  }, [selectedPath, fileParam, setSearchParams])
+
   if (isLoading || noActiveTask) {
     return (
-      <Overlay title={TITLE}>
+      <div className="p-6">
         {isLoading ? (
           <p className="text-text-muted">Loading codebase…</p>
         ) : (
@@ -37,12 +53,12 @@ export default function CodebaseExplorerPage() {
             <TextLink to="/room/task">Go to the task board</TextLink>
           </div>
         )}
-      </Overlay>
+      </div>
     )
   }
 
   return (
-    <Overlay title={TITLE} wide>
+    <>
       <div className="flex items-center gap-6 border-b border-border px-6 py-2">
         <TextLink to="/room/task">Task board</TextLink>
         <span className="ml-auto text-xs text-text-muted">Read-only</span>
@@ -75,6 +91,6 @@ export default function CodebaseExplorerPage() {
           </div>
         </section>
       </div>
-    </Overlay>
+    </>
   )
 }
