@@ -6,15 +6,14 @@ import { Icon } from './Icon'
 interface OverlayProps {
   title: string
   children: ReactNode
-  /** Full-height, wide panel with an unpadded body, for panels that manage their own layout. */
-  wide?: boolean
 }
 
 /**
- * Modal panel shown over the room. The open panel lives in the URL (nested route),
- * so closing means navigating back to /room; the browser back button works too.
+ * Full-screen moment shown over the room, on a scrim. Tools use PanelWindow instead.
+ * The panel lives in the URL (nested route), so closing means navigating back to /room;
+ * the browser back button works too.
  */
-export function Overlay({ title, children, wide = false }: OverlayProps) {
+export function Overlay({ title, children }: OverlayProps) {
   const navigate = useNavigate()
   const panelRef = useModalDialog(true)
   const headingId = useId()
@@ -30,7 +29,7 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
         aria-modal="true"
         aria-labelledby={headingId}
         tabIndex={-1}
-        className={`flex max-h-full w-full flex-col rounded-xl border border-border bg-bg-surface shadow-overlay focus:outline-none ${wide ? 'h-full max-w-7xl' : 'max-w-3xl'}`}
+        className="flex max-h-full w-full max-w-3xl flex-col rounded-xl border border-border bg-bg-surface shadow-overlay focus:outline-none"
       >
         <header className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 id={headingId} className="text-lg font-semibold text-text-primary">
@@ -45,9 +44,7 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
             <Icon name="x" />
           </button>
         </header>
-        <div className={wide ? 'flex min-h-0 flex-1 flex-col' : 'overflow-y-auto p-6'}>
-          {children}
-        </div>
+        <div className="overflow-y-auto p-6">{children}</div>
       </div>
     </div>
   )

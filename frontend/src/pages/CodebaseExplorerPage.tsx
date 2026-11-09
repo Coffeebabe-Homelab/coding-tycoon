@@ -5,13 +5,10 @@ import { buildFileTree } from '../lib/fileTree'
 import { languageForPath } from '../lib/language'
 import { FileTree } from '../components/FileTree'
 import { LazyCodeEditor } from '../components/LazyCodeEditor'
-import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 
-const TITLE = 'Codebase Explorer'
-
 /**
- * Read-only browser for the active task's codebase, shown as an overlay over the room.
+ * Read-only browser for the active task's codebase, shown as a panel tab.
  * The open file lives in `?file=` so refreshes, deep links and the back button keep it.
  */
 export default function CodebaseExplorerPage() {
@@ -26,7 +23,7 @@ export default function CodebaseExplorerPage() {
 
   if (isLoading || noActiveTask) {
     return (
-      <Overlay title={TITLE}>
+      <div className="p-6">
         {isLoading ? (
           <p className="text-text-muted">Loading codebase…</p>
         ) : (
@@ -37,12 +34,12 @@ export default function CodebaseExplorerPage() {
             <TextLink to="/room/task">Go to the task board</TextLink>
           </div>
         )}
-      </Overlay>
+      </div>
     )
   }
 
   return (
-    <Overlay title={TITLE} wide>
+    <>
       <div className="flex items-center gap-6 border-b border-border px-6 py-2">
         <TextLink to="/room/task">Task board</TextLink>
         <span className="ml-auto text-xs text-text-muted">Read-only</span>
@@ -75,6 +72,6 @@ export default function CodebaseExplorerPage() {
           </div>
         </section>
       </div>
-    </Overlay>
+    </>
   )
 }

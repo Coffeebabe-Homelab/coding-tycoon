@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useTask } from '../hooks/useTask'
-import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 import { Button } from '../components/Button'
@@ -121,18 +120,18 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
   )
 }
 
-/** Overlay panel that shows today's assigned task and lets the player start it. */
+/** Panel tab that shows today's assigned task and lets the player start it. */
 export default function TaskBoardPage() {
   const { task, isLoading, error, startTask } = useTask()
 
   return (
-    <Overlay title="Task Board">
+    <div className="overflow-y-auto p-6">
       {isLoading && <p className="text-text-muted">Loading today's task…</p>}
       {!isLoading && error && <p className="text-danger">{error}</p>}
       {!isLoading && !error && !task && (
         <p className="text-text-muted">No task assigned for today.</p>
       )}
       {!isLoading && !error && task && <TaskDetail task={task} onStartTask={startTask} />}
-    </Overlay>
+    </div>
   )
 }
