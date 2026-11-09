@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { trapFocus } from '../lib/focusTrap'
+import { useModalDialog } from '../hooks/useModalDialog'
 import { Icon } from './Icon'
 
 interface OverlayProps {
@@ -16,25 +16,8 @@ interface OverlayProps {
  */
 export function Overlay({ title, children, wide = false }: OverlayProps) {
   const navigate = useNavigate()
-  const panelRef = useRef<HTMLDivElement>(null)
+  const panelRef = useModalDialog(true)
   const headingId = useId()
-  // Captured during render: once mounted the room becomes inert and loses focus.
-  const [opener] = useState(() => document.activeElement as HTMLElement | null)
-
-  useEffect(() => {
-    panelRef.current?.focus()
-
-    // Listen on document so Esc and the trap work even if focus slipped to <body>.
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') navigate('/room')
-      if (event.key === 'Tab' && panelRef.current) trapFocus(event, panelRef.current)
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      opener?.focus()
-    }
-  }, [navigate, opener])
 
   return (
     <div
