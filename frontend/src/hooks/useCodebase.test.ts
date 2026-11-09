@@ -64,6 +64,22 @@ describe('useCodebase', () => {
     expect(result.current.noActiveTask).toBe(false)
   })
 
+  it('stays ready and drops the no-task state when a refetch finds a task', async () => {
+    let answer = jsonResponse({}, 404)
+    stubApi({ [FILES_ROUTE]: () => answer.clone() })
+    const hook = renderHook(() => useCodebase())
+    await waitFor(() => expect(hook.result.current.noActiveTask).toBe(true))
+
+    answer = jsonResponse(CODEBASE)
+    // A new token function re-runs the load, as a tab coming back does.
+    vi.mocked(useAuth0).mockReturnValue(authState())
+    hook.rerender()
+
+    expect(hook.result.current.isLoading).toBe(false)
+    await waitFor(() => expect(hook.result.current.noActiveTask).toBe(false))
+    expect(hook.result.current.files).toEqual(CODEBASE.files)
+  })
+
   describe('openFile', () => {
     it('loads the file, encoding each path segment but keeping slashes', async () => {
       const file = { path: 'src/my file.md', content: 'hello' }

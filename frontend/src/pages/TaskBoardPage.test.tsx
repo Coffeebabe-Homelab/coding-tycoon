@@ -1,3 +1,4 @@
+import { Activity } from 'react'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAuth0 } from '@auth0/auth0-react'
@@ -34,6 +35,27 @@ function renderBoard() {
 describe('TaskBoardPage', () => {
   beforeEach(() => {
     vi.mocked(useAuth0).mockReturnValue(authState())
+  })
+
+  it('keeps showing the task while it refreshes after the tab comes back', async () => {
+    let answer: () => Promise<Response> = () => Promise.resolve(jsonResponse(TASK))
+    stubApi({ 'GET /api/tasks/today': () => answer() })
+    const tab = (mode: 'visible' | 'hidden') => (
+      <MemoryRouter>
+        <Activity mode={mode}>
+          <TaskBoardPage />
+        </Activity>
+      </MemoryRouter>
+    )
+    const { rerender } = render(tab('visible'))
+    await screen.findByRole('heading', { name: 'Add endpoint' })
+
+    answer = () => new Promise(() => {})
+    rerender(tab('hidden'))
+    rerender(tab('visible'))
+
+    expect(screen.getByRole('heading', { name: 'Add endpoint' })).toBeVisible()
+    expect(screen.queryByText("Loading today's task…")).not.toBeInTheDocument()
   })
 
   it('shows loading, then the task', async () => {

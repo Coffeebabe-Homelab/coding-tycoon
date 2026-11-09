@@ -9,7 +9,7 @@ function encodePath(path: string): string {
 }
 
 /**
- * Loads the active task's codebase file list once and opens files on demand.
+ * Loads the active task's codebase file list and opens files on demand.
  * `noActiveTask` is true when the backend answers 404 for the file list.
  */
 export function useCodebase(): {
@@ -33,7 +33,11 @@ export function useCodebase(): {
   useEffect(() => {
     getAccessTokenSilently()
       .then((token) => fetchWithAuth<CodebaseFiles>('/api/codebase/files', token))
-      .then(setCodebase)
+      .then((result) => {
+        setCodebase(result)
+        // A kept tab refetches when it comes back: the player may have started a task meanwhile.
+        setNoActiveTask(false)
+      })
       .catch((err: Error) => {
         if (err.message.startsWith('API error 404')) setNoActiveTask(true)
         else setError('Failed to load the codebase')
