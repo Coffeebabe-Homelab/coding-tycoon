@@ -1,3 +1,4 @@
+import { Activity, useState } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -5,33 +6,35 @@ import { CodeEditor } from './CodeEditor'
 import { LazyCodeEditor } from './LazyCodeEditor'
 
 const monacoEditor = vi.hoisted(() => ({ defineTheme: vi.fn(), remeasureFonts: vi.fn() }))
+const stubEditor = vi.hoisted(() => ({ saveViewState: vi.fn(), restoreViewState: vi.fn() }))
+const editorIds = vi.hoisted(() => ({ next: 0 }))
 
-// Monaco can't run in jsdom. The stub exposes what CodeEditor hands to it, and fires onChange.
-vi.mock('@monaco-editor/react', () => ({
-  loader: { config: () => {} },
-  default: ({
-    language,
-    value,
-    options,
-    onChange,
-    beforeMount,
-    onMount,
-  }: {
-    language: string
-    value: string
-    options: { readOnly: boolean; domReadOnly: boolean; fontSize: number; lineHeight: number }
-    onChange: (next: string | undefined) => void
-    beforeMount: () => void
-    onMount: () => void
-  }) => (
+function StubEditor({
+  language,
+  value,
+  options,
+  onChange,
+  beforeMount,
+  onMount,
+}: {
+  language: string
+  value: string
+  options: { readOnly: boolean; domReadOnly: boolean; fontSize: number; lineHeight: number }
+  onChange: (next: string | undefined) => void
+  beforeMount: () => void
+  onMount: (editor: typeof stubEditor) => void
+}) {
+  const [id] = useState(() => ++editorIds.next)
+  return (
     <div>
+      <p data-testid="editor-id">{id}</p>
       <p>{`${language}: ${value}`}</p>
       <p>{`readOnly=${options.readOnly} domReadOnly=${options.domReadOnly}`}</p>
       <p>{`size=${options.fontSize}/${options.lineHeight}`}</p>
       <button
         onClick={() => {
           beforeMount()
-          onMount()
+          onMount(stubEditor)
         }}
       >
         mount
@@ -39,7 +42,13 @@ vi.mock('@monaco-editor/react', () => ({
       <button onClick={() => onChange('edited')}>type</button>
       <button onClick={() => onChange(undefined)}>clear</button>
     </div>
-  ),
+  )
+}
+
+// Monaco can't run in jsdom. The stub exposes what CodeEditor hands to it, and fires onChange.
+vi.mock('@monaco-editor/react', () => ({
+  loader: { config: () => {} },
+  default: StubEditor,
 }))
 vi.mock('monaco-editor', () => ({ editor: monacoEditor }))
 vi.mock('monaco-editor/editor/editor.worker?worker', () => ({ default: class {} }))
@@ -129,6 +138,63 @@ describe('CodeEditor theme', () => {
     const [, theme] = monacoEditor.defineTheme.mock.calls[0]
     expect(theme.colors['editor.background']).toBe('#0b0918')
     expect(theme.rules).toEqual([{ token: 'keyword', foreground: 'ffa366' }])
+  })
+})
+
+describe('CodeEditor inside a hidden tab', () => {
+  const inTab = (mode: 'visible' | 'hidden') => (
+    <Activity mode={mode}>
+      <CodeEditor {...PROPS} readOnly />
+    </Activity>
+  )
+  const mount = () => userEvent.click(screen.getByRole('button', { name: 'mount' }))
+  const editorId = () => screen.getByTestId('editor-id').textContent
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    Object.defineProperty(document, 'fonts', {
+      configurable: true,
+      value: { load: () => Promise.resolve([]) },
+    })
+  })
+
+  it('starts a new editor when the tab comes back, since hiding destroys the old one', async () => {
+    const { rerender } = render(inTab('visible'))
+    await mount()
+    const firstId = editorId()
+
+    rerender(inTab('hidden'))
+    rerender(inTab('visible'))
+
+    await waitFor(() => expect(editorId()).not.toBe(firstId))
+  })
+
+  it('restores scroll and cursor in the new editor', async () => {
+    stubEditor.saveViewState.mockReturnValue('saved view')
+    const { rerender } = render(inTab('visible'))
+    await mount()
+    expect(stubEditor.restoreViewState).not.toHaveBeenCalled()
+
+    rerender(inTab('hidden'))
+    rerender(inTab('visible'))
+    await mount()
+
+    expect(stubEditor.restoreViewState).toHaveBeenCalledExactlyOnceWith('saved view')
+  })
+
+  it('keeps the saved view if the tab hides again before the new editor is ready', async () => {
+    stubEditor.saveViewState.mockReturnValue('saved view')
+    const { rerender } = render(inTab('visible'))
+    await mount()
+
+    rerender(inTab('hidden'))
+    rerender(inTab('visible'))
+    rerender(inTab('hidden'))
+    rerender(inTab('visible'))
+    await mount()
+
+    expect(stubEditor.saveViewState).toHaveBeenCalledOnce()
+    expect(stubEditor.restoreViewState).toHaveBeenCalledExactlyOnceWith('saved view')
   })
 })
 
