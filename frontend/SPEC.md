@@ -65,16 +65,20 @@ frontend/src/
 /callback           → Auth0 callback handler
 /onboarding         → OnboardingPage (protected)
 /room               → GameRoomPage (protected) — main hub: room scene + HUD + panel outlet
-  /room/task        → TaskBoardPage overlay
-  /room/profile     → ProfilePage overlay
-  /room/end-of-day  → EndOfDayPage overlay (Phase 7)
-  /room/codebase    → CodebaseExplorerPage overlay (wide)
-  /room/editor      → EditorPage overlay (Phase 4)
-  /room/review      → ReviewPage overlay (Phase 5)
+  (no path)         → PanelWindow — stays mounted for all of /room
+    /room/task       → TaskBoardPage (tab)
+    /room/codebase   → CodebaseExplorerPage (tab)
+    /room/editor     → EditorPage (tab, Phase 4)
+    /room/vcs        → VCS panel (tab, Phase 4; no route yet)
+    /room/review     → ReviewPage (tab, Phase 5)
+    /room/profile    → ProfilePage in Overlay
+    /room/end-of-day → EndOfDayPage in Overlay (Phase 7)
 /profile            → redirect to /room/profile
 ```
 
-`/room` is wrapped in `<ProtectedRoute />`; its panels are nested routes, so they inherit the protection. Panels render through `useOutlet()` inside `GameRoomPage` and wrap their content in `<Overlay>`. While a panel is open the room is `inert`. Closing (Esc, ×, backdrop click, "Back to room") navigates to `/room`, and the browser back button closes a panel too.
+`/room` is wrapped in `<ProtectedRoute />`; its panels are nested routes, so they inherit the protection. Tools are tabs in `PanelWindow`, listed in `PANEL_TABS` in `App.tsx`; add one only once it has a route. Other panels render through `PanelWindow`'s outlet and wrap their content in `<Overlay>`, which is now for full-screen moments only. While a panel is open the room is `inert`, based on the URL. Closing (Esc, "Back to room", or × and a backdrop click on an `Overlay`) navigates to `/room`. Tab links use `replace`, so the browser back button closes the panel instead of walking through tabs.
+
+Visited tabs stay mounted in React's `<Activity>` until the player leaves the room or refreshes, so they start from where they were left. A hidden tab's effects are cleaned up and run again when it comes back, so its data refreshes. Hooks must keep showing current data during that refresh instead of going back to a loading state.
 
 ### Session flow (`hooks/useSessionFlow.ts`)
 
@@ -88,11 +92,13 @@ On entering the room: no profile (`404`) → `/onboarding`. If the player landed
 | `game/Hotspot.tsx` | SVG `role="button"` wrapper: `tabIndex`, `aria-label`, Enter/Space, `<title>` tooltip, hover/focus glow. No `onActivate` → disabled (`aria-disabled`). |
 | `game/Avatar.tsx` | Placeholder player figure seated at the desk. |
 | `game/RoomHud.tsx` | Top strip: total XP, current streak, "wrap up the day" link after an approval, email, Profile, Log out. |
-| `components/Overlay.tsx` | Accessible modal: `role="dialog"`, `aria-modal`, labelled heading, focus trap (`lib/focusTrap.ts`), Esc/× close, restores focus to the opener. |
+| `components/PanelWindow.tsx` | The one window for all tools (Figma 46:25): tab bar, "Back to room", visited tabs kept in `<Activity>`. |
+| `components/Overlay.tsx` | Full-screen moment on a scrim, with a labelled heading and × close. |
+| `hooks/useModalDialog.ts` | Dialog behaviour for both: `role="dialog"` focus handling, focus trap (`lib/focusTrap.ts`), Esc, restores focus to the opener on every open. |
 | `pages/EndOfDayPage.tsx` | Outcome (approved / in progress / not started), XP today, total XP, current and longest streak; actions Back to room, Log out. Skill delta hidden until Phase 6. |
 | `hooks/useProgress.ts` | `GET /api/progress`; optional `refreshKey` refetches (the room refetches when a panel opens or closes). |
 
-Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → `/room/codebase`. `Overlay` takes `wide` for panels with their own full-height layout (the explorer).
+Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor → `/room/codebase`.
 
 ---
 
@@ -279,10 +285,11 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 
 ### Codebase Explorer (Phase 3)
 
-`pages/CodebaseExplorerPage.tsx` at `/room/codebase`, rendered as a wide `Overlay` over the room: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
+`pages/CodebaseExplorerPage.tsx` at `/room/codebase`, a tab in `PanelWindow`: `FileTree` on the left, read-only `LazyCodeEditor` on the right.
 
 - `hooks/useCodebase.ts` loads `GET /api/codebase/files` once and exposes `{ files, focusFiles, openFile, current, isLoading, error, noActiveTask }`. `openFile(path)` fetches `GET /api/codebase/files/{path}` and ignores stale responses.
-- The open file lives in the URL (`?file=<path>`), so refresh, deep links and Back keep it. Without `?file`, the first focus file opens (else the first file).
+- The open file lives in the URL (`?file=<path>`), so refresh and deep links keep it. Back steps through files picked in the explorer, then closes the panel. Without `?file`, the last open file reopens if it's still in the list, else the first focus file (else the first file), and the URL is updated to name it.
+- `CodeEditor` starts a new Monaco editor when its tab comes back, restoring scroll and cursor, because hiding the tab destroys the old one.
 - `components/FileTree.tsx`: collapsible folders built from native buttons (Tab/Enter/Space), text glyphs per file type, focus files in `text-warning`, folders leading to focus files start expanded.
 - 404 on the file list shows "no task yet" with a link to the Task Board. The Task Board lists the task's `focusFiles` as explorer deep links plus an "Explore codebase" link.
 - `components/TextLink.tsx`: the shared inline accent link.
