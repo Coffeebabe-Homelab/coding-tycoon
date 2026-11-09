@@ -34,6 +34,12 @@ export function useSessionFlow(): void {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const enteredAtRoom = useRef(pathname === '/room')
+  // `navigate` changes with the route; depending on it would repeat these checks on every tab switch.
+  const navigateRef = useRef(navigate)
+
+  useEffect(() => {
+    navigateRef.current = navigate
+  }, [navigate])
 
   useEffect(() => {
     let cancelled = false
@@ -44,7 +50,7 @@ export function useSessionFlow(): void {
         await fetchWithAuth<PlayerProfile>('/api/profile', token)
       } catch (error) {
         if (!cancelled && error instanceof ApiError && error.status === 404) {
-          navigate('/onboarding', { replace: true })
+          navigateRef.current('/onboarding', { replace: true })
         }
         return
       }
@@ -53,7 +59,7 @@ export function useSessionFlow(): void {
       const task = await fetchWithAuth<Task>('/api/tasks/today', token)
       if (!cancelled && task.status === 'ASSIGNED') {
         markTaskBoardAutoOpened()
-        navigate('/room/task')
+        navigateRef.current('/room/task')
       }
     }
 
@@ -62,5 +68,5 @@ export function useSessionFlow(): void {
     return () => {
       cancelled = true
     }
-  }, [getAccessTokenSilently, navigate])
+  }, [getAccessTokenSilently])
 }
