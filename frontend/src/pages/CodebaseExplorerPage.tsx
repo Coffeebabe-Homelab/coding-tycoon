@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useCodebase } from '../hooks/useCodebase'
 import { buildFileTree } from '../lib/fileTree'
@@ -9,17 +9,36 @@ import { TextLink } from '../components/TextLink'
 
 /**
  * Read-only browser for the active task's codebase, shown as a panel tab.
- * The open file lives in `?file=` so refreshes, deep links and the back button keep it.
+ * The open file lives in `?file=` so refreshes and deep links keep it. A link without `?file=`,
+ * such as the tab, reopens the file the player last had open.
  */
 export default function CodebaseExplorerPage() {
   const { files, focusFiles, openFile, current, isLoading, error, noActiveTask } = useCodebase()
   const [searchParams, setSearchParams] = useSearchParams()
   const tree = useMemo(() => buildFileTree(files), [files])
-  const selectedPath = searchParams.get('file') ?? focusFiles[0] ?? files[0] ?? null
+  const fileParam = searchParams.get('file')
+  const [lastFile, setLastFile] = useState<string | null>(null)
+  // Other tabs' URLs have no `file`, so this only follows the explorer's own selection.
+  if (fileParam && fileParam !== lastFile) setLastFile(fileParam)
+
+  // A new task can remove the remembered file, so anything from before must still be in the list.
+  const selectedPath =
+    [fileParam, lastFile].find((path) => path && files.includes(path)) ??
+    focusFiles[0] ??
+    files[0] ??
+    null
 
   useEffect(() => {
     if (selectedPath) void openFile(selectedPath)
   }, [selectedPath, openFile])
+
+  // Effects don't run while hidden, so this can't touch another tab's URL.
+  // Keeps the URL naming the open file, so a refresh after a restore shows the same file.
+  useEffect(() => {
+    if (selectedPath && selectedPath !== fileParam) {
+      setSearchParams({ file: selectedPath }, { replace: true })
+    }
+  }, [selectedPath, fileParam, setSearchParams])
 
   if (isLoading || noActiveTask) {
     return (

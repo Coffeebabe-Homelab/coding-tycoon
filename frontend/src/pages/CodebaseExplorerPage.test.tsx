@@ -1,11 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAuth0 } from '@auth0/auth0-react'
-import { MemoryRouter } from 'react-router-dom'
+import { Link, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CodebaseExplorerPage from './CodebaseExplorerPage'
 import type { CodeEditorProps } from '../components/CodeEditor'
-import { authState, jsonResponse, stubApi } from '../test/helpers'
+import { PanelWindow, type PanelTab } from '../components/PanelWindow'
+import { authState, jsonResponse, settle, stubApi } from '../test/helpers'
 import { LocationProbe } from '../test/LocationProbe'
 
 vi.mock('@auth0/auth0-react', () => ({ useAuth0: vi.fn() }))
@@ -37,6 +38,120 @@ function renderExplorer(path = '/room/codebase') {
   )
   return userEvent.setup()
 }
+
+const TABS: PanelTab[] = [
+  { path: 'task', label: 'Task Board', element: <p>task panel</p> },
+  { path: 'codebase', label: 'Codebase', element: <CodebaseExplorerPage /> },
+]
+
+function Room() {
+  return (
+    <>
+      <Link to="/room/codebase">open codebase</Link>
+      <Link to="/room/codebase?file=src/App.java">open focus file</Link>
+      <Outlet />
+    </>
+  )
+}
+
+function renderInWindow(path = '/room/codebase') {
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <LocationProbe />
+      <Routes>
+        <Route path="/room" element={<Room />}>
+          <Route element={<PanelWindow tabs={TABS} />}>
+            <Route index element={null} />
+            <Route path="task" element={null} />
+            <Route path="codebase" element={null} />
+          </Route>
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  )
+  return userEvent.setup()
+}
+
+const editorFor = (name: RegExp) => screen.findByRole('textbox', { name })
+const pickReadme = async (user: ReturnType<typeof userEvent.setup>) => {
+  await editorFor(/App\.java/)
+  await user.click(screen.getByRole('button', { name: /README\.md/ }))
+  await editorFor(/README\.md/)
+}
+
+describe('CodebaseExplorerPage in the panel window', () => {
+  beforeEach(() => {
+    vi.mocked(useAuth0).mockReturnValue(authState())
+  })
+
+  it('reopens the last file after a tab switch', async () => {
+    stubApi({ [FILES_ROUTE]: CODEBASE, ...FILE_ROUTES })
+    const user = renderInWindow()
+    await pickReadme(user)
+
+    await user.click(screen.getByRole('link', { name: 'Task Board' }))
+    await user.click(screen.getByRole('link', { name: 'Codebase' }))
+
+    expect(await editorFor(/README\.md/)).toBeVisible()
+  })
+
+  it('reopens the last file after the panel closes, and puts it in the URL', async () => {
+    stubApi({ [FILES_ROUTE]: CODEBASE, ...FILE_ROUTES })
+    const user = renderInWindow()
+    await pickReadme(user)
+
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('link', { name: 'open codebase' }))
+
+    expect(await editorFor(/README\.md/)).toBeVisible()
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/room/codebase?file=README.md'),
+    )
+  })
+
+  it('lets a file named in the link win over the last file', async () => {
+    stubApi({ [FILES_ROUTE]: CODEBASE, ...FILE_ROUTES })
+    const user = renderInWindow()
+    await pickReadme(user)
+
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('link', { name: 'open focus file' }))
+
+    expect(await editorFor(/App\.java/)).toBeVisible()
+  })
+
+  it('falls back to the first focus file when the last file is gone', async () => {
+    let files = CODEBASE
+    stubApi({ [FILES_ROUTE]: () => jsonResponse(files), ...FILE_ROUTES })
+    const user = renderInWindow()
+    await pickReadme(user)
+
+    await user.keyboard('{Escape}')
+    files = { ...CODEBASE, files: ['src/App.java'] }
+    await user.click(screen.getByRole('link', { name: 'open codebase' }))
+
+    expect(await editorFor(/App\.java/)).toBeVisible()
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/room/codebase?file=src%2FApp.java',
+      ),
+    )
+  })
+
+  it('fetches nothing while hidden', async () => {
+    const fetchMock = stubApi({ [FILES_ROUTE]: CODEBASE, ...FILE_ROUTES })
+    const user = renderInWindow()
+    await editorFor(/App\.java/)
+    await settle()
+    const requestsBefore = fetchMock.mock.calls.length
+
+    await user.click(screen.getByRole('link', { name: 'Task Board' }))
+    await settle()
+
+    expect(fetchMock.mock.calls).toHaveLength(requestsBefore)
+    expect(screen.getByTestId('location')).toHaveTextContent(/^\/room\/task$/)
+  })
+})
 
 describe('CodebaseExplorerPage', () => {
   beforeEach(() => {
