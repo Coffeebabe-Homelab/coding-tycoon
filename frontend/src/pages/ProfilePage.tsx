@@ -5,6 +5,7 @@ import { useTopics } from '../hooks/useTopics'
 import { SelectionCard } from '../components/SelectionCard'
 import { TopicChip } from '../components/TopicChip'
 import { Overlay } from '../components/Overlay'
+import { Button } from '../components/Button'
 
 const SENIORITY_LEVELS = ['Junior', 'Mid', 'Senior']
 
@@ -82,13 +83,7 @@ export default function ProfilePage() {
             </dl>
 
             <div className="mt-8 flex justify-end">
-              <button
-                type="button"
-                onClick={enterEditMode}
-                className="rounded-md bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
-              >
-                Edit
-              </button>
+              <Button onClick={enterEditMode}>Edit</Button>
             </div>
           </>
         )}
@@ -134,21 +129,12 @@ export default function ProfilePage() {
             {saveError && <p className="text-sm text-danger">{saveError}</p>}
 
             <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="rounded-md border border-border px-4 py-2 text-sm text-text-muted transition-colors hover:border-accent hover:text-text-primary"
-              >
+              <Button variant="secondary" onClick={cancelEdit}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving || editTopicIds.length === 0}
-                className="rounded-md bg-accent px-4 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
+              </Button>
+              <Button onClick={handleSave} disabled={saving || editTopicIds.length === 0}>
                 {saving ? 'Saving…' : 'Save'}
-              </button>
+              </Button>
             </div>
           </div>
         )}

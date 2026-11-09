@@ -43,15 +43,8 @@ If the same combination of 5+ utility classes appears more than twice, extract i
 ✅ **Good** — one component, one place to update:
 ```tsx
 // components/Button.tsx
-export function Button({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      className="rounded-md bg-accent px-4 py-2 text-accent-ink hover:bg-accent-hover"
-      {...props}
-    >
-      {children}
-    </button>
-  )
+export function Button({ variant = 'primary', type = 'button', ...props }: ButtonProps) {
+  return <button type={type} className={buttonClasses(variant)} {...props} />
 }
 ```
 ```tsx
