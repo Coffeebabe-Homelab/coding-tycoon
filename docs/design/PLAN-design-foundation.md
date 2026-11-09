@@ -1,5 +1,7 @@
 # PLAN — Design Stage 1: Foundation
 
+**Implemented:** [PR #42](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/42), merged into `dev` on 2026-11-08.
+
 Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
 ## Goal

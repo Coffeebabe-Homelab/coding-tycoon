@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { Button } from '../components/Button'
 
 /**
  * Auth0 redirects here after login. A successful login is normally sent on by AuthProvider before
@@ -26,20 +27,13 @@ export default function CallbackPage() {
       >
         <p className="text-text-primary">We couldn't log you in.</p>
         <div className="flex gap-3">
-          <button
-            type="button"
-            className="rounded-md bg-accent px-6 py-2 text-sm text-accent-ink transition-colors hover:bg-accent-hover"
-            onClick={() => loginWithRedirect()}
-          >
-            Try again
-          </button>
-          <button
-            type="button"
-            className="rounded-md border border-border px-6 py-2 text-sm text-text-muted transition-colors hover:text-text-primary"
+          <Button onClick={() => loginWithRedirect()}>Try again</Button>
+          <Button
+            variant="secondary"
             onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
           >
             Log out
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -3,20 +3,9 @@ import { useTask } from '../hooks/useTask'
 import { Overlay } from '../components/Overlay'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
-
-/** Maps a difficulty string to its badge colour classes. */
-function difficultyClasses(difficulty: string): string {
-  switch (difficulty.toLowerCase()) {
-    case 'easy':
-      return 'bg-success-subtle text-success'
-    case 'medium':
-      return 'bg-warning-subtle text-warning'
-    case 'hard':
-      return 'bg-danger-subtle text-danger'
-    default:
-      return 'bg-bg-elevated text-text-muted'
-  }
-}
+import { Button } from '../components/Button'
+import { Difficulty } from '../components/Difficulty'
+import { StatusBadge } from '../components/StatusBadge'
 
 interface TaskDetailProps {
   task: Task
@@ -43,15 +32,12 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
   return (
     <article>
-      {/* Header row — title + difficulty badge */}
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <h3 className="text-2xl font-semibold text-text-primary">{task.title}</h3>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${difficultyClasses(task.difficulty)}`}
-        >
-          {task.difficulty}
-        </span>
+      {/* Metadata row above the title, as in Figma 14:182 */}
+      <div className="mb-4 flex items-center gap-2">
+        <Difficulty level={task.difficulty} />
+        <StatusBadge status={task.status} />
       </div>
+      <h3 className="mb-4 text-2xl font-semibold text-text-primary">{task.title}</h3>
 
       {/* Tags */}
       {task.tags.length > 0 && (
@@ -121,24 +107,15 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
 
       {/* Action */}
       {task.status === 'ASSIGNED' && (
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={isStarting}
-          className="rounded-md bg-accent px-6 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button onClick={handleStart} disabled={isStarting}>
           {isStarting ? 'Starting…' : 'Start task'}
-        </button>
+        </Button>
       )}
 
       {task.status === 'IN_PROGRESS' && (
-        <button
-          type="button"
-          disabled
-          className="rounded-md bg-bg-elevated px-6 py-2 text-sm font-medium text-success disabled:cursor-not-allowed"
-        >
+        <Button variant="secondary" disabled>
           Continue
-        </button>
+        </Button>
       )}
     </article>
   )
