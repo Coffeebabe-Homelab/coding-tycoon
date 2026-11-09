@@ -6,7 +6,9 @@ const FOCUSABLE_SELECTOR =
  * Call from a keydown handler for the Tab key.
  */
 export function trapFocus(event: KeyboardEvent, container: HTMLElement): void {
-  const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+  const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (element) => !element.closest('[hidden]'),
+  )
   if (focusable.length === 0) {
     event.preventDefault()
     container.focus()

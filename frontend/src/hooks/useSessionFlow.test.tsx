@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { render, renderHook, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useAuth0 } from '@auth0/auth0-react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSessionFlow } from './useSessionFlow'
 import { authState, jsonResponse, settle, stubApi } from '../test/helpers'
@@ -126,6 +127,30 @@ describe('useSessionFlow', () => {
     await settle()
 
     expect(location()).toHaveTextContent(/^\/room$/)
+  })
+
+  it('checks the profile once, however often the route changes', async () => {
+    function MoveAround() {
+      const navigate = useNavigate()
+      return <button onClick={() => navigate('/room/codebase')}>move</button>
+    }
+    const fetchMock = stubApi({
+      'GET /api/profile': PROFILE,
+      'GET /api/tasks/today': { status: 'IN_PROGRESS' },
+    })
+    render(
+      <MemoryRouter initialEntries={['/room']}>
+        <SessionFlow />
+        <MoveAround />
+      </MemoryRouter>,
+    )
+    await settle()
+
+    await userEvent.click(screen.getByRole('button', { name: 'move' }))
+    await settle()
+
+    const profileRequests = fetchMock.mock.calls.filter(([url]) => url.endsWith('/api/profile'))
+    expect(profileRequests).toHaveLength(1)
   })
 
   it('never redirects a deep link to a panel', async () => {

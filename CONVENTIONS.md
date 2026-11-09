@@ -105,7 +105,7 @@ Every interactive element (`button`, `a`, anything with `onClick`) needs a `hove
 <button className="bg-accent focus:outline-none focus:ring-2 focus:ring-accent">
 ```
 
-Exception: a panel that only receives focus from script, such as `Overlay`, keeps `focus:outline-none`. It isn't a control.
+Exception: a panel that only receives focus from script, such as `Overlay` or `PanelWindow`, keeps `focus:outline-none`. It isn't a control.
 
 ---
 

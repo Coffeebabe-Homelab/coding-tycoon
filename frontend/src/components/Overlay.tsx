@@ -1,40 +1,22 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { trapFocus } from '../lib/focusTrap'
+import { useModalDialog } from '../hooks/useModalDialog'
 import { Icon } from './Icon'
 
 interface OverlayProps {
   title: string
   children: ReactNode
-  /** Full-height, wide panel with an unpadded body, for panels that manage their own layout. */
-  wide?: boolean
 }
 
 /**
- * Modal panel shown over the room. The open panel lives in the URL (nested route),
- * so closing means navigating back to /room; the browser back button works too.
+ * Full-screen moment shown over the room, on a scrim. Tools use PanelWindow instead.
+ * The panel lives in the URL (nested route), so closing means navigating back to /room;
+ * the browser back button works too.
  */
-export function Overlay({ title, children, wide = false }: OverlayProps) {
+export function Overlay({ title, children }: OverlayProps) {
   const navigate = useNavigate()
-  const panelRef = useRef<HTMLDivElement>(null)
+  const panelRef = useModalDialog(true)
   const headingId = useId()
-  // Captured during render: once mounted the room becomes inert and loses focus.
-  const [opener] = useState(() => document.activeElement as HTMLElement | null)
-
-  useEffect(() => {
-    panelRef.current?.focus()
-
-    // Listen on document so Esc and the trap work even if focus slipped to <body>.
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') navigate('/room')
-      if (event.key === 'Tab' && panelRef.current) trapFocus(event, panelRef.current)
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      opener?.focus()
-    }
-  }, [navigate, opener])
 
   return (
     <div
@@ -47,7 +29,7 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
         aria-modal="true"
         aria-labelledby={headingId}
         tabIndex={-1}
-        className={`flex max-h-full w-full flex-col rounded-xl border border-border bg-bg-surface shadow-overlay focus:outline-none ${wide ? 'h-full max-w-7xl' : 'max-w-3xl'}`}
+        className="flex max-h-full w-full max-w-3xl flex-col rounded-xl border border-border bg-bg-surface shadow-overlay focus:outline-none"
       >
         <header className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 id={headingId} className="text-lg font-semibold text-text-primary">
@@ -62,9 +44,7 @@ export function Overlay({ title, children, wide = false }: OverlayProps) {
             <Icon name="x" />
           </button>
         </header>
-        <div className={wide ? 'flex min-h-0 flex-1 flex-col' : 'overflow-y-auto p-6'}>
-          {children}
-        </div>
+        <div className="overflow-y-auto p-6">{children}</div>
       </div>
     </div>
   )

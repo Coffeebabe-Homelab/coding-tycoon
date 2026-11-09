@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Frontend: Task Board and Codebase now share one tabbed panel window from Figma, with a URL per tab and "Back to room". Tabs start from where they were left, including the open file, open folders and scroll position, after a tab switch or closing the panel. `Overlay` is now only for full-screen moments. Fix: `useSessionFlow` no longer repeats `GET /api/profile` on every route change.
 - Frontend: add the `Button`, `Icon`, `Difficulty` and `StatusBadge` primitives from Figma and use them everywhere they apply, replacing the copied button class strings and `difficultyClasses()`. The Task Board header now shows difficulty and status on a row above the title. Disabled buttons use the design's 40% opacity.
 - Frontend: apply the Night Shift foundation. Colours, radius and shadows now match Figma, including the missing tokens (`border-input`, `accent-ink`, the `*-subtle` set). Text on solid accent uses `accent-ink`, because the new orange fails contrast with light text. One global `:focus-visible` ring replaces the per-component `focus:` classes. Pixelify Sans, Space Grotesk and JetBrains Mono are self-hosted, and the 13 Figma text styles are available as classes. Monaco uses the Night Shift colours and Code/M type.
 - Design: the Input component's Default border in Figma now uses a new `border/input` token (`night/500`, `#6C6494`), which reaches the Design Spec's 3:1 rule on both the surface (3.4:1) and the input fill (3.1:1). `docs/design/DESIGN_SPEC.md` is updated to match. The code still needs the token.

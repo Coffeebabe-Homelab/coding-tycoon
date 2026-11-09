@@ -2,6 +2,8 @@
 
 Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
+**Implemented:** [PR #43](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/43), merged into `dev` on 2026-11-09.
+
 ## Goal
 Build the four primitives that have a use today, replace the copied class strings, and test them. Only `Button` and `Icon` must be merged before Phase 4. `Difficulty` and `StatusBadge` must exist by the time Phase 4 builds Screen 5. Build `Button` and `Icon` first.
 
