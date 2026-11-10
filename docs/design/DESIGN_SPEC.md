@@ -3,7 +3,7 @@
 > **Copy of the [Design Spec page in Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=44-2), so the spec is readable without Figma access.**
 >
 > - **Figma is the source of truth.** If this file and Figma disagree, Figma wins.
-> - **Copied on:** 2026-11-08. The Figma page was last updated on 2026-11-08.
+> - **Copied on:** 2026-11-10. The Figma page was last updated on 2026-11-10.
 > - **Not included:** live component previews, colour swatches, icon artwork and the screen designs. Open Figma for those.
 > - **Keeping it current:** when the Figma page changes, update this file in the same PR.
 
@@ -45,7 +45,7 @@ Four pages. Never put screens on the Design System page or components on the Scr
 | 04 | [Typography](#04--typography) | 13 text styles and when to use each font | [45:453](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=45-453) |
 | 05 | [Spacing, radius & elevation](#05--spacing-radius--elevation) | 4-pt scale, corner radii, shadows | [45:607](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=45-607) |
 | 06 | [Layout & breakpoints](#06--layout--breakpoints) | App Bar, panel window, sidebars, viewport rules | [46:2](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=46-2) |
-| 07 | [Components](#07--components) | Inventory, variants and usage rules for all 24 components | [46:151](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=46-151) |
+| 07 | [Components](#07--components) | Inventory, variants and usage rules for all 25 components | [46:151](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=46-151) |
 | 08 | [Patterns](#08--patterns) | Panels, code surfaces, review loop, rewards, toasts, empty/error states | [47:260](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=47-260) |
 | 09 | [Screens & flow](#09--screens--flow) | Screen ↔ route map and the core gameplay flow | [47:510](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=47-510) |
 | 10 | [Accessibility](#10--accessibility) | Contrast, focus, keyboard, motion | [48:260](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb?node-id=48-260) |
@@ -386,6 +386,7 @@ All components live on the Design System page (Components frame). Use instances;
 | Modal | — | Confirmations before consequential actions (“Push to review?”). Never for navigation. |
 | Level Up Callout | — | Reward moment when a focus area improves. Uses Glow/Accent. |
 | App Bar | Breadcrumb (text property) | Top of every desktop screen. |
+| Avatar Menu | Email (text) · Menu Item: State Default · Hover · Focus, Label (text) | Opens from the App Bar avatar. Email, Profile and Log out. |
 
 ### Icons
 
@@ -626,6 +627,7 @@ Newest last. Add a row whenever a decision changes the look, flow or rules — w
 | 2026-11-06 | Text on solid accent uses `accent/ink` | `text/primary` on accent is ~2:1 contrast | Accepted · code pending |
 | 2026-11-06 | This page is the design spec | One place for conventions, rules and decisions, next to the designs | Accepted |
 | 2026-11-08 | Input default border uses `border/input` | `border/strong` is only 1.8:1. The new token reaches 3.4:1 on the surface and 3.1:1 on the input fill. Disabled inputs keep `border/default`, as WCAG exempts them | Accepted · code pending |
+| 2026-11-08 | The avatar opens a small menu: email, Profile, Log out | The App Bar replaces the old HUD, which held Log out and the only Profile link. A menu keeps both reachable without crowding the bar. | Accepted · code pending |
 
 ## 13 · Open questions
 
