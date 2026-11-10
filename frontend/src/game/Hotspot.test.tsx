@@ -48,6 +48,16 @@ describe('Hotspot', () => {
     expect(onActivate).not.toHaveBeenCalled()
   })
 
+  // Focus returns here when a panel closes; the default outline would box the whole slanted object.
+  it.each([
+    ['enabled', vi.fn()],
+    ['disabled', undefined],
+  ])('shows focus with its glow, not the outline, when %s', (_name, onActivate) => {
+    const { hotspot } = renderHotspot(onActivate)
+
+    expect(hotspot).toHaveClass('outline-none')
+  })
+
   it('without an action it stays focusable and is announced as disabled', async () => {
     const { user, hotspot } = renderHotspot()
 
