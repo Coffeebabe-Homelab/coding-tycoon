@@ -70,17 +70,31 @@ describe('App routing', () => {
     expect(await screen.findByRole('group', { name: 'Your developer room' })).toBeInTheDocument()
   })
 
-  it('redirects the old /profile URL to the profile panel inside the room', async () => {
+  it('shows Profile as its own page, with the App Bar', async () => {
     stubApi(ROOM_ROUTES)
     vi.mocked(useAuth0).mockReturnValue(authState())
 
     renderAt('/profile')
 
-    expect(location()).toHaveTextContent('/room/profile')
-    expect(await screen.findByRole('dialog', { name: 'Player Profile' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Player Profile' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Your developer room' })).not.toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent(
+      'Room / Profile',
+    )
   })
 
-  it.each(['/room', '/onboarding'])('protects %s from anonymous visitors', (path) => {
+  it('redirects the old /room/profile URL to the Profile page', async () => {
+    stubApi(ROOM_ROUTES)
+    vi.mocked(useAuth0).mockReturnValue(authState())
+
+    renderAt('/room/profile')
+
+    expect(await screen.findByRole('heading', { name: 'Player Profile' })).toBeInTheDocument()
+    expect(location()).toHaveTextContent(/^\/profile$/)
+  })
+
+  it.each(['/room', '/onboarding', '/profile'])('protects %s from anonymous visitors', (path) => {
     const auth = authState({ isAuthenticated: false })
     vi.mocked(useAuth0).mockReturnValue(auth)
 
@@ -89,5 +103,6 @@ describe('App routing', () => {
     expect(auth.loginWithRedirect).toHaveBeenCalled()
     expect(screen.queryByRole('group', { name: 'Your developer room' })).not.toBeInTheDocument()
     expect(screen.queryByText('Step 1 of 3')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Player Profile' })).not.toBeInTheDocument()
   })
 })

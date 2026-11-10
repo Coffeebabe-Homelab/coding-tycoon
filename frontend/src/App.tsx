@@ -40,9 +40,10 @@ function App() {
           {PANEL_TABS.map((tab) => (
             <Route key={tab.path} path={tab.path} element={null} />
           ))}
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile" element={<Navigate to="/profile" replace />} />
           <Route path="end-of-day" element={<EndOfDayPage />} />
         </Route>
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route
         path="/onboarding"
@@ -52,7 +53,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
       <Route path="/" element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />} />
     </Routes>
   )

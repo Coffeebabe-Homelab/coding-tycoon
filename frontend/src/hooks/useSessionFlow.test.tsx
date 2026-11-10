@@ -50,7 +50,7 @@ describe('useSessionFlow', () => {
   it('sends a player with no profile to onboarding from a deep link too', async () => {
     stubApi({ 'GET /api/profile': jsonResponse({}, 404) })
 
-    enterAt('/room/profile')
+    enterAt('/profile')
 
     await waitFor(() => expect(location()).toHaveTextContent('/onboarding'))
   })
@@ -156,10 +156,10 @@ describe('useSessionFlow', () => {
   it('never redirects a deep link to a panel', async () => {
     const fetchMock = stubApi({ 'GET /api/profile': PROFILE })
 
-    enterAt('/room/profile')
+    enterAt('/profile')
     await settle()
 
-    expect(location()).toHaveTextContent('/room/profile')
+    expect(location()).toHaveTextContent('/profile')
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
