@@ -50,6 +50,7 @@ function Room() {
       <Link to="/room/codebase">open codebase</Link>
       <Link to="/room/codebase?file=src/App.java">open focus file</Link>
       <Outlet />
+      <PanelWindow tabs={TABS} />
     </>
   )
 }
@@ -60,11 +61,8 @@ function renderInWindow(path = '/room/codebase') {
       <LocationProbe />
       <Routes>
         <Route path="/room" element={<Room />}>
-          <Route element={<PanelWindow tabs={TABS} />}>
-            <Route index element={null} />
-            <Route path="task" element={null} />
-            <Route path="codebase" element={null} />
-          </Route>
+          <Route path="task" element={null} />
+          <Route path="codebase" element={null} />
         </Route>
       </Routes>
     </MemoryRouter>,

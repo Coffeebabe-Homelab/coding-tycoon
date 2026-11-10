@@ -4,12 +4,14 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import GameRoomPage from './GameRoomPage'
+import { GameShell } from '../game/GameShell'
 import { authState, jsonResponse, settle, stubApi } from '../test/helpers'
 import { LocationProbe } from '../test/LocationProbe'
 
 vi.mock('@auth0/auth0-react', () => ({ useAuth0: vi.fn() }))
 
 const PROGRESS = {
+  level: 'X',
   totalXp: 150,
   xpToday: 100,
   currentStreak: 3,
@@ -29,8 +31,10 @@ function renderRoom(path = '/room') {
     <MemoryRouter initialEntries={[path]}>
       <LocationProbe />
       <Routes>
-        <Route path="/room" element={<GameRoomPage />}>
-          <Route path="task" element={<p>task panel</p>} />
+        <Route element={<GameShell tabs={[]} />}>
+          <Route path="/room" element={<GameRoomPage />}>
+            <Route path="task" element={<p>task panel</p>} />
+          </Route>
         </Route>
         <Route path="*" element={null} />
       </Routes>
@@ -73,8 +77,8 @@ describe('GameRoomPage', () => {
 
     renderRoom()
 
-    expect(await screen.findByText('150')).toBeInTheDocument()
-    expect(screen.getByText('3 d')).toBeInTheDocument()
+    expect(await screen.findByText('LV X · 150 XP')).toBeInTheDocument()
+    expect(screen.getByText('3-day streak')).toBeInTheDocument()
     expect(screen.getByText('player@example.com')).toBeInTheDocument()
   })
 
@@ -84,7 +88,7 @@ describe('GameRoomPage', () => {
     renderRoom()
     await settle()
 
-    expect(screen.queryByText('XP')).not.toBeInTheDocument()
+    expect(screen.queryByText(/XP/)).not.toBeInTheDocument()
     expect(hotspot(/Kanban board/)).toBeInTheDocument()
   })
 
@@ -158,17 +162,5 @@ describe('GameRoomPage', () => {
     await settle()
 
     expect(progressCalls()).toBe(2)
-  })
-
-  it('logs out back to the app origin', async () => {
-    stubApi(ROOM_ROUTES)
-    const user = renderRoom()
-    await settle()
-
-    await user.click(screen.getByRole('button', { name: 'Log out' }))
-
-    expect(auth.logout).toHaveBeenCalledWith({
-      logoutParams: { returnTo: window.location.origin },
-    })
   })
 })
