@@ -23,7 +23,7 @@ const button = (name: string) => screen.getByRole('button', { name })
 
 function renderProfile() {
   render(
-    <MemoryRouter initialEntries={['/room/profile']}>
+    <MemoryRouter initialEntries={['/profile']}>
       <ProfilePage />
     </MemoryRouter>,
   )

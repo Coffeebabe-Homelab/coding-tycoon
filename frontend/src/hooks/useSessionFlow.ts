@@ -27,7 +27,7 @@ function markTaskBoardAutoOpened(): void {
 /**
  * Guides the player when they enter the room:
  * no profile → onboarding; today's task still ASSIGNED → open the Task Board once per session.
- * Deep links to a panel (e.g. /room/profile) are respected and never redirected.
+ * Deep links to a panel or page (e.g. /profile) are respected and never redirected.
  */
 export function useSessionFlow(): void {
   const { getAccessTokenSilently } = useAuth0()

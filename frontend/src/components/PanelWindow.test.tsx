@@ -36,6 +36,7 @@ function Room() {
       <button onClick={() => navigate(-1)}>browser back</button>
       <Link to="/room/task">open panel</Link>
       <Outlet />
+      <PanelWindow tabs={TABS} />
     </>
   )
 }
@@ -46,12 +47,9 @@ function renderWindow(path = '/room/task') {
       <LocationProbe />
       <Routes>
         <Route path="/room" element={<Room />}>
-          <Route element={<PanelWindow tabs={TABS} />}>
-            <Route index element={null} />
-            <Route path="task" element={null} />
-            <Route path="codebase" element={null} />
-            <Route path="end-of-day" element={<p>end of day</p>} />
-          </Route>
+          <Route path="task" element={null} />
+          <Route path="codebase" element={null} />
+          <Route path="end-of-day" element={<p>end of day</p>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -177,7 +175,7 @@ describe('PanelWindow', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
 
-    it('renders non-tab routes through the outlet, without the window', () => {
+    it('stays out of the way on routes that are not tabs', () => {
       renderWindow('/room/end-of-day')
 
       expect(screen.getByText('end of day')).toBeInTheDocument()
