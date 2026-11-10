@@ -241,8 +241,9 @@ One Figma component set is one React component, and its variants are props. Prop
 | Panel | `rounded-xl border border-border bg-bg-surface p-4` |
 | Card | `rounded-lg border border-border bg-bg-elevated p-4` |
 | Button | `<Button>` (see UI primitives) |
-| Badge / chip (selected) | `rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle` |
-| Badge / chip (unselected) | `rounded-full bg-bg-elevated px-2 py-0.5 text-xs text-text-muted` |
+| Topic or tag | `<Chip>`: a toggle with `onClick`, otherwise a read-only tag |
+| One option in a group | `<SelectionCard>`, with `type` matching the Figma variants |
+| Wizard progress | `<StepperStep>` inside an `<ol>` |
 | Body text | `text-text-primary` |
 | Muted text | `text-text-muted` |
 | Success state | `text-success` |

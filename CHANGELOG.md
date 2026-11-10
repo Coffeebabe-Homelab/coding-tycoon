@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Frontend: Login and the onboarding wizard now match Figma, with the room art on Login and new `StepperStep` and `Chip` components (`Chip` replaces `TopicChip`). `SelectionCard` gains the Figma types. The wizard locks Java, Spring Boot and Junior as the only MVP options and shows Mid and Senior as coming soon. Focus moves to the heading of each new step, so keyboard users don't lose their place.
 - Frontend: the App Bar from Figma replaces the room's top strip, with a breadcrumb, the streak and "LV X" next to the real XP. Profile is now its own page at `/profile`, and `/room/profile` redirects to it. A shared layout around the room and Profile keeps open tabs across a Profile visit. The avatar opens a small menu with the email, Profile and Log out.
 - Backend: `GET /api/progress` returns a mock `level` of `"X"` until the level model exists.
 - Frontend: Task Board and Codebase now share one tabbed panel window from Figma, with a URL per tab and "Back to room". Tabs start from where they were left, including the open file, open folders and scroll position, after a tab switch or closing the panel. `Overlay` is now only for full-screen moments. Fix: `useSessionFlow` no longer repeats `GET /api/profile` on every route change.

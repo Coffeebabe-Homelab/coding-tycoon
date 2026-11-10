@@ -55,7 +55,7 @@ describe('OnboardingWizard', () => {
 
       await user.click(button('Next'))
       expect(screen.getByText('Step 2 of 3')).toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: "What's your experience level?" })).toBeVisible()
+      expect(screen.getByRole('heading', { name: 'What’s your experience level?' })).toBeVisible()
 
       await user.click(button('Next'))
       expect(screen.getByText('Step 3 of 3')).toBeInTheDocument()
@@ -70,7 +70,6 @@ describe('OnboardingWizard', () => {
       const user = renderWizard()
 
       await user.click(button('Next'))
-      await user.click(button('Senior'))
       await user.click(button('Next'))
       await user.click(await screen.findByRole('button', { name: 'SQL' }))
       await user.click(button('Back'))
@@ -79,9 +78,62 @@ describe('OnboardingWizard', () => {
 
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
       expect(JSON.parse(fetchMock.mock.calls[1][1]?.body as string)).toMatchObject({
-        seniority: 'Senior',
         topicIds: [2],
       })
+    })
+
+    it('moves focus to each new step, since its Next or Back may become disabled', async () => {
+      const user = renderWizard()
+
+      await user.click(button('Next'))
+      expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('experience level')
+
+      await user.click(button('Back'))
+      expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('language')
+    })
+
+    it('marks the current step and the ones already done', async () => {
+      const user = renderWizard()
+      const step = (name: RegExp) => screen.getByText(name).closest('li')
+
+      expect(step(/Stack/)).toHaveAttribute('aria-current', 'step')
+
+      await user.click(button('Next'))
+
+      expect(step(/Level/)).toHaveAttribute('aria-current', 'step')
+      expect(step(/Stack/)).not.toHaveAttribute('aria-current')
+      expect(step(/Stack/)).toHaveTextContent('Done: Stack')
+    })
+  })
+
+  describe('MVP choices', () => {
+    beforeEach(() => {
+      stubApi({ 'GET /api/topics': TOPICS })
+    })
+
+    const card = (name: RegExp) => screen.getByRole('button', { name })
+
+    it('locks the only language and framework', () => {
+      renderWizard()
+
+      for (const name of [/^Java/, /^Spring Boot/]) {
+        expect(card(name)).toBeDisabled()
+        expect(card(name)).toHaveAttribute('aria-pressed', 'true')
+      }
+    })
+
+    it('locks Junior and marks the other levels as coming soon', async () => {
+      const user = renderWizard()
+
+      await user.click(button('Next'))
+
+      expect(card(/^Junior/)).toHaveAttribute('aria-pressed', 'true')
+      for (const name of [/^Mid\s*Coming soon/, /^Senior\s*Coming soon/]) {
+        expect(card(name)).toBeDisabled()
+        expect(card(name)).toHaveAttribute('aria-pressed', 'false')
+      }
     })
   })
 
@@ -99,6 +151,18 @@ describe('OnboardingWizard', () => {
 
       await user.click(rest)
       expect(button('Finish')).toBeDisabled()
+    })
+
+    it('counts the selected topics', async () => {
+      stubApi({ 'GET /api/topics': TOPICS })
+      const user = renderWizard()
+      await goToTopics(user)
+
+      await user.click(await screen.findByRole('button', { name: 'REST' }))
+      expect(screen.getByText('1 selected')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'SQL' }))
+      expect(screen.getByText('2 selected')).toBeInTheDocument()
     })
 
     it('keeps Finish disabled when no topics exist', async () => {

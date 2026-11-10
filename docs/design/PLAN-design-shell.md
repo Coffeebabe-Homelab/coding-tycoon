@@ -4,6 +4,8 @@ Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
 **Implemented (part A):** [PR #44](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/44), merged into `dev` on 2026-11-09.
 
+**Implemented (part B):** [PR #45](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/45), merged into `dev` on 2026-11-10.
+
 ## Goal
 Part A replaces the tool `Overlay` chrome with Figma's tabbed panel window, so Phase 4 adds panels to the final container. Part B replaces `RoomHud` with the App Bar and moves Profile to a standalone page. Part B ships separately and doesn't block Phase 4.
 
