@@ -72,14 +72,13 @@ describe('GameRoomPage', () => {
     expect(screen.getByRole('group', { name: 'Your developer room' })).toBeInTheDocument()
   })
 
-  it('shows the player and their progress in the HUD', async () => {
+  it('shows the progress in the App Bar', async () => {
     stubApi(ROOM_ROUTES)
 
     renderRoom()
 
     expect(await screen.findByText('LV X · 150 XP')).toBeInTheDocument()
     expect(screen.getByText('3-day streak')).toBeInTheDocument()
-    expect(screen.getByText('player@example.com')).toBeInTheDocument()
   })
 
   it('hides the stats but keeps the room usable when progress fails', async () => {

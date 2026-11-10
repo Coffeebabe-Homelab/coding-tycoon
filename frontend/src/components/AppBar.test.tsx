@@ -69,12 +69,15 @@ describe('AppBar', () => {
     expect(screen.queryByRole('link', { name: /wrap up the day/ })).not.toBeInTheDocument()
   })
 
-  it('reaches the profile and logs out', async () => {
+  it('reaches the profile and logs out through the avatar menu', async () => {
     const onLogout = renderBar()
+    const user = userEvent.setup()
 
+    await user.click(screen.getByRole('button', { name: 'Account menu' }))
+
+    expect(screen.getByText('player@example.com')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/profile')
-    await userEvent.click(screen.getByRole('button', { name: 'Log out' }))
-
+    await user.click(screen.getByRole('button', { name: 'Log out' }))
     expect(onLogout).toHaveBeenCalledOnce()
   })
 })

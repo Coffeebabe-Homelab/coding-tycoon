@@ -57,7 +57,16 @@ function renderShell(path: string) {
 }
 
 const breadcrumb = () => screen.getByRole('navigation', { name: 'Breadcrumb', hidden: true })
-const profileLink = () => screen.getByRole('link', { name: 'Profile', hidden: true })
+const avatar = () => screen.getByRole('button', { name: 'Account menu', hidden: true })
+
+async function openMenu(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(avatar())
+}
+
+async function goToProfile(user: ReturnType<typeof userEvent.setup>) {
+  await openMenu(user)
+  await user.click(screen.getByRole('link', { name: 'Profile' }))
+}
 
 describe('GameShell', () => {
   beforeEach(() => {
@@ -84,7 +93,7 @@ describe('GameShell', () => {
     renderShell('/profile')
     await settle()
 
-    expect(profileLink().closest('[inert]')).toBeNull()
+    expect(avatar().closest('[inert]')).toBeNull()
   })
 
   it.each(['/room/task', '/room/end-of-day'])('makes the bar inert on %s', async (path) => {
@@ -93,7 +102,7 @@ describe('GameShell', () => {
     renderShell(path)
     await settle()
 
-    expect(profileLink().closest('[inert]')).not.toBeNull()
+    expect(avatar().closest('[inert]')).not.toBeNull()
   })
 
   it('keeps a tab state across a visit to the profile page', async () => {
@@ -103,7 +112,7 @@ describe('GameShell', () => {
 
     await user.click(screen.getByRole('button', { name: 'count 0' }))
     await user.click(screen.getByRole('link', { name: /Back to room/ }))
-    await user.click(profileLink())
+    await goToProfile(user)
     expect(screen.getByText('profile page')).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Room' }))
     await user.click(screen.getByRole('link', { name: 'open panel' }))
@@ -116,7 +125,7 @@ describe('GameShell', () => {
     const user = renderShell('/room')
     await settle()
 
-    await user.click(profileLink())
+    await goToProfile(user)
     await user.click(screen.getByRole('link', { name: 'Room' }))
     await settle()
 
@@ -131,6 +140,7 @@ describe('GameShell', () => {
     const user = renderShell('/room')
     await settle()
 
+    await openMenu(user)
     await user.click(screen.getByRole('button', { name: 'Log out' }))
 
     expect(auth.logout).toHaveBeenCalledWith({

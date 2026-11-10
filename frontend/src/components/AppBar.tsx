@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Progress } from '../types/progress'
+import { AvatarMenu } from './AvatarMenu'
 import { Icon } from './Icon'
 
 interface AppBarProps {
@@ -13,10 +14,10 @@ interface AppBarProps {
 
 const LINK_CLASS = 'text-sm text-accent transition-colors hover:text-accent-hover'
 
-/** The bar on every game screen (Figma 9:316). The player links become the avatar menu. */
+/** The bar on every game screen (Figma 9:316). */
 export function AppBar({ email, panelLabel, progress, onLogout }: AppBarProps) {
   return (
-    <header className="flex h-[61px] shrink-0 items-center justify-between gap-6 border-b border-border bg-bg-surface px-6">
+    <header className="relative flex h-[61px] shrink-0 items-center justify-between gap-6 border-b border-border bg-bg-surface px-6">
       <div className="flex items-center gap-6">
         <span className="font-display text-xl font-medium uppercase text-accent">
           Coding Tycoon
@@ -45,15 +46,7 @@ export function AppBar({ email, panelLabel, progress, onLogout }: AppBarProps) {
             </span>
           </>
         )}
-        <nav aria-label="Player" className="flex items-center gap-4">
-          <span className="text-sm text-text-muted">{email}</span>
-          <Link to="/profile" className={LINK_CLASS}>
-            Profile
-          </Link>
-          <button type="button" onClick={onLogout} className={LINK_CLASS}>
-            Log out
-          </button>
-        </nav>
+        <AvatarMenu email={email} onLogout={onLogout} />
       </div>
     </header>
   )
