@@ -92,7 +92,8 @@ On entering the room: no profile (`404`) → `/onboarding`. If the player landed
 | `game/Hotspot.tsx` | SVG `role="button"` wrapper: `tabIndex`, `aria-label`, Enter/Space, `<title>` tooltip, hover/focus glow. No `onActivate` → disabled (`aria-disabled`). |
 | `game/Avatar.tsx` | Placeholder player figure seated at the desk. |
 | `game/GameShell.tsx` | Layout around the room and Profile: App Bar, `PanelWindow`, progress and session checks. |
-| `components/AppBar.tsx` | Figma 9:316: logo, breadcrumb ("Room" links back), "wrap up the day" link after an approval, streak, "LV {level} · XP". Email, Profile and Log out stay as links until the avatar menu is designed. |
+| `components/AppBar.tsx` | Figma 9:316: logo, breadcrumb ("Room" links back), "wrap up the day" link after an approval, streak, "LV {level} · XP", avatar. |
+| `components/AvatarMenu.tsx` | Figma 117:347: the avatar opens a disclosure with the email, Profile and Log out. Esc returns focus to the avatar; a click outside or tabbing away closes it. |
 | `components/PanelWindow.tsx` | The one window for all tools (Figma 46:25): tab bar, "Back to room", visited tabs kept in `<Activity>`. |
 | `components/Overlay.tsx` | Full-screen moment on a scrim, with a labelled heading and × close. |
 | `hooks/useModalDialog.ts` | Dialog behaviour for both: `role="dialog"` focus handling, focus trap (`lib/focusTrap.ts`), Esc, restores focus to the opener on every open. |

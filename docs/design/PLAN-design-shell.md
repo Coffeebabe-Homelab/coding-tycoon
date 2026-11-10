@@ -101,7 +101,7 @@ Changed: `frontend/src/App.tsx`, `frontend/src/components/Overlay.tsx`, `fronten
 **Cards:** [App Bar and Profile](https://trello.com/c/Jgp2Utrw), [avatar menu](https://trello.com/c/znLbZHWb). Start any time after part A, and no later than Phase 6's Profile work.
 **Needs:** part A merged.
 
-**Owner decision (2026-11-09):** kept tabs must survive a Profile visit. `GameShell`, a layout around `/room` and `/profile`, holds the App Bar and `PanelWindow`, so the routes differ from the Target routes above: see `frontend/SPEC.md`. Until the avatar menu is in Figma, the bar keeps the email, Profile and Log out links.
+**Owner decision (2026-11-09):** kept tabs must survive a Profile visit. `GameShell`, a layout around `/room` and `/profile`, holds the App Bar and `PanelWindow`, so the routes differ from the Target routes above: see `frontend/SPEC.md`.
 
 ## Steps
 
