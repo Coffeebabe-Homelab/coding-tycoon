@@ -45,6 +45,18 @@
   /* --- Decorative (room lighting) --- */
   --color-rgb-magenta: #e84df5;
   --color-rgb-violet: #7b5cff;
+  --gradient-login-glow: radial-gradient(
+    ellipse 56.25% 55.56% at 50% 47%,
+    rgb(122 92 255 / 0.16),
+    rgb(232 77 245 / 0.05) 50%,
+    transparent
+  );
+  --gradient-wizard-glow: radial-gradient(
+    ellipse 55.56% 41.67% at 50% 50%,
+    rgb(255 138 61 / 0.1),
+    rgb(122 92 255 / 0.06) 45%,
+    transparent
+  );
 
   /* --- Elevation --- */
   --shadow-card: 0 4px 12px rgb(0 0 0 / 0.35);

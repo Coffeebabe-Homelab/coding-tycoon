@@ -3,6 +3,7 @@ import { useTask } from '../hooks/useTask'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 import { Button } from '../components/Button'
+import { Chip } from '../components/Chip'
 import { Difficulty } from '../components/Difficulty'
 import { StatusBadge } from '../components/StatusBadge'
 
@@ -42,12 +43,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       {task.tags.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-2">
           {task.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle"
-            >
-              {tag}
-            </span>
+            <Chip key={tag} label={tag} />
           ))}
         </div>
       )}
