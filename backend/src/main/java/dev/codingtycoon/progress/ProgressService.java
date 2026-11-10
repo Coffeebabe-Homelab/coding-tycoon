@@ -24,6 +24,9 @@ public class ProgressService {
     /** XP awarded when a task is approved. */
     public static final int XP_PER_APPROVED_TASK = 100;
 
+    /** Shown until levels and XP thresholds are defined; only this value changes when they are. */
+    static final String MOCK_LEVEL = "X";
+
     private static final Logger LOG = Logger.getLogger(ProgressService.class);
 
     @Inject
@@ -77,7 +80,7 @@ public class ProgressService {
                 .map(e -> e.createdAt.toLocalDate())
                 .toList();
         Streak streak = StreakCalculator.calculate(approvalDays, today);
-        return new ProgressResponse(totalXp, xpToday, streak.current(), streak.longest(),
+        return new ProgressResponse(MOCK_LEVEL, totalXp, xpToday, streak.current(), streak.longest(),
                 approvedTodayTaskTitle(todayEvents));
     }
 

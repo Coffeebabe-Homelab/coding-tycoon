@@ -45,6 +45,7 @@ class ProgressResourceTest {
                 .when().get("/api/progress")
                 .then()
                 .statusCode(200)
+                .body("level", is("X"))
                 .body("totalXp", is(200))
                 .body("xpToday", is(100))
                 .body("currentStreak", is(2))
