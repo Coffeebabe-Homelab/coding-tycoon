@@ -54,7 +54,7 @@ export function OnboardingWizard() {
                   <SelectionCard
                     key={lang}
                     label={lang}
-                    selected={language === lang}
+                    type={language === lang ? 'selected' : 'default'}
                     onClick={() => setLanguage(lang)}
                   />
                 ))}
@@ -68,7 +68,7 @@ export function OnboardingWizard() {
                   <SelectionCard
                     key={fw}
                     label={fw}
-                    selected={framework === fw}
+                    type={framework === fw ? 'selected' : 'default'}
                     onClick={() => setFramework(fw)}
                   />
                 ))}
@@ -88,7 +88,7 @@ export function OnboardingWizard() {
                 <SelectionCard
                   key={level}
                   label={level}
-                  selected={seniority === level}
+                  type={seniority === level ? 'selected' : 'default'}
                   onClick={() => setSeniority(level)}
                 />
               ))}

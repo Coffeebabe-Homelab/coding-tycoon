@@ -96,7 +96,7 @@ export default function ProfilePage() {
                   <SelectionCard
                     key={level}
                     label={level}
-                    selected={editSeniority === level}
+                    type={editSeniority === level ? 'selected' : 'default'}
                     onClick={() => setEditSeniority(level)}
                   />
                 ))}
