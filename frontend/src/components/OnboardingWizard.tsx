@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SelectionCard } from './SelectionCard'
-import { TopicChip } from './TopicChip'
+import { Chip } from './Chip'
 import { useTopics } from '../hooks/useTopics'
 import { useCreateProfile } from '../hooks/useCreateProfile'
 import { Button } from './Button'
@@ -108,7 +108,7 @@ export function OnboardingWizard() {
             {!topicsLoading && !topicsError && (
               <div className="flex flex-wrap gap-2">
                 {topics.map((topic) => (
-                  <TopicChip
+                  <Chip
                     key={topic.id}
                     label={topic.name}
                     selected={selectedTopicIds.includes(topic.id)}

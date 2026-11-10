@@ -3,7 +3,7 @@ import { useProfile } from '../hooks/useProfile'
 import { useUpdateProfile } from '../hooks/useUpdateProfile'
 import { useTopics } from '../hooks/useTopics'
 import { SelectionCard } from '../components/SelectionCard'
-import { TopicChip } from '../components/TopicChip'
+import { Chip } from '../components/Chip'
 import { Button } from '../components/Button'
 
 const SENIORITY_LEVELS = ['Junior', 'Mid', 'Senior']
@@ -70,12 +70,7 @@ export default function ProfilePage() {
                 <dt className="text-sm text-text-muted">Topics</dt>
                 <dd className="flex flex-wrap gap-2">
                   {profile.topics.map((topic) => (
-                    <span
-                      key={topic.id}
-                      className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs text-accent-on-subtle"
-                    >
-                      {topic.name}
-                    </span>
+                    <Chip key={topic.id} label={topic.name} />
                   ))}
                 </dd>
               </div>
@@ -114,7 +109,7 @@ export default function ProfilePage() {
               {!topicsLoading && (
                 <div className="flex flex-wrap gap-2">
                   {allTopics.map((topic) => (
-                    <TopicChip
+                    <Chip
                       key={topic.id}
                       label={topic.name}
                       selected={editTopicIds.includes(topic.id)}
