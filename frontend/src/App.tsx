@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { LoadingScreen } from './components/LoadingScreen'
-import { PanelWindow, type PanelTab } from './components/PanelWindow'
+import type { PanelTab } from './components/PanelWindow'
+import { GameShell } from './game/GameShell'
 import LoginPage from './pages/LoginPage'
 import CallbackPage from './pages/CallbackPage'
 import EndOfDayPage from './pages/EndOfDayPage'
@@ -27,24 +28,22 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/callback" element={<CallbackPage />} />
-      {/* Panels are nested routes. Tabs render inside PanelWindow, the rest through its outlet. */}
       <Route
-        path="/room"
         element={
           <ProtectedRoute>
-            <GameRoomPage />
+            <GameShell tabs={PANEL_TABS} />
           </ProtectedRoute>
         }
       >
-        <Route element={<PanelWindow tabs={PANEL_TABS} />}>
-          {/* Keeps the window mounted on /room, so visited tabs survive closing the panel. */}
-          <Route index element={null} />
+        {/* Panels are nested routes. Tabs render inside the shell's PanelWindow, so theirs are empty. */}
+        <Route path="/room" element={<GameRoomPage />}>
           {PANEL_TABS.map((tab) => (
             <Route key={tab.path} path={tab.path} element={null} />
           ))}
-          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile" element={<Navigate to="/profile" replace />} />
           <Route path="end-of-day" element={<EndOfDayPage />} />
         </Route>
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route
         path="/onboarding"
@@ -54,7 +53,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/profile" element={<Navigate to="/room/profile" replace />} />
       <Route path="/" element={<Navigate to={isAuthenticated ? '/room' : '/login'} replace />} />
     </Routes>
   )

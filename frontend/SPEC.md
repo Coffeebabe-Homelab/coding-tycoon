@@ -64,21 +64,21 @@ frontend/src/
 /login              → LoginPage (public)
 /callback           → Auth0 callback handler
 /onboarding         → OnboardingPage (protected)
-/room               → GameRoomPage (protected) — main hub: room scene + HUD + panel outlet
-  (no path)         → PanelWindow — stays mounted for all of /room
+(no path)           → GameShell (protected) — App Bar + PanelWindow, around the room and Profile
+  /room             → GameRoomPage — main hub: room scene + panel outlet
     /room/task       → TaskBoardPage (tab)
     /room/codebase   → CodebaseExplorerPage (tab)
     /room/editor     → EditorPage (tab, Phase 4)
     /room/vcs        → VCS panel (tab, Phase 4; no route yet)
     /room/review     → ReviewPage (tab, Phase 5)
-    /room/profile    → ProfilePage in Overlay
     /room/end-of-day → EndOfDayPage in Overlay (Phase 7)
-/profile            → redirect to /room/profile
+    /room/profile    → redirect to /profile
+  /profile          → ProfilePage (standalone)
 ```
 
-`/room` is wrapped in `<ProtectedRoute />`; its panels are nested routes, so they inherit the protection. Tools are tabs in `PanelWindow`, listed in `PANEL_TABS` in `App.tsx`; add one only once it has a route. Other panels render through `PanelWindow`'s outlet and wrap their content in `<Overlay>`, which is now for full-screen moments only. While a panel is open the room is `inert`, based on the URL. Closing (Esc, "Back to room", or × and a backdrop click on an `Overlay`) navigates to `/room`. Tab links use `replace`, so the browser back button closes the panel instead of walking through tabs.
+`GameShell` is wrapped in `<ProtectedRoute />`, so the room, its panels and Profile all inherit the protection. It holds the App Bar, `PanelWindow`, the progress fetch and `useSessionFlow`, so moving between the room and Profile keeps kept tabs and doesn't repeat those. Tools are tabs in `PanelWindow`, listed in `PANEL_TABS` in `App.tsx`; add one only once it has a route, whose element stays empty because the window renders the tab. Other panels render through `GameRoomPage`'s outlet and wrap their content in `<Overlay>`, which is for full-screen moments only. While a panel is open the room and the App Bar are `inert`, based on the URL. Closing (Esc, "Back to room", or × and a backdrop click on an `Overlay`) navigates to `/room`. Tab links use `replace`, so the browser back button closes the panel instead of walking through tabs.
 
-Visited tabs stay mounted in React's `<Activity>` until the player leaves the room or refreshes, so they start from where they were left. A hidden tab's effects are cleaned up and run again when it comes back, so its data refreshes. Hooks must keep showing current data during that refresh instead of going back to a loading state.
+Visited tabs stay mounted in React's `<Activity>` until the player refreshes or logs out, so they start from where they were left. A hidden tab's effects are cleaned up and run again when it comes back, so its data refreshes. Hooks must keep showing current data during that refresh instead of going back to a loading state.
 
 ### Session flow (`hooks/useSessionFlow.ts`)
 
@@ -91,7 +91,9 @@ On entering the room: no profile (`404`) → `/onboarding`. If the player landed
 | `game/RoomScene.tsx` | Static isometric SVG room (walls, floor, desk, monitor, chair, kanban board, door). No routing inside; takes callbacks. |
 | `game/Hotspot.tsx` | SVG `role="button"` wrapper: `tabIndex`, `aria-label`, Enter/Space, `<title>` tooltip, hover/focus glow. No `onActivate` → disabled (`aria-disabled`). |
 | `game/Avatar.tsx` | Placeholder player figure seated at the desk. |
-| `game/RoomHud.tsx` | Top strip: total XP, current streak, "wrap up the day" link after an approval, email, Profile, Log out. |
+| `game/GameShell.tsx` | Layout around the room and Profile: App Bar, `PanelWindow`, progress and session checks. |
+| `components/AppBar.tsx` | Figma 9:316: logo, breadcrumb ("Room" links back), "wrap up the day" link after an approval, streak, "LV {level} · XP", avatar. |
+| `components/AvatarMenu.tsx` | Figma 117:347: the avatar opens a disclosure with the email, Profile and Log out. Esc returns focus to the avatar; a click outside or tabbing away closes it. |
 | `components/PanelWindow.tsx` | The one window for all tools (Figma 46:25): tab bar, "Back to room", visited tabs kept in `<Activity>`. |
 | `components/Overlay.tsx` | Full-screen moment on a scrim, with a labelled heading and × close. |
 | `hooks/useModalDialog.ts` | Dialog behaviour for both: `role="dialog"` focus handling, focus trap (`lib/focusTrap.ts`), Esc, restores focus to the opener on every open. |

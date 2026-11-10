@@ -1,10 +1,9 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useProfile } from '../hooks/useProfile'
 import { useUpdateProfile } from '../hooks/useUpdateProfile'
 import { useTopics } from '../hooks/useTopics'
 import { SelectionCard } from '../components/SelectionCard'
 import { TopicChip } from '../components/TopicChip'
-import { Overlay } from '../components/Overlay'
 import { Button } from '../components/Button'
 
 const SENIORITY_LEVELS = ['Junior', 'Mid', 'Senior']
@@ -50,15 +49,15 @@ export default function ProfilePage() {
 
   if (isLoading || error || !profile) {
     return (
-      <Overlay title="Player Profile">
+      <ProfileLayout>
         {isLoading && <p className="text-text-muted">Loading profile…</p>}
         {!isLoading && error && <p className="text-danger">{error}</p>}
-      </Overlay>
+      </ProfileLayout>
     )
   }
 
   return (
-    <Overlay title="Player Profile">
+    <ProfileLayout>
       <div>
         {/* View mode */}
         {!isEditing && (
@@ -139,7 +138,19 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-    </Overlay>
+    </ProfileLayout>
+  )
+}
+
+/** Standalone page frame. Screen 8's full layout arrives with Phase 6. */
+function ProfileLayout({ children }: { children: ReactNode }) {
+  return (
+    <main className="min-h-0 flex-1 overflow-y-auto p-8">
+      <div className="mx-auto max-w-3xl rounded-xl border border-border bg-bg-surface p-6">
+        <h1 className="mb-6 text-lg font-semibold text-text-primary">Player Profile</h1>
+        {children}
+      </div>
+    </main>
   )
 }
 

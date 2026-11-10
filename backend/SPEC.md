@@ -99,7 +99,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
 │   ├── Streak.java                  Value: current, longest
 │   ├── ProgressService.java         Domain core: awards XP on approval (called by TaskService), computes totals and streak
-│   ├── ProgressResponse.java        JSON: totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
+│   ├── ProgressResponse.java        JSON: level (mock), totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
 │   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
 │
 └── ai/
@@ -124,9 +124,10 @@ backend/src/main/java/dev/codingtycoon/
 `GET /api/progress` (authenticated) → `200`
 
 ```json
-{ "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
+{ "level": "X", "totalXp": 300, "xpToday": 100, "currentStreak": 2, "longestStreak": 3, "approvedTodayTaskTitle": "Add a REST endpoint" }
 ```
 
+- `level` is a mock: always `"X"` (`ProgressService.MOCK_LEVEL`) until the level model exists. Only this value will change.
 - XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
 - `PATCH /api/tasks/{id}/status` only accepts player transitions on the caller's own tasks: `ASSIGNED → IN_PROGRESS`, `IN_PROGRESS → SUBMITTED`, `CHANGES_REQUESTED → SUBMITTED`. Another player's task returns `404`, and any other transition returns `422`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.

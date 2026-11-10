@@ -2,6 +2,8 @@
 
 Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
+**Implemented (part A):** [PR #44](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/44), merged into `dev` on 2026-11-09.
+
 ## Goal
 Part A replaces the tool `Overlay` chrome with Figma's tabbed panel window, so Phase 4 adds panels to the final container. Part B replaces `RoomHud` with the App Bar and moves Profile to a standalone page. Part B ships separately and doesn't block Phase 4.
 
@@ -99,6 +101,8 @@ Changed: `frontend/src/App.tsx`, `frontend/src/components/Overlay.tsx`, `fronten
 **Cards:** [App Bar and Profile](https://trello.com/c/Jgp2Utrw), [avatar menu](https://trello.com/c/znLbZHWb). Start any time after part A, and no later than Phase 6's Profile work.
 **Needs:** part A merged.
 
+**Owner decision (2026-11-09):** kept tabs must survive a Profile visit. `GameShell`, a layout around `/room` and `/profile`, holds the App Bar and `PanelWindow`, so the routes differ from the Target routes above: see `frontend/SPEC.md`.
+
 ## Steps
 
 ### 1. `AppBar` (replaces `RoomHud`)
@@ -130,8 +134,6 @@ Removed: `frontend/src/game/RoomHud.tsx`.
 
 ## Risks
 - `useSessionFlow` opens the Task Board once per session and refers to room paths, so recheck it after the Profile move.
-- `useProgress` is fetched by the room today, so the standalone Profile needs its own fetch for the App Bar.
-- `/profile` is outside `/room`, so going there unmounts `PanelWindow` and drops kept tabs. Before this ships, move the kept tabs above both routes, or get an owner decision to accept the loss.
 
 ## Done when
 1. `AppBar` shows on the room, panels and Profile.
