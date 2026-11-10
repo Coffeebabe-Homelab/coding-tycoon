@@ -40,7 +40,9 @@ export function SelectionCard({ type, label, caption, onClick }: SelectionCardPr
         {type === 'selected' && <Icon name="check" className="shrink-0 text-success" />}
       </span>
       {caption && (
-        <span className={`text-label-s ${isSelected ? 'text-accent-on-subtle' : 'text-text-muted'}`}>
+        <span
+          className={`text-label-s ${isSelected ? 'text-accent-on-subtle' : 'text-text-muted'}`}
+        >
           {caption}
         </span>
       )}

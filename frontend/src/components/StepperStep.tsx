@@ -23,7 +23,9 @@ export function StepperStep({ state, number, label }: StepperStepProps) {
       >
         {state === 'done' ? <Icon name="check" /> : number}
       </span>
-      <span className={`text-label-m ${state === 'upcoming' ? 'text-text-muted' : 'text-text-primary'}`}>
+      <span
+        className={`text-label-m ${state === 'upcoming' ? 'text-text-muted' : 'text-text-primary'}`}
+      >
         {state === 'done' && <span className="sr-only">Done: </span>}
         {label}
       </span>
