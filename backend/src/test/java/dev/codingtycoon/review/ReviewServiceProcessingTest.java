@@ -92,6 +92,7 @@ class ReviewServiceProcessingTest {
         assertEquals(List.of(FOCUS), request.pushed().stream().map(ReviewFile::path).toList());
         assertEquals(FOCUS, request.originals().getFirst().path());
         assertTrue(request.originals().getFirst().content().contains("class UserService"));
+        assertTrue(request.guidelines().contains("MUST_FIX"), "the review guidelines are in the request");
     }
 
     @Test
