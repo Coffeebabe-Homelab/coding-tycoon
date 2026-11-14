@@ -71,6 +71,11 @@
             <artifactId>quarkus-langchain4j-ollama</artifactId>
             <version>1.13.4</version>
         </dependency>
+        <!-- Timeouts, retries and circuit breakers around AI calls. Version from the Quarkus BOM. -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
+        </dependency>
         <!-- Auth: OIDC (Auth0 JWT validation) -->
         <dependency>
             <groupId>io.quarkus</groupId>

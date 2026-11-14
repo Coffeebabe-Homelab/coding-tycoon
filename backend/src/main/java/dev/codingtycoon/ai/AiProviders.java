@@ -1,8 +1,10 @@
 package dev.codingtycoon.ai;
 
+import dev.codingtycoon.ai.ollama.OllamaTaskAdapter;
 import dev.codingtycoon.ai.stub.StubTaskAdapter;
 import dev.codingtycoon.task.TaskAiPort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -19,9 +21,11 @@ public class AiProviders {
 
     @Produces
     @ApplicationScoped
-    TaskAiPort taskAiPort(StubTaskAdapter stub) {
+    TaskAiPort taskAiPort(StubTaskAdapter stub, Instance<OllamaTaskAdapter> ollama) {
+        // Instance: the Ollama adapter is only created when it is selected.
         return switch (provider) {
             case STUB -> stub;
+            case OLLAMA -> ollama.get();
         };
     }
 }
