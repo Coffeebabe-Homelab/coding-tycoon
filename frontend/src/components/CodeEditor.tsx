@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import Editor, { DiffEditor, loader, type DiffOnMount, type OnMount } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
@@ -65,18 +65,27 @@ function defineTheme(): void {
  */
 function useEditorKeyAcrossHide(onHide?: () => void): number {
   const [editorKey, setEditorKey] = useState(0)
-  const onHideRef = useRef(onHide)
-  useLayoutEffect(() => {
-    onHideRef.current = onHide
-  })
+  const onHideRef = useLatest(onHide)
   useLayoutEffect(
     () => () => {
       onHideRef.current?.()
       setEditorKey((key) => key + 1)
     },
-    [],
+    [onHideRef],
   )
   return editorKey
+}
+
+/**
+ * The Monaco wrappers keep the onMount from their first render, which can come long before the
+ * mount (a tab hidden in between), so onMount reads current props through this ref.
+ */
+function useLatest<T>(value: T): RefObject<T> {
+  const ref = useRef(value)
+  useLayoutEffect(() => {
+    ref.current = value
+  })
+  return ref
 }
 
 /**
@@ -122,6 +131,7 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const savedView = useRef<monaco.editor.ICodeEditorViewState | null>(null)
+  const latestValue = useLatest(value)
   const editorKey = useEditorKeyAcrossHide(() => {
     if (editorRef.current) savedView.current = editorRef.current.saveViewState()
     editorRef.current = null
@@ -129,7 +139,7 @@ export function CodeEditor({
 
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor
-    syncModel(editor, value)
+    syncModel(editor, latestValue.current)
     if (savedView.current) editor.restoreViewState(savedView.current)
     const position = editor.getPosition()
     if (position) onCursorChange?.(position.lineNumber, position.column)
@@ -213,12 +223,13 @@ export function CodeDiff({
   ariaLabel,
 }: CodeDiffProps) {
   const editorKey = useEditorKeyAcrossHide()
+  const latest = useLatest({ original, modified })
 
   const handleMount: DiffOnMount = (editor) => {
     const models = editor.getModel()
     if (models) {
-      syncModel(models.original, original)
-      syncModel(models.modified, modified)
+      syncModel(models.original, latest.current.original)
+      syncModel(models.modified, latest.current.modified)
     }
     editor.onDidUpdateDiff(() => {
       const { added, removed } = countLines(editor.getLineChanges() ?? [])

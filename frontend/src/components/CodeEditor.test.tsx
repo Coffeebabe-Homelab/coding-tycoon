@@ -37,6 +37,8 @@ function StubEditor({
   onMount: (editor: typeof stubEditor) => void
 }) {
   const [id] = useState(() => ++editorIds.next)
+  // Like the wrapper, keep the onMount from the first render.
+  const [firstOnMount] = useState(() => onMount)
   return (
     <div>
       <p data-testid="editor-id">{id}</p>
@@ -47,7 +49,7 @@ function StubEditor({
       <button
         onClick={() => {
           beforeMount()
-          onMount(stubEditor)
+          firstOnMount(stubEditor)
         }}
       >
         mount
@@ -84,6 +86,7 @@ function StubDiffEditor({
   onMount: (editor: typeof stubDiffEditor) => void
 }) {
   const [id] = useState(() => ++editorIds.next)
+  const [firstOnMount] = useState(() => onMount)
   return (
     <div>
       <p data-testid="diff-id">{id}</p>
@@ -91,7 +94,7 @@ function StubDiffEditor({
       <p>{`${originalModelPath} | ${modifiedModelPath}`}</p>
       <p>{`keep=${keepCurrentOriginalModel}/${keepCurrentModifiedModel}`}</p>
       <p>{`split=${options.renderSideBySide} readOnly=${options.readOnly}`}</p>
-      <button onClick={() => onMount(stubDiffEditor)}>mount diff</button>
+      <button onClick={() => firstOnMount(stubDiffEditor)}>mount diff</button>
     </div>
   )
 }
@@ -175,14 +178,18 @@ describe('CodeEditor', () => {
   it('brings a kept model up to date when a new editor reuses it', async () => {
     stubEditor.getValue.mockReturnValue('stale')
     const user = userEvent.setup()
-    render(<CodeEditor {...PROPS} readOnly={false} path="draft/src/A.java" />)
+    const { rerender } = render(<CodeEditor {...PROPS} readOnly={false} path="draft/src/A.java" />)
+    // The editor can render before it mounts, as in a hidden tab; the newest value must win.
+    rerender(
+      <CodeEditor {...PROPS} value="class A { B b; }" readOnly={false} path="draft/src/A.java" />,
+    )
 
     await user.click(screen.getByRole('button', { name: 'mount' }))
-    expect(stubEditor.setValue).toHaveBeenCalledWith('class A {}')
+    expect(stubEditor.setValue).toHaveBeenCalledWith('class A { B b; }')
 
     // A current model is left alone, so its undo history survives.
     stubEditor.setValue.mockClear()
-    stubEditor.getValue.mockReturnValue('class A {}')
+    stubEditor.getValue.mockReturnValue('class A { B b; }')
     await user.click(screen.getByRole('button', { name: 'mount' }))
     expect(stubEditor.setValue).not.toHaveBeenCalled()
   })
@@ -388,7 +395,8 @@ describe('CodeDiff', () => {
     const model = (value: string) => ({ getValue: () => value, setValue: vi.fn() })
     const kept = { original: model('old'), modified: model('older draft') }
     stubDiffEditor.getModel.mockReturnValue(kept)
-    render(<CodeDiff {...DIFF} />)
+    const { rerender } = render(<CodeDiff {...DIFF} modified="first" />)
+    rerender(<CodeDiff {...DIFF} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'mount diff' }))
 
