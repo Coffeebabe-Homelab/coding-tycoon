@@ -69,7 +69,7 @@ The email is stored when the player finishes onboarding. Players who onboarded b
 
 The `ollama` service runs the model on the host's CPU. It publishes no port: only the backend reaches it, at `http://ollama:11434`. The backend doesn't wait for it, so if Ollama is down, players still get seed tasks.
 
-**Host needs:** about 5 GB of free disk for the model (`deepseek-coder:6.7b-instruct-q4_K_M` is about 4.1 GB) and about 9 GB of free RAM while it answers: about 4.5 GB for the model and 4 GB for the default 8192-token context (about 0.5 GB per 1024 tokens; lower `OLLAMA_NUM_CTX` on a smaller host, at the cost of longer pushes failing to review). Ollama unloads the model after 5 minutes idle.
+**Host needs:** about 5 GB of free disk for the model (`deepseek-coder:6.7b-instruct-q4_K_M` is about 4.1 GB) and free RAM for the model plus its context while it answers. The context cost depends on the model: with `deepseek-coder:6.7b-instruct-q4_K_M` the default 8192 tokens take about 4 GB (about 9 GB in all); with `qwen2.5-coder:7b` they take about 0.45 GB (about 5.5 GB in all). Lower `OLLAMA_NUM_CTX` on a smaller host, at the cost of longer pushes failing to review. Ollama unloads the model after 5 minutes idle.
 
 **Get the model onto the host** once. It's kept in the `ollama_data` volume across deploys, and nothing downloads it at startup:
 

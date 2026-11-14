@@ -58,7 +58,33 @@ Make the AI senior dev review real code. "Feedback is the product" (north star),
 - **The verdict is not:** the model approves almost everything, including a no-op and a bug. It even wrote "APPROVED" next to its own MUST_FIX in run 1. This is the model's judgement, not parsing.
 - **Latency on a GPU is 30–64 s**, so it is already over the 30 s target. CPU staging will be several times slower, and the 5 min timeout may need raising.
 
-**Decision pending (owner):** what to do about review quality before P5-06. The options are a better model (config only, e.g. a newer or larger coder model), a lower temperature, a code-side verdict rule (CHANGES_REQUESTED when any criterion is unmet or any comment is MUST_FIX), or accepting it for the MVP. Record the staging eval table here too.
+### Evals with qwen2.5-coder:7b (same machine and prompt, 2026-11-14)
+
+The owner chose to try it first. The staging host has 16 GB in total.
+
+| Case | Expected | Got | Seconds |
+|---|---|---|---|
+| 1-validation-correct | APPROVED | APPROVED | 16 |
+| 2-validation-missing | CHANGES_REQUESTED | APPROVED | 8 |
+| 3-validation-no-op | CHANGES_REQUESTED | CHANGES_REQUESTED | 16 |
+| 4-list-users-correct | APPROVED | APPROVED | 23 |
+| 5-list-users-bug | CHANGES_REQUESTED | APPROVED | 13 |
+| 6-list-users-no-test | CHANGES_REQUESTED | APPROVED | 9 |
+| **As expected** | | **3 of 6** | all under the 30 s target on a GPU |
+
+- **Better than deepseek on everything we measure.**
+  - Every answer is usable.
+  - It is 2–4× faster.
+  - It needs less RAM: grouped-query attention makes the 8192-token context about 0.45 GB, against 4 GB for deepseek.
+- **Still not good enough to judge.**
+  - In each miss it ticks every criterion as met. It doesn't see the missing `@Valid`, the 1000 cap or the missing test.
+  - So a code-side verdict rule wouldn't help: the model never says a criterion is unmet.
+  - Approvals come with no comments, so there is no Praise either.
+- Prompts were 1.8k–3.3k tokens, well inside the context.
+
+**Next (owner, 2026-11-14):** an external vendor API (OpenAI was named) as a new provider in `ai.<provider>`. It needs a decision on sending player code to a third party, and it costs per call. Until then, qwen2.5-coder:7b is the better local model.
+
+**Earlier options, kept for reference:** what to do about review quality before P5-06. The options are a better model (config only, e.g. a newer or larger coder model), a lower temperature, a code-side verdict rule (CHANGES_REQUESTED when any criterion is unmet or any comment is MUST_FIX), or accepting it for the MVP. Record the staging eval table here too.
 
 ## Definition of Done
 
