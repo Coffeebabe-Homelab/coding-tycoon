@@ -26,9 +26,16 @@ function Workspace({ task }: { task: Task }) {
   const { files, changedPaths, isLoading, error, loadDrafts, setDraft, resetFile } = useDrafts()
   const [searchParams, setSearchParams] = useSearchParams()
   const fileParam = searchParams.get('file')
-  // The tab link has no ?file=, so remember the last file to reopen it, as the Explorer does.
-  const [lastFile, setLastFile] = useState<string | null>(null)
-  if (fileParam && fileParam !== lastFile) setLastFile(fileParam)
+  // Selection is local state, so Monaco swaps models at once: router updates are transitions and
+  // can lag by most of a second, letting keystrokes land in the previous file. The URL mirrors it,
+  // and a new ?file= (from "Open in editor") still wins. The tab link has no ?file=, so the last
+  // file stays open.
+  const [selectedPath, setSelectedPath] = useState<string | null>(null)
+  const [seenParam, setSeenParam] = useState<string | null>(null)
+  if (fileParam && fileParam !== seenParam) {
+    setSeenParam(fileParam)
+    setSelectedPath(fileParam)
+  }
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
   const tabRefs = useRef(new Map<string, HTMLButtonElement>())
@@ -41,7 +48,7 @@ function Workspace({ task }: { task: Task }) {
     setCursor({ line, column })
   }, [])
 
-  const file = files.find((candidate) => candidate.path === (fileParam ?? lastFile)) ?? files[0]
+  const file = files.find((candidate) => candidate.path === selectedPath) ?? files[0]
   if (isLoading || !file) {
     return <PanelMessage>{error ?? 'Loading files…'}</PanelMessage>
   }
@@ -49,6 +56,7 @@ function Workspace({ task }: { task: Task }) {
   const isChanged = changedPaths.includes(file.path)
 
   const selectFile = (path: string) => {
+    setSelectedPath(path)
     setSearchParams({ file: path }, { replace: true })
     tabRefs.current.get(path)?.focus()
   }
