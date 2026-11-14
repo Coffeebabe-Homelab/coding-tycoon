@@ -76,6 +76,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
         </dependency>
+        <!-- Runs the review worker on an interval. Version from the Quarkus BOM. -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
         <!-- Auth: OIDC (Auth0 JWT validation) -->
         <dependency>
             <groupId>io.quarkus</groupId>
