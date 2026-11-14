@@ -347,6 +347,7 @@ when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
 - All `/api/*` endpoints (except `/api/health`) require a valid Bearer token
 - Use `@Authenticated` on resource classes; `@PermitAll` to explicitly open an endpoint
 - Inject the JWT with `@Inject JsonWebToken jwt` — use `jwt.getSubject()` as the user identifier
+- The email comes from the custom claim `https://codingtycoon.dev/email`, which an Auth0 Post-Login Action adds to the access token (`docs/STAGING_DEPLOY.md`). Access tokens have no plain `email` claim. Without the Action, `users.email` stays `null`
 - CORS is configured for `http://localhost:5173` in dev mode
 - Tests keep OIDC enabled against a local stub server (`OidcWiremockTestResource`). `OidcTokenValidationTest` covers real token validation; other tests inject an identity with `@TestSecurity` + `@OidcSecurity`
 
