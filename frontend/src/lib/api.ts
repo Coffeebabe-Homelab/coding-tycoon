@@ -14,6 +14,8 @@ export class ApiError extends Error {
  * Fetch wrapper that injects the Auth0 Bearer token into every request.
  * Always use this instead of raw fetch for authenticated API calls.
  *
+ * Resolves to `undefined` on 204 No Content, so `T` should include `undefined` for such endpoints.
+ *
  * @throws ApiError when the response status is not 2xx, or with status 401 when there is no token
  */
 export const fetchWithAuth = async <T>(
@@ -37,5 +39,6 @@ export const fetchWithAuth = async <T>(
     throw new ApiError(res.status, await res.text())
   }
 
+  if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
 }

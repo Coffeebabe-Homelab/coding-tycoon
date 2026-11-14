@@ -13,6 +13,12 @@ describe('fetchWithAuth', () => {
     expect(init?.headers).toMatchObject({ Authorization: 'Bearer abc' })
   })
 
+  it('resolves to undefined on 204 No Content', async () => {
+    stubApi({ 'GET /api/things': new Response(null, { status: 204 }) })
+
+    await expect(fetchWithAuth('/api/things', 'abc')).resolves.toBeUndefined()
+  })
+
   it('passes request options through and keeps custom headers', async () => {
     const fetchMock = stubApi({ 'POST /api/things': {} })
 
@@ -61,13 +67,5 @@ describe('fetchWithAuth', () => {
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(401)
     expect(fetchMock).not.toHaveBeenCalled()
-  })
-
-  // Known bug: res.json() throws on an empty body. https://trello.com/c/d6v9NYfk
-  // When fixed this test starts passing, so Vitest flags it: drop `.fails`.
-  it.fails('resolves on 204 No Content', async () => {
-    stubApi({ 'DELETE /api/things': () => new Response(null, { status: 204 }) })
-
-    await fetchWithAuth('/api/things', 'abc', { method: 'DELETE' })
   })
 })
