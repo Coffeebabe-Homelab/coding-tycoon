@@ -29,7 +29,7 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 ### Tasks
 - [x] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
 - [x] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
-- [ ] Add `quarkus-langchain4j-ollama` extension to backend *(deferred: version compatibility regression on Quarkus 3.33+. Task generation runs on `StubTaskAdapter` with seed fallback. Revisit with the first real AI adapter, Phase 5 at the latest)*
+- [x] Add `quarkus-langchain4j-ollama` extension to backend *(done in P5-01: 1.13.4, which supports Quarkus 3.33)*
 - [x] Docker Compose for local: PostgreSQL + Ollama
 - [x] Auth0 tenant setup (dev application, callback URLs)
 - [x] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)
@@ -128,7 +128,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
 - [x] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
 - [x] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
-- [ ] Integration verification (P3-06) — staging verified except deep-link refresh after login (fix pending) and focus-file links (retest)
+- [ ] Integration verification (P3-06) — staging verified except deep-link refresh after login and focus-file links. **Tech debt (owner, 2026-11-14):** not blocking Phase 5; tracked on Trello
 
 ### Exit Criteria
 - Player can open the file tree and browse the synthetic codebase
@@ -150,7 +150,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
 - [x] Editor tab: focus files editable in Monaco, drafts kept across tabs (P4-03)
 - [x] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
-- [ ] Integration verification (P4-05)
+- [x] Integration verification (P4-05) — staging verified 2026-11-14
 
 ### Exit Criteria
 - Player opens the Editor with the task's focus files loaded
@@ -164,21 +164,22 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 
 **Goal:** After submission, an AI senior dev reviews the code and returns APPROVED or CHANGES REQUESTED with inline feedback.
 
+**Decided 2026-11-14:** the Ollama spike is the first task; a push queues the review automatically (no trigger endpoint); the Review tab polls while a review is pending; attempts have no cap, and only attempt 1 earns the first-try bonus. The review target (30 s) is a config value tuned on staging; the AI provider and the review queue sit behind ports, so either can be replaced. Specs: [`docs/tasks/phase-5/`](docs/tasks/phase-5/).
+
 ### Tasks
-- [ ] Ollama prompt template: code-reviewer (task spec + codebase context + submission + guidelines → review)
-- [ ] `POST /api/reviews/trigger` — triggers async AI review for a submission
-- [ ] Review entity: `submissionId`, `verdict` (APPROVED/CHANGES_REQUESTED), `comments` (list of inline feedback), `reviewedAt`
-- [ ] Review polling or WebSocket notification to frontend
-- [ ] Review Panel UI: verdict banner + inline comments (file + line + message)
-- [ ] If CHANGES_REQUESTED: player can edit in Monaco and re-submit (attempt counter increments)
-- [ ] If APPROVED: task marked complete, XP awarded
-- [ ] Code review guidelines document (used as context in the prompt)
+- [ ] Ollama foundation: first real AI call through `TaskAiPort`, adapter chosen by config, fault tolerance, Ollama in Compose (P5-01). Replaces the deferred P0-03
+- [ ] Review domain: `reviews`, comments (file + line + severity) and criteria results (V11); a push queues a `PENDING` review through a `ReviewQueue` port; stub reviewer; `GET /api/reviews/latest` (P5-02). Replaces the planned `POST /api/reviews/trigger`
+- [ ] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry`, tunable target and timeout (P5-03)
+- [ ] Code review guidelines, reviewer prompt, `OllamaReviewAdapter` and hand-run evals (P5-04)
+- [ ] Review tab: polling, verdict card, attempt dots, criteria, threads anchored to code, "Fix in editor" / "Ship it & end the day", offline state (P5-05)
+- [ ] Integration verification (P5-06)
 
 ### Exit Criteria
-- Submit code → review appears within reasonable time (target < 30s on local Ollama)
+- Push code → the review appears without a refresh, measured against `codingtycoon.review.target-duration` (default 30 s, tuned on staging without a rebuild)
 - APPROVED path: task closes, player sees success state
 - CHANGES REQUESTED path: feedback shown, player can iterate
 - Multiple attempts tracked correctly
+- A failed review never costs the player an attempt
 - HUD and End of Day show the same XP and streak values as `GET /api/progress` (deferred from P7-06)
 
 ---
@@ -286,4 +287,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-11-06 | Status: Phases 0–2.1 and Phase 7 (Game Shell) complete. Phase 3 (Codebase Explorer) is delivered; P3-06 verification is still open (deep-link refresh fix, focus-file retest).*
+*Last updated: 2026-11-14 | Status: Phases 0–2.1, 4 and 7 complete. Phase 3 (Codebase Explorer) is delivered; the rest of P3-06 (deep-link refresh, focus-file retest) is tech debt. Next: Phase 5 (AI Review Engine).*

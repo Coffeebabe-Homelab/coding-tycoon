@@ -1,7 +1,7 @@
 # P3-06 — Phase 3 Integration Verification
 
 **Phase:** 3 — Codebase Explorer  
-**Status:** 🟡 Staging verified 2026-11-01 except deep-link refresh (❌) and focus-file links (⏳ retest)  
+**Status:** 🟡 Staging verified 2026-11-01 except deep-link refresh (❌) and focus-file links (⏳ retest). Tech debt since 2026-11-14 (owner): doesn't block Phase 5  
 **Depends on:** P3-01 through P3-05  
 
 ---
