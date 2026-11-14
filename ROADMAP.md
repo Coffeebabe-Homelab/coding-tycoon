@@ -29,7 +29,7 @@ Phase 8 — MVP Polish          End-to-end flow, 10 tasks seeded, launch-ready
 ### Tasks
 - [x] Initialise `frontend/` — Vite + React + TypeScript + Tailwind CSS
 - [x] Initialise `backend/` — Quarkus (REST, Panache, Dev Services for PostgreSQL)
-- [ ] Add `quarkus-langchain4j-ollama` extension to backend *(deferred: version compatibility regression on Quarkus 3.33+. Task generation runs on `StubTaskAdapter` with seed fallback. Revisit with the first real AI adapter, Phase 5 at the latest)*
+- [x] Add `quarkus-langchain4j-ollama` extension to backend *(done in P5-01: 1.13.4, which supports Quarkus 3.33)*
 - [x] Docker Compose for local: PostgreSQL + Ollama
 - [x] Auth0 tenant setup (dev application, callback URLs)
 - [x] Configure Auth0 SDK in frontend (`@auth0/auth0-react`)

@@ -33,6 +33,11 @@ services:
       AUTH0_DOMAIN: ${AUTH0_DOMAIN:?AUTH0_DOMAIN is required}
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:?AUTH0_AUDIENCE is required}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      # No depends_on ollama: with Ollama down the backend still starts and serves seed tasks.
+      AI_PROVIDER: ${AI_PROVIDER:-stub}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-deepseek-coder:6.7b-instruct-q4_K_M}
+      AI_TASK_TIMEOUT_SECONDS: ${AI_TASK_TIMEOUT_SECONDS:-50}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health/ready >/dev/null 2>&1 || exit 1"]
       interval: 30s
@@ -76,22 +81,25 @@ services:
     volumes:
       - lgtm-data:/data
 
-  # ollama:
-  #     image: ollama/ollama:latest
-  #     ports:
-  #       - "11434:11434"
-  #     volumes:
-  #       - ollama_data:/root/.ollama
-  #     # Pulls DeepSeek-Coder 6.7B Q4_K_M on first start
-  #     entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 10 && ollama pull deepseek-coder:6.7b-instruct-q4_K_M && wait"]
-  #     healthcheck:
-  #       test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
-  #       interval: 30s
-  #       timeout: 10s
-  #       retries: 5
-  #       start_period: 60s
+  # Model server for the AI ports. No published port: only the backend reaches it.
+  # The model is pulled once onto the volume (docs/STAGING_DEPLOY.md), never at startup.
+  ollama:
+    image: ollama/ollama:0.40.13
+    restart: unless-stopped
+    environment:
+      # CPU only: one model call at a time; more would just queue inside Ollama.
+      OLLAMA_NUM_PARALLEL: "1"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      # The image has no curl or wget; the CLI talks to the local server.
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
 volumes:
   lgtm-data:
   postgres_data:
-  # ollama_data:
+  ollama_data:

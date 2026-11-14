@@ -32,6 +32,8 @@ Required values:
 
 Optional: `DB_NAME` (default `codingtycoon`), `FRONTEND_PORT` (default `5173`), `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://lgtm:4318`), `OTEL_SERVICE_NAME` (default `coding-tycoon-backend`), `DEPLOYMENT_ENVIRONMENT` (default `homelab`), and the `GRAFANA_PORT` (default `3000`), `OTLP_GRPC_PORT` (default `4317`) and `OTLP_HTTP_PORT` (default `4318`) bindings. See [observability/README.md](../observability/README.md).
 
+AI (optional): `AI_PROVIDER` (`stub` by default: no AI, seed tasks; `ollama` to use the model), `OLLAMA_MODEL` (default `deepseek-coder:6.7b-instruct-q4_K_M`) and `AI_TASK_TIMEOUT_SECONDS` (default `50`; keep it under nginx's 60 s `/api/` proxy timeout). See [AI model (Ollama)](#ai-model-ollama).
+
 Don't set these in `.env`:
 
 - `DATABASE_JDBC_URL` and `QUARKUS_PROFILE`: Compose sets them for the backend.
@@ -60,6 +62,22 @@ exports.onExecutePostLogin = async (event, api) => {
 ```
 
 The email is stored when the player finishes onboarding. Players who onboarded before the Action existed keep an empty email.
+
+## AI model (Ollama)
+
+The `ollama` service runs the model on the host's CPU. It publishes no port: only the backend reaches it, at `http://ollama:11434`. The backend doesn't wait for it, so if Ollama is down, players still get seed tasks.
+
+**Host needs:** about 5 GB of free disk for the model (`deepseek-coder:6.7b-instruct-q4_K_M` is about 4.1 GB) and about 6 GB of free RAM while it answers. Ollama unloads the model after 5 minutes idle.
+
+**Get the model onto the host** once. It's kept in the `ollama_data` volume across deploys, and nothing downloads it at startup:
+
+```bash
+docker compose exec ollama ollama pull deepseek-coder:6.7b-instruct-q4_K_M
+```
+
+**Turn the AI on:** set `AI_PROVIDER=ollama` in the env-file credential and redeploy. To turn it off, set `stub`. No rebuild is needed either way.
+
+**Check a real call:** `POST /api/tasks/generate`, as a player with no active task, generates a task with the model. The backend log shows `AI task generation failed, using a seed task` when it falls back. With CPU only, the first call after idle also loads the model, so it is the slowest.
 
 ## Jenkins Assumptions
 
