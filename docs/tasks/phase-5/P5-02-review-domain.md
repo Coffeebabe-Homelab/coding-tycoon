@@ -29,11 +29,11 @@ Store reviews and let the frontend read them. A push queues a review automatical
 - [ ] `ReviewQueue` port in the `review` domain, with only our own types:
   - `enqueue(reviewId)`: called inside the push transaction
   - `claimNext()` → `Optional<ClaimedReview>`: takes the next review for a worker
-  - `complete(reviewId)`, `retryLater(reviewId, delay)`, `release(reviewId)` (stuck recovery)
+  - `complete(reviewId)`, `retryLater(reviewId, delay)`, `releaseStuck(runningFor)` (puts back reviews whose worker stopped; the worker can't know their ids)
 - [ ] `DbReviewQueue` adapter (`review.queue.db`): the `reviews` table is the queue (`status`, `created_at`, a `next_attempt_at` column). It also works as an outbox if a broker comes later: a relay would publish enqueued rows, and the domain wouldn't change
 - [ ] `POST /api/submissions` saves the review and calls `ReviewQueue.enqueue` **in the same transaction** as the submission, so a push can't exist without its review
 - [ ] Nothing else creates reviews. There is no `POST /api/reviews/trigger`
-- [ ] A shared contract test for `ReviewQueue` adapters: enqueue → claim, no double claim, retry-later is not claimable before its time, release makes it claimable
+- [ ] A shared contract test for `ReviewQueue` adapters: enqueue → claim, no double claim, retry-later is not claimable before its time, a stuck review is put back, two workers never claim the same review
 
 ### API
 - [ ] `GET /api/reviews/latest` (authenticated): the latest review of the player's active task, or the task just approved today. `200` with `{ id, submissionId, attemptNumber, status, verdict, summary, comments[], criteria[], createdAt, reviewedAt, targetSeconds }`, comments sorted Must fix → Suggestion → Praise, then by path and line. `204` when the task has no push yet
