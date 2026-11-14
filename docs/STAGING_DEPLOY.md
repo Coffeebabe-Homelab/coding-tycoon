@@ -47,6 +47,20 @@ Staging is served over Tailscale at `https://coding-tycoon-stg.tail028aa9.ts.net
 
 If staging uses a port during early setup, add that exact origin too, for example `http://staging-host:8080`.
 
+### Email claim Action
+
+Auth0 puts the user's email only in the ID token, so the backend can't read it from the access token. Add a Post-Login Action that copies it into the access token, or `users.email` stays empty. Do this once per tenant: Actions › Library › Create Action (Login / Post Login), deploy it, then add it to the Login flow.
+
+```js
+exports.onExecutePostLogin = async (event, api) => {
+  if (event.user.email) {
+    api.accessToken.setCustomClaim('https://codingtycoon.dev/email', event.user.email);
+  }
+};
+```
+
+The email is stored when the player finishes onboarding. Players who onboarded before the Action existed keep an empty email.
+
 ## Jenkins Assumptions
 
 The Jenkinsfile validates `dev` (the same checks as GitHub CI), waits for manual approval, merges `dev` into `staging`, builds the root Compose project, rsyncs the repo to the staging host, and runs the command below. With the `DEPLOY_ONLY` parameter it skips validation, approval and merge, and deploys `staging` as-is.
