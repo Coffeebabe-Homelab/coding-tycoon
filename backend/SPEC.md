@@ -124,6 +124,7 @@ backend/src/main/java/dev/codingtycoon/
     ├── stub/StubReviewAdapter.java  No AI: attempt 1 → CHANGES_REQUESTED (one comment per severity), later → APPROVED
     └── ollama/
         ├── OllamaTaskAdapter.java   LangChain4j ChatModel + prompts/task-generator.txt, JSON mode, fault tolerance
+        ├── OllamaReviewAdapter.java ChatModel + prompts/code-reviewer.txt; JSON shape check; TypedGuard from codingtycoon.review.timeout
         └── AiUnavailableException.java  Server unreachable: the only failure that is retried
 ```
 
@@ -319,10 +320,11 @@ The AI is replaceable: the domain never knows which provider runs (owner require
 - **Adapters in `ai.<provider>`.** `ai.stub` and `ai.ollama`. Adapters are `@Typed` to their own class, so they are not port beans themselves.
 - **One switch.** `AiProviders` produces every port from `codingtycoon.ai.provider` (env `AI_PROVIDER`, default `stub`). One image runs everywhere; an unknown value fails at startup. A new provider is a package, an `AiProvider` value, a `case` in `AiProviders` and passing the contract test.
 - **Guards.** `AiBoundaryTest` fails the build if LangChain4j types appear outside `ai/ollama`. `TaskAiPortContract` and `ReviewAiPortContract` are the behaviour every adapter must pass (a complete result that fits the request, or empty, never an exception). `ReviewQueueContract` does the same for `ReviewQueue` adapters.
-- **Reviewer.** `ReviewAiPort` uses the stub for both providers until `OllamaReviewAdapter` lands with its prompt (P5-04).
+- **Reviewer.** `OllamaReviewAdapter` fills `prompts/code-reviewer.txt` in one pass (text in the player's code is never taken as a placeholder) with the ticket, the criteria by position, the originals, the pushed files with line numbers, and `review/code-review-guidelines.md`, which `ReviewService` adds to every `ReviewRequest` so any provider gets the same rules. The answer's JSON shape is checked by the adapter (verdict, severities, one result per criterion position) and its fit to the push by the worker (`ReviewResultValidator`). Fault tolerance is a programmatic `TypedGuard` so its timeout is `codingtycoon.review.timeout`, the same value the worker applies; only an unreachable server is retried, and there is no circuit breaker because the queue's backoff already spaces calls. A prompt over the context budget (`num-ctx` minus `num-predict`, at 3 characters per token) is never sent.
+- **Evals.** `backend/evals/review/` holds cases on seed tasks with an expected verdict; `evals/review/run.sh` runs them through the configured `ReviewAiPort` (`AI_PROVIDER=ollama evals/review/run.sh`). By hand only; CI skips `ReviewEvals`.
 - **Slow calls stay outside transactions.** `TaskService.generateTask` reads and saves in two short transactions (`shared.Transactions`) with the model call between them.
 - **Fault tolerance in the adapter.** `OllamaTaskAdapter.generate` has a timeout (`AI_TASK_TIMEOUT_SECONDS`, default 50, under nginx's 60 s), retries only `AiUnavailableException`, a circuit breaker and a fallback to empty. Override any of them with the MicroProfile keys, e.g. `dev.codingtycoon.ai.ollama.OllamaTaskAdapter/generate/Timeout/value`.
-- **Ollama config.** `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_CLIENT_TIMEOUT` (HTTP client, 10 min), JSON output mode, request/response logging in `%dev` only, Dev Services off.
+- **Ollama config.** `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_NUM_CTX` (context, 8192 tokens), `OLLAMA_NUM_PREDICT` (answer cap, 1024), `OLLAMA_CLIENT_TIMEOUT` (HTTP client, 10 min), JSON output mode, request/response logging in `%dev` only, Dev Services off.
 
 Prompt templates live in `src/main/resources/prompts/` as `.txt` files, provider-agnostic.
 
