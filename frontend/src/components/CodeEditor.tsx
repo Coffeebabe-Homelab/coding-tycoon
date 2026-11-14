@@ -69,6 +69,10 @@ export interface CodeEditorProps {
   language: string
   readOnly: boolean
   onChange?: (value: string) => void
+  /** Monaco model URI. Give each editable file its own so undo history stays per file. */
+  path?: string
+  /** 1-based line and column, for a status bar. Read once per editor mount, so pass a stable function. */
+  onCursorChange?: (line: number, column: number) => void
   ariaLabel: string
 }
 
@@ -76,7 +80,15 @@ export interface CodeEditorProps {
  * Shared Monaco editor: read-only in the Codebase Explorer, editable in the Phase 4 editor.
  * Load it through `LazyCodeEditor` so Monaco stays out of the initial bundle.
  */
-export function CodeEditor({ value, language, readOnly, onChange, ariaLabel }: CodeEditorProps) {
+export function CodeEditor({
+  value,
+  language,
+  readOnly,
+  onChange,
+  path,
+  onCursorChange,
+  ariaLabel,
+}: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const savedView = useRef<monaco.editor.ICodeEditorViewState | null>(null)
   const [editorKey, setEditorKey] = useState(0)
@@ -95,6 +107,11 @@ export function CodeEditor({ value, language, readOnly, onChange, ariaLabel }: C
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor
     if (savedView.current) editor.restoreViewState(savedView.current)
+    const position = editor.getPosition()
+    if (position) onCursorChange?.(position.lineNumber, position.column)
+    editor.onDidChangeCursorPosition(({ position }) =>
+      onCursorChange?.(position.lineNumber, position.column),
+    )
     remeasureOnceFontLoads()
   }
 
@@ -105,6 +122,10 @@ export function CodeEditor({ value, language, readOnly, onChange, ariaLabel }: C
         height="100%"
         language={language}
         value={value}
+        path={path}
+        // Hiding a tab replaces the editor; keeping named models keeps each file's undo history.
+        // Unnamed models get a fresh URI per editor, so keeping them would only leak.
+        keepCurrentModel={path !== undefined}
         theme={THEME_NAME}
         beforeMount={defineTheme}
         onMount={handleMount}

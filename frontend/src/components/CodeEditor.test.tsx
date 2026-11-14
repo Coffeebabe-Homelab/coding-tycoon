@@ -6,12 +6,19 @@ import { CodeEditor } from './CodeEditor'
 import { LazyCodeEditor } from './LazyCodeEditor'
 
 const monacoEditor = vi.hoisted(() => ({ defineTheme: vi.fn(), remeasureFonts: vi.fn() }))
-const stubEditor = vi.hoisted(() => ({ saveViewState: vi.fn(), restoreViewState: vi.fn() }))
+const stubEditor = vi.hoisted(() => ({
+  saveViewState: vi.fn(),
+  restoreViewState: vi.fn(),
+  getPosition: vi.fn(),
+  onDidChangeCursorPosition: vi.fn(),
+}))
 const editorIds = vi.hoisted(() => ({ next: 0 }))
 
 function StubEditor({
   language,
   value,
+  path,
+  keepCurrentModel,
   options,
   onChange,
   beforeMount,
@@ -19,6 +26,8 @@ function StubEditor({
 }: {
   language: string
   value: string
+  path?: string
+  keepCurrentModel: boolean
   options: { readOnly: boolean; domReadOnly: boolean; fontSize: number; lineHeight: number }
   onChange: (next: string | undefined) => void
   beforeMount: () => void
@@ -31,6 +40,7 @@ function StubEditor({
       <p>{`${language}: ${value}`}</p>
       <p>{`readOnly=${options.readOnly} domReadOnly=${options.domReadOnly}`}</p>
       <p>{`size=${options.fontSize}/${options.lineHeight}`}</p>
+      <p>{`path=${path ?? 'none'} keep=${keepCurrentModel}`}</p>
       <button
         onClick={() => {
           beforeMount()
@@ -86,6 +96,33 @@ describe('CodeEditor', () => {
 
     await user.click(screen.getByRole('button', { name: 'clear' }))
     expect(onChange).toHaveBeenLastCalledWith('')
+  })
+
+  it('gives each file its own model, kept when the editor is replaced', () => {
+    render(<CodeEditor {...PROPS} readOnly={false} path="draft/src/A.java" />)
+
+    // One model per path keeps undo history per file; hiding a tab replaces the editor.
+    expect(screen.getByText('path=draft/src/A.java keep=true')).toBeInTheDocument()
+  })
+
+  it('drops unnamed models with their editor', () => {
+    render(<CodeEditor {...PROPS} readOnly />)
+
+    expect(screen.getByText('path=none keep=false')).toBeInTheDocument()
+  })
+
+  it('reports the cursor position on mount and when it moves', async () => {
+    const onCursorChange = vi.fn()
+    stubEditor.getPosition.mockReturnValue({ lineNumber: 1, column: 1 })
+    const user = userEvent.setup()
+    render(<CodeEditor {...PROPS} readOnly={false} onCursorChange={onCursorChange} />)
+
+    await user.click(screen.getByRole('button', { name: 'mount' }))
+    expect(onCursorChange).toHaveBeenLastCalledWith(1, 1)
+
+    const [listener] = stubEditor.onDidChangeCursorPosition.mock.lastCall!
+    listener({ position: { lineNumber: 3, column: 7 } })
+    expect(onCursorChange).toHaveBeenLastCalledWith(3, 7)
   })
 
   it('tolerates edits with no change handler', async () => {
