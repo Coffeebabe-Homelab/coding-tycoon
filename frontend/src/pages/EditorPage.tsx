@@ -1,15 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useDrafts } from '../hooks/useDrafts'
-import { useTask } from '../hooks/useTask'
 import { splitCriteria } from '../lib/criteria'
 import { languageForPath, languageLabel } from '../lib/language'
 import { Button } from '../components/Button'
@@ -20,41 +11,15 @@ import { EditorTab } from '../components/EditorTab'
 import { LazyCodeEditor } from '../components/LazyCodeEditor'
 import { Modal } from '../components/Modal'
 import { StatusBadge } from '../components/StatusBadge'
-import { TextLink } from '../components/TextLink'
-import type { Task } from '../types/task'
+import { PanelMessage, TaskFilesGate } from '../components/TaskFilesGate'
+import { EDITABLE_STATUSES, type Task } from '../types/task'
 
 // Monaco's own binding for "Tab moves focus"; on a Mac Cmd+M would minimise the window instead.
 const TAB_FOCUS_SHORTCUT = /Mac/.test(navigator.userAgent) ? 'Ctrl+Shift+M' : 'Ctrl+M'
 
-const EDITABLE_STATUSES: Task['status'][] = ['IN_PROGRESS', 'CHANGES_REQUESTED']
-
 /** Panel tab where the player edits the active task's focus files. Drafts live in DraftsProvider. */
 export default function EditorPage() {
-  const { task, isLoading, error } = useTask()
-
-  if (isLoading) return <Message>Loading today's task…</Message>
-  if (error) return <p className="p-6 text-danger">{error}</p>
-  if (!task || task.focusFiles.length === 0) {
-    return (
-      <Message>
-        This task has no files to edit.
-        <TextLink to="/room/codebase">Explore the codebase</TextLink>
-      </Message>
-    )
-  }
-  if (task.status === 'ASSIGNED') {
-    return (
-      <Message>
-        Start the task to edit its files.
-        <TextLink to="/room/task">Go to the task board</TextLink>
-      </Message>
-    )
-  }
-  return <Workspace task={task} />
-}
-
-function Message({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col items-start gap-4 p-6 text-text-primary">{children}</div>
+  return <TaskFilesGate action="edit">{(task) => <Workspace task={task} />}</TaskFilesGate>
 }
 
 function Workspace({ task }: { task: Task }) {
@@ -78,7 +43,7 @@ function Workspace({ task }: { task: Task }) {
 
   const file = files.find((candidate) => candidate.path === (fileParam ?? lastFile)) ?? files[0]
   if (isLoading || !file) {
-    return <Message>{error ?? 'Loading files…'}</Message>
+    return <PanelMessage>{error ?? 'Loading files…'}</PanelMessage>
   }
 
   const isChanged = changedPaths.includes(file.path)

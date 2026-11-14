@@ -1,11 +1,14 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { trapFocus } from '../lib/focusTrap'
 import { Button } from './Button'
+import type { ButtonVariant } from './buttonClasses'
 
 interface ModalProps {
   title: string
   children: ReactNode
   confirmLabel: string
+  /** Danger for discarding work (the default); primary for a step forward such as a push. */
+  confirmVariant?: ButtonVariant
   onConfirm: () => void
   onCancel: () => void
 }
@@ -15,7 +18,14 @@ interface ModalProps {
  * stray Enter can't confirm. Esc cancels without closing the panel underneath. Focus returns to
  * the opener if it can still take it; otherwise the caller moves focus in `onConfirm`.
  */
-export function Modal({ title, children, confirmLabel, onConfirm, onCancel }: ModalProps) {
+export function Modal({
+  title,
+  children,
+  confirmLabel,
+  confirmVariant = 'danger',
+  onConfirm,
+  onCancel,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
@@ -61,7 +71,7 @@ export function Modal({ title, children, confirmLabel, onConfirm, onCancel }: Mo
           <Button ref={cancelRef} variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>

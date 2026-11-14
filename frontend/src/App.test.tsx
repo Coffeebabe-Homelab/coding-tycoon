@@ -98,6 +98,18 @@ describe('App routing', () => {
     expect(tabs.indexOf('Editor')).toBe(tabs.indexOf('Codebase') + 1)
   })
 
+  it('opens VCS as a panel tab after the Editor', async () => {
+    stubApi(ROOM_ROUTES)
+    vi.mocked(useAuth0).mockReturnValue(authState())
+
+    renderAt('/room/vcs')
+
+    expect(await screen.findByText('This task has no files to change.')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Room / VCS')
+    const tabs = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(tabs.indexOf('VCS')).toBe(tabs.indexOf('Editor') + 1)
+  })
+
   it('redirects the old /room/profile URL to the Profile page', async () => {
     stubApi(ROOM_ROUTES)
     vi.mocked(useAuth0).mockReturnValue(authState())
