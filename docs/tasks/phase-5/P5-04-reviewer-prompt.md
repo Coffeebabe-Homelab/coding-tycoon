@@ -17,10 +17,10 @@ Make the AI senior dev review real code. "Feedback is the product" (north star),
 - [ ] `docs/code-review-guidelines.md`: what a Java / Spring Boot Junior review checks (correctness against the criteria, validation, error handling, naming, tests, layering in `shopfront`). It is loaded into the prompt, so keep it short
 - [ ] `prompts/code-reviewer.txt`: task, criteria, the focus-file originals, the pushed files with line numbers, and the guidelines → a JSON result: `verdict`, `summary`, `comments[{path, line, severity, body}]`, `criteria[{position, met}]`
 - [ ] Tone from the Design Spec "Senior Dev" voice: specific, constructive, cites file:line, and at least one Praise when something was done well
-- [ ] `OllamaReviewAdapter` implements `ReviewAiPort`, selected by `codingtycoon.ai.provider=ollama`. It asks Ollama for JSON output and maps it to `ReviewResult`; unparseable output returns `Optional.empty()` (the worker counts it as a failure)
-- [ ] Fault tolerance as in P5-01. The review timeout is its own config key, longer than task generation, set from the P5-01 latency
+- [ ] `OllamaReviewAdapter` in `ai.ollama` implements `ReviewAiPort`, selected by `codingtycoon.ai.provider=ollama`, and passes the shared `ReviewAiPort` contract test from P5-02. It asks Ollama for JSON output and maps it to `ReviewResult`; unparseable output returns `Optional.empty()` (the worker counts it as a failure)
+- [ ] Fault tolerance as in P5-01. The call uses `codingtycoon.review.timeout` from P5-03, set from the P5-01 latency
 - [ ] The prompt fits the model's context: pushed files are capped by the 64 KB push limit; if the prompt would exceed the configured context size, the adapter fails fast instead of sending a truncated review
-- [ ] `backend/evals/review/`: at least 5 cases on seed tasks (a correct solution, a missing criterion, a bug, missing validation, a no-op change), each with the expected verdict. A script runs them against a real Ollama and prints verdict and latency. It runs by hand, not in CI
+- [ ] `backend/evals/review/`: at least 5 cases on seed tasks (a correct solution, a missing criterion, a bug, missing validation, a no-op change), each with the expected verdict. A script runs them through `ReviewAiPort` against the configured provider and prints verdict, latency and whether it beat the target. It runs by hand, not in CI, and works for any future provider
 - [ ] Unit tests with a mocked model: JSON mapping, malformed JSON, missing fields, unknown severity
 - [ ] `backend/SPEC.md`, `CHANGELOG.md`
 

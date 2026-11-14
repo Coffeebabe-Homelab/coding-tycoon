@@ -164,18 +164,18 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 
 **Goal:** After submission, an AI senior dev reviews the code and returns APPROVED or CHANGES REQUESTED with inline feedback.
 
-**Decided 2026-11-14:** the Ollama spike is the first task; a push queues the review automatically (no trigger endpoint); the Review tab polls while a review is pending; attempts have no cap, and only attempt 1 earns the first-try bonus. Specs: [`docs/tasks/phase-5/`](docs/tasks/phase-5/).
+**Decided 2026-11-14:** the Ollama spike is the first task; a push queues the review automatically (no trigger endpoint); the Review tab polls while a review is pending; attempts have no cap, and only attempt 1 earns the first-try bonus. The review target (30 s) is a config value tuned on staging; the AI provider and the review queue sit behind ports, so either can be replaced. Specs: [`docs/tasks/phase-5/`](docs/tasks/phase-5/).
 
 ### Tasks
 - [ ] Ollama foundation: first real AI call through `TaskAiPort`, adapter chosen by config, fault tolerance, Ollama in Compose (P5-01). Replaces the deferred P0-03
-- [ ] Review domain: `reviews`, comments (file + line + severity) and criteria results (V11); a push queues a `PENDING` review; stub reviewer; `GET /api/reviews/latest` (P5-02). Replaces the planned `POST /api/reviews/trigger`
-- [ ] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry` (P5-03)
+- [ ] Review domain: `reviews`, comments (file + line + severity) and criteria results (V11); a push queues a `PENDING` review through a `ReviewQueue` port; stub reviewer; `GET /api/reviews/latest` (P5-02). Replaces the planned `POST /api/reviews/trigger`
+- [ ] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry`, tunable target and timeout (P5-03)
 - [ ] Code review guidelines, reviewer prompt, `OllamaReviewAdapter` and hand-run evals (P5-04)
 - [ ] Review tab: polling, verdict card, attempt dots, criteria, threads anchored to code, "Fix in editor" / "Ship it & end the day", offline state (P5-05)
 - [ ] Integration verification (P5-06)
 
 ### Exit Criteria
-- Push code → the review appears without a refresh; latency is recorded (CPU staging has no hard target, owner 2026-11-14; the < 30s goal is revisited with the P5-01 numbers)
+- Push code → the review appears without a refresh, measured against `codingtycoon.review.target-duration` (default 30 s, tuned on staging without a rebuild)
 - APPROVED path: task closes, player sees success state
 - CHANGES REQUESTED path: feedback shown, player can iterate
 - Multiple attempts tracked correctly

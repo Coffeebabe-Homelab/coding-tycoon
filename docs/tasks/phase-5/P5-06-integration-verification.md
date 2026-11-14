@@ -15,7 +15,7 @@ Verify the Phase 5 exit criteria end to end on staging, with the real model, bef
 ## Exit Criteria (from ROADMAP)
 
 ### Review loop
-- [ ] Push → a review appears in the Review tab without a refresh. The latency is recorded (no hard target on CPU staging, owner 2026-11-14)
+- [ ] Push → a review appears in the Review tab without a refresh. The latency is recorded against `codingtycoon.review.target-duration`, and the target is tuned on staging by changing the env value only
 - [ ] Approved: the task closes, the success state shows, and "Ship it & end the day" opens End of Day
 - [ ] Changes requested: the comments show anchored to code; "Fix in editor" reopens editable files from the last push; the next push is attempt 2
 - [ ] Several attempts are numbered correctly, and the attempt dots match
@@ -27,6 +27,10 @@ Verify the Phase 5 exit criteria end to end on staging, with the real model, bef
 ### XP
 - [ ] The approval pays the ticket XP once, plus the first-try bonus only on attempt 1
 - [ ] HUD and End of Day show the same XP and streak as `GET /api/progress` (deferred from P7-06)
+
+### Replaceability
+- [ ] The import check passes: no provider types outside `ai.<provider>`, no JPA in `review.worker`
+- [ ] Every `TaskAiPort`, `ReviewAiPort` and `ReviewQueue` adapter passes its contract test
 
 ### Security
 - [ ] `GET /api/reviews/latest` and `POST /api/reviews/{id}/retry` without a token → `401`

@@ -17,7 +17,7 @@ The Review tab (`/room/review`) shows the senior dev's verdict and comments, anc
 ### Tab and loading
 - [ ] `/room/review` → `ReviewPage`, the fifth panel tab, kept alive with `<Activity>` like the others
 - [ ] `useReview` hook: `GET /api/reviews/latest`. While the status is `PENDING` or `RUNNING`, it polls every 3 s, and stops when the tab is hidden or the review is `DONE` or `FAILED` (owner chose polling, 2026-11-14)
-- [ ] Pending state: "Senior dev is reviewing attempt N…" with the time since the push. No spinner-only screen: on CPU this can take minutes
+- [ ] Pending state: "Senior dev is reviewing attempt N…" with the time since the push. Past `targetSeconds` it adds "taking longer than usual — you can leave, it keeps going". No spinner-only screen: on CPU this can take minutes
 - [ ] No push yet: points to the VCS tab
 - [ ] After a push, the VCS toast links to the Review tab, and its wording changes from "waiting for review" to "in review"
 
