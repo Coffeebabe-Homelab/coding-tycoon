@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import EditorPage from './EditorPage'
 import { DraftsProvider } from '../hooks/useDrafts'
 import { authState, stubApi } from '../test/helpers'
+import { LocationProbe } from '../test/LocationProbe'
 import type { CodeEditorProps } from '../components/CodeEditor'
 import type { Task } from '../types/task'
 
@@ -71,10 +72,11 @@ function page(mode: 'visible' | 'hidden' = 'visible') {
   )
 }
 
-function renderEditor() {
+function renderEditor(url = '/room/editor') {
   const result = render(page(), {
     wrapper: ({ children }) => (
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[url]}>
+        <LocationProbe />
         <DraftsProvider>{children}</DraftsProvider>
       </MemoryRouter>
     ),
@@ -134,6 +136,32 @@ describe('EditorPage', () => {
     expect(fileTab('UserController.java')).toHaveFocus()
   })
 
+  it('opens the file named in ?file=, as the VCS tab links to it', async () => {
+    stubTask()
+    renderEditor(`/room/editor?file=${encodeURIComponent(SERVICE)}`)
+
+    expect(await editor('UserService.java')).toHaveValue('class UserService {}')
+  })
+
+  it('names the selected file in the URL', async () => {
+    stubTask()
+    const { user } = renderEditor()
+    await editor()
+
+    await user.click(fileTab('UserService.java'))
+
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      `/room/editor?file=${encodeURIComponent(SERVICE)}`,
+    )
+  })
+
+  it('falls back to the first file when ?file= is not a task file', async () => {
+    stubTask()
+    renderEditor('/room/editor?file=pom.xml')
+
+    expect(await editor()).toBeInTheDocument()
+  })
+
   it('keeps each draft across file and panel tab switches', async () => {
     stubTask()
     const { user, rerender } = renderEditor()
@@ -191,7 +219,7 @@ describe('EditorPage', () => {
     stubTask()
     const { user } = renderEditor()
     await editor()
-    const status = screen.getByRole('status')
+    const status = screen.getByRole('status', { name: 'Editor status' })
 
     await user.click(screen.getByRole('button', { name: 'move cursor' }))
 
@@ -210,7 +238,7 @@ describe('EditorPage', () => {
     expect(locked).toHaveAttribute('readonly')
     expect(fileTab('UserController.java')).toHaveAccessibleName(/read-only/)
     expect(screen.getByText(/waiting for review/)).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Read-only')
+    expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('Read-only')
     expect(screen.queryByRole('button', { name: 'Reset file' })).not.toBeInTheDocument()
   })
 

@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import Editor, { loader, type OnMount } from '@monaco-editor/react'
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import Editor, { DiffEditor, loader, type DiffOnMount, type OnMount } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
@@ -41,6 +41,8 @@ function defineTheme(): void {
     'editorLineNumber.foreground': token('--color-text-muted'),
     'editorLineNumber.activeForeground': token('--color-text-primary'),
     'editorCursor.foreground': token('--color-accent'),
+    'diffEditor.insertedLineBackground': token('--color-success-subtle'),
+    'diffEditor.removedLineBackground': token('--color-danger-subtle'),
   }
   // Skip tokens that aren't emitted so Monaco keeps its vs-dark default for them.
   const definedColors = Object.fromEntries(Object.entries(colors).filter(([, value]) => value))
@@ -54,6 +56,44 @@ function defineTheme(): void {
     rules,
     colors: definedColors,
   })
+}
+
+/**
+ * Hiding a tab runs effect cleanups. The Monaco wrappers then destroy their editor and crash if
+ * shown again, so this returns a key that replaces the editor after each hide. `onHide` runs
+ * first: layout cleanups run before the wrapper's, while the old editor still exists.
+ */
+function useEditorKeyAcrossHide(onHide?: () => void): number {
+  const [editorKey, setEditorKey] = useState(0)
+  const onHideRef = useLatest(onHide)
+  useLayoutEffect(
+    () => () => {
+      onHideRef.current?.()
+      setEditorKey((key) => key + 1)
+    },
+    [onHideRef],
+  )
+  return editorKey
+}
+
+/**
+ * The Monaco wrappers keep the onMount from their first render, which can come long before the
+ * mount (a tab hidden in between), so onMount reads current props through this ref.
+ */
+function useLatest<T>(value: T): RefObject<T> {
+  const ref = useRef(value)
+  useLayoutEffect(() => {
+    ref.current = value
+  })
+  return ref
+}
+
+/**
+ * A new editor reuses a kept model as it is: the wrapper only applies `value` on later changes.
+ * Setting it only when stale keeps the model's undo history.
+ */
+function syncModel(model: { getValue(): string; setValue(value: string): void }, value: string) {
+  if (model.getValue() !== value) model.setValue(value)
 }
 
 /** Monaco caches glyph widths: measured with a fallback font, the selection drifts from the text. */
@@ -91,21 +131,15 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const savedView = useRef<monaco.editor.ICodeEditorViewState | null>(null)
-  const [editorKey, setEditorKey] = useState(0)
-
-  // Hiding a tab runs effect cleanups. The Monaco wrapper then destroys its editor and crashes if
-  // shown again, so save the view first (layout cleanups run before the wrapper's) and replace it.
-  useLayoutEffect(
-    () => () => {
-      if (editorRef.current) savedView.current = editorRef.current.saveViewState()
-      editorRef.current = null
-      setEditorKey((key) => key + 1)
-    },
-    [],
-  )
+  const latestValue = useLatest(value)
+  const editorKey = useEditorKeyAcrossHide(() => {
+    if (editorRef.current) savedView.current = editorRef.current.saveViewState()
+    editorRef.current = null
+  })
 
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor
+    syncModel(editor, latestValue.current)
     if (savedView.current) editor.restoreViewState(savedView.current)
     const position = editor.getPosition()
     if (position) onCursorChange?.(position.lineNumber, position.column)
@@ -139,6 +173,100 @@ export function CodeEditor({
           fontSize: FONT_SIZE,
           lineHeight: LINE_HEIGHT,
           wordWrap: 'on',
+          scrollBeyondLastLine: false,
+        }}
+      />
+    </div>
+  )
+}
+
+export interface CodeDiffProps {
+  original: string
+  modified: string
+  /** Monaco language id, see `languageForPath` in lib/language.ts. */
+  language: string
+  /** The file's path; each file gets its own pair of models. */
+  path: string
+  /** Side by side when true, one unified column otherwise. */
+  split: boolean
+  /** Lines added and removed, each time Monaco finishes a diff. Read once per mount. */
+  onLineCounts?: (added: number, removed: number) => void
+  ariaLabel: string
+}
+
+/** Counts lines from Monaco's line changes; an end line of 0 means "no lines on that side". */
+function countLines(changes: monaco.editor.ILineChange[]): { added: number; removed: number } {
+  let added = 0
+  let removed = 0
+  for (const change of changes) {
+    if (change.modifiedEndLineNumber > 0) {
+      added += change.modifiedEndLineNumber - change.modifiedStartLineNumber + 1
+    }
+    if (change.originalEndLineNumber > 0) {
+      removed += change.originalEndLineNumber - change.originalStartLineNumber + 1
+    }
+  }
+  return { added, removed }
+}
+
+/**
+ * Read-only Monaco diff of a file's original and the player's version, for the VCS panel.
+ * Load it through `DiffView`. One editor whose models swap per file, as the spec asks.
+ */
+export function CodeDiff({
+  original,
+  modified,
+  language,
+  path,
+  split,
+  onLineCounts,
+  ariaLabel,
+}: CodeDiffProps) {
+  const editorKey = useEditorKeyAcrossHide()
+  const latest = useLatest({ original, modified })
+
+  const handleMount: DiffOnMount = (editor) => {
+    const models = editor.getModel()
+    if (models) {
+      syncModel(models.original, latest.current.original)
+      syncModel(models.modified, latest.current.modified)
+    }
+    editor.onDidUpdateDiff(() => {
+      const { added, removed } = countLines(editor.getLineChanges() ?? [])
+      onLineCounts?.(added, removed)
+    })
+    remeasureOnceFontLoads()
+  }
+
+  return (
+    <div className="h-full w-full" aria-label={ariaLabel} role="region">
+      <DiffEditor
+        key={editorKey}
+        height="100%"
+        language={language}
+        original={original}
+        modified={modified}
+        originalModelPath={`diff-original/${path}`}
+        modifiedModelPath={`diff-modified/${path}`}
+        // Disposing the models before the editor makes Monaco's diff widget throw. One pair per
+        // file path is kept, so this stays bounded by the task's focus files.
+        keepCurrentOriginalModel
+        keepCurrentModifiedModel
+        theme={THEME_NAME}
+        beforeMount={defineTheme}
+        onMount={handleMount}
+        options={{
+          readOnly: true,
+          domReadOnly: true,
+          originalEditable: false,
+          renderSideBySide: split,
+          // Keep the toggle meaningful: Monaco would otherwise fall back to unified when narrow.
+          useInlineViewWhenSpaceIsLimited: false,
+          ariaLabel,
+          minimap: { enabled: false },
+          fontFamily: token('--font-mono'),
+          fontSize: FONT_SIZE,
+          lineHeight: LINE_HEIGHT,
           scrollBeyondLastLine: false,
         }}
       />

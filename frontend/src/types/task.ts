@@ -16,3 +16,6 @@ export interface Task {
   status: TaskStatus
   createdAt: string
 }
+
+/** Statuses in which the player can change and push the task's files. */
+export const EDITABLE_STATUSES: TaskStatus[] = ['IN_PROGRESS', 'CHANGES_REQUESTED']

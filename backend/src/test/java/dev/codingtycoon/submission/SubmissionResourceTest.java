@@ -21,6 +21,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -74,6 +75,7 @@ class SubmissionResourceTest {
                 .body("id", notNullValue())
                 .body("taskId", is(taskId.intValue()))
                 .body("attemptNumber", is(1))
+                .body("commitHash", matchesPattern("[0-9a-f]{7}"))
                 .body("commitMessage", is("feat(users): list users"))
                 .body("submittedAt", notNullValue())
                 .body("files[0].path", is(FOCUS_FILE))

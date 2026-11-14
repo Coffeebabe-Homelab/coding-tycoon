@@ -2,8 +2,9 @@ import { Activity, useState } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CodeEditor } from './CodeEditor'
+import { CodeDiff, CodeEditor } from './CodeEditor'
 import { LazyCodeEditor } from './LazyCodeEditor'
+import { DiffView } from './DiffView'
 
 const monacoEditor = vi.hoisted(() => ({ defineTheme: vi.fn(), remeasureFonts: vi.fn() }))
 const stubEditor = vi.hoisted(() => ({
@@ -11,6 +12,8 @@ const stubEditor = vi.hoisted(() => ({
   restoreViewState: vi.fn(),
   getPosition: vi.fn(),
   onDidChangeCursorPosition: vi.fn(),
+  getValue: vi.fn(),
+  setValue: vi.fn(),
 }))
 const editorIds = vi.hoisted(() => ({ next: 0 }))
 
@@ -34,6 +37,8 @@ function StubEditor({
   onMount: (editor: typeof stubEditor) => void
 }) {
   const [id] = useState(() => ++editorIds.next)
+  // Like the wrapper, keep the onMount from the first render.
+  const [firstOnMount] = useState(() => onMount)
   return (
     <div>
       <p data-testid="editor-id">{id}</p>
@@ -44,7 +49,7 @@ function StubEditor({
       <button
         onClick={() => {
           beforeMount()
-          onMount(stubEditor)
+          firstOnMount(stubEditor)
         }}
       >
         mount
@@ -55,10 +60,50 @@ function StubEditor({
   )
 }
 
-// Monaco can't run in jsdom. The stub exposes what CodeEditor hands to it, and fires onChange.
+const stubDiffEditor = vi.hoisted(() => ({
+  onDidUpdateDiff: vi.fn(),
+  getLineChanges: vi.fn(),
+  getModel: vi.fn(),
+}))
+
+function StubDiffEditor({
+  original,
+  modified,
+  originalModelPath,
+  modifiedModelPath,
+  keepCurrentOriginalModel,
+  keepCurrentModifiedModel,
+  options,
+  onMount,
+}: {
+  original: string
+  modified: string
+  originalModelPath: string
+  modifiedModelPath: string
+  keepCurrentOriginalModel: boolean
+  keepCurrentModifiedModel: boolean
+  options: { renderSideBySide: boolean; readOnly: boolean; ariaLabel: string }
+  onMount: (editor: typeof stubDiffEditor) => void
+}) {
+  const [id] = useState(() => ++editorIds.next)
+  const [firstOnMount] = useState(() => onMount)
+  return (
+    <div>
+      <p data-testid="diff-id">{id}</p>
+      <p>{`${original} -> ${modified}`}</p>
+      <p>{`${originalModelPath} | ${modifiedModelPath}`}</p>
+      <p>{`keep=${keepCurrentOriginalModel}/${keepCurrentModifiedModel}`}</p>
+      <p>{`split=${options.renderSideBySide} readOnly=${options.readOnly}`}</p>
+      <button onClick={() => firstOnMount(stubDiffEditor)}>mount diff</button>
+    </div>
+  )
+}
+
+// Monaco can't run in jsdom. The stubs expose what CodeEditor hands to them, and fire callbacks.
 vi.mock('@monaco-editor/react', () => ({
   loader: { config: () => {} },
   default: StubEditor,
+  DiffEditor: StubDiffEditor,
 }))
 vi.mock('monaco-editor', () => ({ editor: monacoEditor }))
 vi.mock('monaco-editor/editor/editor.worker?worker', () => ({ default: class {} }))
@@ -128,6 +173,25 @@ describe('CodeEditor', () => {
     const [listener] = stubEditor.onDidChangeCursorPosition.mock.lastCall!
     listener({ position: { lineNumber: 3, column: 7 } })
     expect(onCursorChange).toHaveBeenLastCalledWith(3, 7)
+  })
+
+  it('brings a kept model up to date when a new editor reuses it', async () => {
+    stubEditor.getValue.mockReturnValue('stale')
+    const user = userEvent.setup()
+    const { rerender } = render(<CodeEditor {...PROPS} readOnly={false} path="draft/src/A.java" />)
+    // The editor can render before it mounts, as in a hidden tab; the newest value must win.
+    rerender(
+      <CodeEditor {...PROPS} value="class A { B b; }" readOnly={false} path="draft/src/A.java" />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'mount' }))
+    expect(stubEditor.setValue).toHaveBeenCalledWith('class A { B b; }')
+
+    // A current model is left alone, so its undo history survives.
+    stubEditor.setValue.mockClear()
+    stubEditor.getValue.mockReturnValue('class A { B b; }')
+    await user.click(screen.getByRole('button', { name: 'mount' }))
+    expect(stubEditor.setValue).not.toHaveBeenCalled()
   })
 
   it('tolerates edits with no change handler', async () => {
@@ -246,5 +310,119 @@ describe('LazyCodeEditor', () => {
 
     expect(screen.getByText('Loading editor…')).toBeInTheDocument()
     expect(await screen.findByRole('region', { name: 'Viewing A.java' })).toBeInTheDocument()
+  })
+})
+
+describe('CodeDiff', () => {
+  const DIFF = {
+    original: 'old',
+    modified: 'new',
+    language: 'java',
+    path: 'src/A.java',
+    split: false,
+    ariaLabel: 'Changes to A.java',
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('compares the original with the draft, read-only, one model pair per file', () => {
+    render(<CodeDiff {...DIFF} />)
+
+    expect(screen.getByRole('region', { name: 'Changes to A.java' })).toBeInTheDocument()
+    expect(screen.getByText('old -> new')).toBeInTheDocument()
+    expect(
+      screen.getByText('diff-original/src/A.java | diff-modified/src/A.java'),
+    ).toBeInTheDocument()
+    // Disposing the models first makes Monaco's diff widget throw, so they are kept per path.
+    expect(screen.getByText('keep=true/true')).toBeInTheDocument()
+  })
+
+  it('renders unified or split', () => {
+    const { rerender } = render(<CodeDiff {...DIFF} />)
+    expect(screen.getByText('split=false readOnly=true')).toBeInTheDocument()
+
+    rerender(<CodeDiff {...DIFF} split />)
+    expect(screen.getByText('split=true readOnly=true')).toBeInTheDocument()
+  })
+
+  it('reports added and removed lines whenever the diff updates', async () => {
+    const onLineCounts = vi.fn()
+    stubDiffEditor.getLineChanges.mockReturnValue([
+      {
+        originalStartLineNumber: 3,
+        originalEndLineNumber: 3,
+        modifiedStartLineNumber: 3,
+        modifiedEndLineNumber: 5,
+      },
+      // Pure insertion: Monaco marks "no original lines" with an end line of 0.
+      {
+        originalStartLineNumber: 9,
+        originalEndLineNumber: 0,
+        modifiedStartLineNumber: 12,
+        modifiedEndLineNumber: 12,
+      },
+      // Pure deletion.
+      {
+        originalStartLineNumber: 20,
+        originalEndLineNumber: 21,
+        modifiedStartLineNumber: 22,
+        modifiedEndLineNumber: 0,
+      },
+    ])
+    render(<CodeDiff {...DIFF} onLineCounts={onLineCounts} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'mount diff' }))
+    const [listener] = stubDiffEditor.onDidUpdateDiff.mock.lastCall!
+    listener()
+
+    expect(onLineCounts).toHaveBeenLastCalledWith(4, 3)
+  })
+
+  it('counts nothing before the first diff is ready', async () => {
+    const onLineCounts = vi.fn()
+    stubDiffEditor.getLineChanges.mockReturnValue(null)
+    render(<CodeDiff {...DIFF} onLineCounts={onLineCounts} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'mount diff' }))
+    stubDiffEditor.onDidUpdateDiff.mock.lastCall![0]()
+
+    expect(onLineCounts).toHaveBeenLastCalledWith(0, 0)
+  })
+
+  it('brings kept models up to date when a new diff editor reuses them', async () => {
+    const model = (value: string) => ({ getValue: () => value, setValue: vi.fn() })
+    const kept = { original: model('old'), modified: model('older draft') }
+    stubDiffEditor.getModel.mockReturnValue(kept)
+    const { rerender } = render(<CodeDiff {...DIFF} modified="first" />)
+    rerender(<CodeDiff {...DIFF} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'mount diff' }))
+
+    expect(kept.original.setValue).not.toHaveBeenCalled()
+    expect(kept.modified.setValue).toHaveBeenCalledWith('new')
+  })
+
+  it('starts a new diff editor when its tab comes back', async () => {
+    const inTab = (mode: 'visible' | 'hidden') => (
+      <Activity mode={mode}>
+        <CodeDiff {...DIFF} />
+      </Activity>
+    )
+    const { rerender } = render(inTab('visible'))
+    const firstId = screen.getByTestId('diff-id').textContent
+
+    rerender(inTab('hidden'))
+    rerender(inTab('visible'))
+
+    await waitFor(() => expect(screen.getByTestId('diff-id').textContent).not.toBe(firstId))
+  })
+
+  it('loads lazily through DiffView', async () => {
+    render(<DiffView {...DIFF} />)
+
+    expect(screen.getByText('Loading diff…')).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Changes to A.java' })).toBeInTheDocument()
   })
 })

@@ -1,15 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useDrafts } from '../hooks/useDrafts'
-import { useTask } from '../hooks/useTask'
 import { splitCriteria } from '../lib/criteria'
 import { languageForPath, languageLabel } from '../lib/language'
 import { Button } from '../components/Button'
@@ -20,46 +11,31 @@ import { EditorTab } from '../components/EditorTab'
 import { LazyCodeEditor } from '../components/LazyCodeEditor'
 import { Modal } from '../components/Modal'
 import { StatusBadge } from '../components/StatusBadge'
-import { TextLink } from '../components/TextLink'
-import type { Task } from '../types/task'
+import { PanelMessage, TaskFilesGate } from '../components/TaskFilesGate'
+import { EDITABLE_STATUSES, type Task } from '../types/task'
 
 // Monaco's own binding for "Tab moves focus"; on a Mac Cmd+M would minimise the window instead.
 const TAB_FOCUS_SHORTCUT = /Mac/.test(navigator.userAgent) ? 'Ctrl+Shift+M' : 'Ctrl+M'
 
-const EDITABLE_STATUSES: Task['status'][] = ['IN_PROGRESS', 'CHANGES_REQUESTED']
-
 /** Panel tab where the player edits the active task's focus files. Drafts live in DraftsProvider. */
 export default function EditorPage() {
-  const { task, isLoading, error } = useTask()
-
-  if (isLoading) return <Message>Loading today's task…</Message>
-  if (error) return <p className="p-6 text-danger">{error}</p>
-  if (!task || task.focusFiles.length === 0) {
-    return (
-      <Message>
-        This task has no files to edit.
-        <TextLink to="/room/codebase">Explore the codebase</TextLink>
-      </Message>
-    )
-  }
-  if (task.status === 'ASSIGNED') {
-    return (
-      <Message>
-        Start the task to edit its files.
-        <TextLink to="/room/task">Go to the task board</TextLink>
-      </Message>
-    )
-  }
-  return <Workspace task={task} />
-}
-
-function Message({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col items-start gap-4 p-6 text-text-primary">{children}</div>
+  return <TaskFilesGate action="edit">{(task) => <Workspace task={task} />}</TaskFilesGate>
 }
 
 function Workspace({ task }: { task: Task }) {
   const { files, changedPaths, isLoading, error, loadDrafts, setDraft, resetFile } = useDrafts()
-  const [selectedPath, setSelectedPath] = useState(task.focusFiles[0])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const fileParam = searchParams.get('file')
+  // Selection is local state, so Monaco swaps models at once: router updates are transitions and
+  // can lag by most of a second, letting keystrokes land in the previous file. The URL mirrors it,
+  // and a new ?file= (from "Open in editor") still wins. The tab link has no ?file=, so the last
+  // file stays open.
+  const [selectedPath, setSelectedPath] = useState<string | null>(null)
+  const [seenParam, setSeenParam] = useState<string | null>(null)
+  if (fileParam && fileParam !== seenParam) {
+    setSeenParam(fileParam)
+    setSelectedPath(fileParam)
+  }
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
   const tabRefs = useRef(new Map<string, HTMLButtonElement>())
@@ -74,13 +50,14 @@ function Workspace({ task }: { task: Task }) {
 
   const file = files.find((candidate) => candidate.path === selectedPath) ?? files[0]
   if (isLoading || !file) {
-    return <Message>{error ?? 'Loading files…'}</Message>
+    return <PanelMessage>{error ?? 'Loading files…'}</PanelMessage>
   }
 
   const isChanged = changedPaths.includes(file.path)
 
   const selectFile = (path: string) => {
     setSelectedPath(path)
+    setSearchParams({ file: path }, { replace: true })
     tabRefs.current.get(path)?.focus()
   }
 
@@ -175,6 +152,7 @@ function Workspace({ task }: { task: Task }) {
 
         <div
           role="status"
+          aria-label="Editor status"
           className="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-text-muted"
         >
           <span className="rounded-sm bg-accent-subtle px-2 py-0.5 font-semibold uppercase text-accent-on-subtle">

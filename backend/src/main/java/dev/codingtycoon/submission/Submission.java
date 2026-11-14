@@ -13,9 +13,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 
 /**
@@ -52,4 +56,20 @@ public class Submission extends PanacheEntityBase {
     @JoinColumn(name = "submission_id", nullable = false)
     @OrderBy("path")
     public List<SubmissionFile> files = new ArrayList<>();
+
+    /**
+     * A short Git-looking id for the VCS panel. Decorative only: it is not a content hash and
+     * identifies nothing, so never look a submission up by it.
+     *
+     * @return the first 7 hex characters of MD5("taskId:playerProfileId:attemptNumber")
+     */
+    public String displayHash() {
+        String key = taskId + ":" + playerProfileId + ":" + attemptNumber;
+        try {
+            byte[] digest = MessageDigest.getInstance("MD5").digest(key.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest).substring(0, 7);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Every Java runtime must provide MD5", e);
+        }
+    }
 }

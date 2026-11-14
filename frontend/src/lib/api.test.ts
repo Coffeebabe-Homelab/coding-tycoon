@@ -69,3 +69,19 @@ describe('fetchWithAuth', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+describe('ApiError.serverMessage', () => {
+  it("reads the backend's message from its error body", () => {
+    const body =
+      '{"error":"UnprocessableException","message":"Commit message is required","status":422}'
+
+    expect(new ApiError(422, body).serverMessage).toBe('Commit message is required')
+  })
+
+  it.each(['<html>Bad gateway</html>', '{"error":"x"}', '"text"', 'null'])(
+    'is null when the body has no message: %s',
+    (body) => {
+      expect(new ApiError(502, body).serverMessage).toBeNull()
+    },
+  )
+})
