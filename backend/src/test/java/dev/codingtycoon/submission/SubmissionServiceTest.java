@@ -6,6 +6,7 @@ import dev.codingtycoon.submission.CreateSubmissionRequest.FileContent;
 import dev.codingtycoon.task.Task;
 import dev.codingtycoon.task.TaskService;
 import dev.codingtycoon.task.TaskStatus;
+import jakarta.enterprise.event.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,6 +39,9 @@ class SubmissionServiceTest {
     private final SubmissionService service = new SubmissionService();
     private Task task;
 
+    @SuppressWarnings("unchecked")
+    private final Event<SubmissionPushed> pushed = Mockito.mock(Event.class);
+
     @BeforeEach
     void setUp() {
         task = new Task();
@@ -53,6 +57,7 @@ class SubmissionServiceTest {
         service.taskService = taskService;
         service.codebaseRepository = codebaseRepository;
         service.submissionRepository = submissionRepository;
+        service.pushed = pushed;
     }
 
     @Test
@@ -68,6 +73,7 @@ class SubmissionServiceTest {
         assertEquals("feat(users): list users", saved.commitMessage);
         assertEquals(List.of(CONTROLLER, SERVICE), saved.files.stream().map(file -> file.path).toList());
         Mockito.verify(taskService).submit(TASK_ID);
+        Mockito.verify(pushed).fire(new SubmissionPushed(saved.id));
     }
 
     @Test

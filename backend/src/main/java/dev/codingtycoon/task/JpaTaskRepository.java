@@ -17,6 +17,11 @@ public class JpaTaskRepository implements TaskRepository, PanacheRepository<Task
      * Uses JPQL ordering to guarantee the latest task is returned first.
      */
     @Override
+    public Optional<Task> findNewestForProfile(Long profileId) {
+        return find("playerProfileId = ?1 ORDER BY createdAt DESC, id DESC", profileId).firstResultOptional();
+    }
+
+    @Override
     public Optional<Task> findTodayForProfile(Long profileId) {
         return find(
                 "playerProfileId = ?1 AND status != ?2 ORDER BY createdAt DESC",

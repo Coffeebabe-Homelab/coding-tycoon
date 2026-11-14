@@ -7,6 +7,7 @@ import dev.codingtycoon.task.Task;
 import dev.codingtycoon.task.TaskService;
 import dev.codingtycoon.task.TaskStatus;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -36,8 +37,12 @@ public class SubmissionService {
     @Inject
     SubmissionRepository submissionRepository;
 
+    @Inject
+    Event<SubmissionPushed> pushed;
+
     /**
-     * Stores a push for the player's active task and moves the task to SUBMITTED.
+     * Stores a push for the player's active task, moves the task to SUBMITTED and announces it
+     * with {@link SubmissionPushed}, which queues its review.
      *
      * @param sub     the Auth0 subject claim identifying the player
      * @param request the commit message and changed files
@@ -63,6 +68,7 @@ public class SubmissionService {
         submissionRepository.save(submission);
 
         taskService.submit(task.id);
+        pushed.fire(new SubmissionPushed(submission.id));
         return submission;
     }
 
@@ -75,6 +81,19 @@ public class SubmissionService {
     @Transactional
     public Optional<Submission> findLatest(String sub) {
         return taskService.findActiveTask(sub)
+                .flatMap(task -> submissionRepository.findLatestForTask(task.id));
+    }
+
+    /**
+     * Returns the latest push for the player's newest task, active or just approved, so its review
+     * stays visible after the approval.
+     *
+     * @param sub the Auth0 subject claim identifying the player
+     * @return the latest submission, or empty if the newest task has no push yet
+     */
+    @Transactional
+    public Optional<Submission> findLatestOfNewestTask(String sub) {
+        return taskService.findNewestTask(sub)
                 .flatMap(task -> submissionRepository.findLatestForTask(task.id));
     }
 
