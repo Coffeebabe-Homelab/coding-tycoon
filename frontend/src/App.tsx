@@ -12,11 +12,13 @@ import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
 import TaskBoardPage from './pages/TaskBoardPage'
 import CodebaseExplorerPage from './pages/CodebaseExplorerPage'
+import EditorPage from './pages/EditorPage'
 
 // Add a tab here only once it has a route; the window builds its bar and routes from this list.
 const PANEL_TABS: PanelTab[] = [
   { path: 'task', label: 'Task Board', element: <TaskBoardPage /> },
   { path: 'codebase', label: 'Codebase', element: <CodebaseExplorerPage /> },
+  { path: 'editor', label: 'Editor', element: <EditorPage /> },
 ]
 
 function App() {

@@ -106,7 +106,10 @@ export function useDrafts(): DraftsValue {
 }
 
 /** Each file starts from its latest pushed version, so a reload or a review round keeps the work. */
-async function loadFiles(task: Task, getToken: () => Promise<string | undefined>): Promise<DraftFile[]> {
+async function loadFiles(
+  task: Task,
+  getToken: () => Promise<string | undefined>,
+): Promise<DraftFile[]> {
   const token = await getToken()
   const [originals, latest] = await Promise.all([
     Promise.all(

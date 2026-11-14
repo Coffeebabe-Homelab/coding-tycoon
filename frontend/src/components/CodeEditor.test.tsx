@@ -114,6 +114,11 @@ describe('CodeEditor', () => {
   it('reports the cursor position on mount and when it moves', async () => {
     const onCursorChange = vi.fn()
     stubEditor.getPosition.mockReturnValue({ lineNumber: 1, column: 1 })
+    // jsdom has no FontFaceSet; mounting waits on the mono font.
+    Object.defineProperty(document, 'fonts', {
+      configurable: true,
+      value: { load: () => Promise.resolve([]) },
+    })
     const user = userEvent.setup()
     render(<CodeEditor {...PROPS} readOnly={false} onCursorChange={onCursorChange} />)
 
