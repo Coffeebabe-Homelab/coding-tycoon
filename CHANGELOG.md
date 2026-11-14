@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Docs: plan Phase 5 in `docs/tasks/phase-5/` (P5-01 to P5-06) and update its `ROADMAP.md` tasks with the owner's decisions: the Ollama spike comes first, a push queues the review (no trigger endpoint), the Review tab polls, and attempts have no cap.
 - Docs: close Phase 4. P4-05 records the 2026-11-14 staging verification (all checks passed) and P1-08 is complete. The open parts of P3-06 (deep-link refresh after login, focus-file retest) are now tech debt and don't block Phase 5.
 - Fix: the backend now stores the player's email (P1-08). It read `email` from the access token, where Auth0 never puts it, so `users.email` was always empty. It now reads `https://codingtycoon.dev/email`, which a new Auth0 Post-Login Action adds (see `docs/STAGING_DEPLOY.md`).
 - Frontend: the VCS tab (`/room/vcs`) shows what the player changed as a Monaco diff, Unified or Split, with a branch named after the task (P4-04). The player writes a commit message (72 characters at most), confirms "Push to review?" and pushes, which locks the files. A toast confirms the push, and the tab then shows the last push, also after a reload. A failed push keeps the drafts and the message and shows the server's error. "Open in editor" opens the Editor on that file (`?file=`). New `Input`, `Toast` and `DiffView` components. Fixes: typing right after switching files in the Editor no longer lands in the previous file, and an editor shown again after a tab switch no longer shows stale content.
