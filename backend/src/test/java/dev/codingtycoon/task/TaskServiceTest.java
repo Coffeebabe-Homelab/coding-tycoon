@@ -41,9 +41,10 @@ class TaskServiceTest {
     private static final Long TASK_ID = 3L;
     private static final Map<TaskStatus, Set<TaskStatus>> PLAYER_TRANSITIONS = Map.of(
             TaskStatus.ASSIGNED, Set.of(TaskStatus.IN_PROGRESS),
-            TaskStatus.IN_PROGRESS, Set.of(TaskStatus.SUBMITTED),
+            // Reaching SUBMITTED needs a push with code (POST /api/submissions), so the PATCH can't.
+            TaskStatus.IN_PROGRESS, Set.of(),
             TaskStatus.SUBMITTED, Set.of(),
-            TaskStatus.CHANGES_REQUESTED, Set.of(TaskStatus.SUBMITTED),
+            TaskStatus.CHANGES_REQUESTED, Set.of(),
             TaskStatus.APPROVED, Set.of()
     );
 
@@ -158,6 +159,33 @@ class TaskServiceTest {
 
         assertEquals(TaskStatus.ASSIGNED, task.status);
         Mockito.verify(taskRepository, Mockito.never()).save(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TaskStatus.class, names = {"IN_PROGRESS", "CHANGES_REQUESTED"})
+    void submitMovesAWorkedTaskToSubmitted(TaskStatus from) {
+        Task task = storedTask(from);
+
+        assertSame(task, taskService.submit(TASK_ID));
+
+        assertEquals(TaskStatus.SUBMITTED, task.status);
+        Mockito.verify(taskRepository).save(task);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TaskStatus.class, names = {"IN_PROGRESS", "CHANGES_REQUESTED"}, mode = EnumSource.Mode.EXCLUDE)
+    void submitIsRejectedUnlessTheTaskIsBeingWorkedOn(TaskStatus from) {
+        Task task = storedTask(from);
+
+        assertThrows(UnprocessableException.class, () -> taskService.submit(TASK_ID));
+
+        assertEquals(from, task.status);
+        Mockito.verify(taskRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    void submitOfUnknownTaskIsNotFound() {
+        assertThrows(NotFoundException.class, () -> taskService.submit(TASK_ID));
     }
 
     @Test

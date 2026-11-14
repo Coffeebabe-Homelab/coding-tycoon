@@ -218,7 +218,7 @@ class TaskResourceTest {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void approvingTaskAwardsXpExactlyOnce() {
-        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+        Integer taskId = createSubmittedTask();
         assertEquals(0, xpEventRepository.count(), "no XP before approval");
 
         taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
@@ -234,9 +234,9 @@ class TaskResourceTest {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
-        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+        Integer taskId = createSubmittedTask();
         taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.CHANGES_REQUESTED);
-        patchStatus(taskId, "SUBMITTED").statusCode(200);
+        taskService.submit(taskId.longValue());
         assertEquals(0, xpEventRepository.count());
 
         taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
@@ -274,11 +274,31 @@ class TaskResourceTest {
             @Claim(key = "sub", value = TEST_SUB)
     })
     void playerCannotSetAReviewVerdictOnTheirOwnTask(String verdict) {
-        Integer taskId = createTaskAndPatch("IN_PROGRESS", "SUBMITTED");
+        Integer taskId = createSubmittedTask();
 
         patchStatus(taskId, verdict).statusCode(422);
 
         assertEquals(0, xpEventRepository.count());
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void playerCannotSubmitWithoutPushingCode() {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS");
+
+        patchStatus(taskId, "SUBMITTED").statusCode(422);
+
+        assertEquals(TaskStatus.IN_PROGRESS, taskService.findActiveTask(TEST_SUB).orElseThrow().status);
+    }
+
+    // A push (POST /api/submissions) is the only way to SUBMITTED, so tests go through the service.
+    private Integer createSubmittedTask() {
+        Integer taskId = createTaskAndPatch("IN_PROGRESS");
+        taskService.submit(taskId.longValue());
+        return taskId;
     }
 
     private Integer createTaskAndPatch(String... statuses) {
