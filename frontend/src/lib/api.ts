@@ -3,16 +3,31 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 /** Non-2xx API response; `status` lets callers react to specific codes (e.g. 404 → onboarding). */
 export class ApiError extends Error {
   readonly status: number
+  /** The backend's `message` from its `{ error, message, status }` body, or null for other bodies. */
+  readonly serverMessage: string | null
 
   constructor(status: number, body: string) {
     super(`API error ${status}: ${body}`)
     this.status = status
+    this.serverMessage = parseServerMessage(body)
+  }
+}
+
+function parseServerMessage(body: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(body)
+    const message = (parsed as { message?: unknown } | null)?.message
+    return typeof message === 'string' ? message : null
+  } catch {
+    return null
   }
 }
 
 /**
  * Fetch wrapper that injects the Auth0 Bearer token into every request.
  * Always use this instead of raw fetch for authenticated API calls.
+ *
+ * Resolves to `undefined` on 204 No Content, so `T` should include `undefined` for such endpoints.
  *
  * @throws ApiError when the response status is not 2xx, or with status 401 when there is no token
  */
@@ -37,5 +52,11 @@ export const fetchWithAuth = async <T>(
     throw new ApiError(res.status, await res.text())
   }
 
+  if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
+}
+
+/** Encodes each segment of a codebase path but keeps the slashes the backend route expects. */
+export function encodePath(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/')
 }

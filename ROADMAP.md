@@ -141,20 +141,20 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 
 **Goal:** Player writes their implementation in Monaco, then commits and pushes via the virtual VCS.
 
-**Design gate:** don't start until Design Stage 1, `Button`, `Icon` and `PanelWindow` are merged. Build the UI to Figma Screens 5, 6a and 6b. See [the design plan](docs/design/PLAN-design-implementation.md#phase-4-overlap).
+**Design gate:** met on 2026-11-10 (Design Stage 1, `Button`, `Icon` and `PanelWindow` are merged). Build the UI to Figma Screens 5, 6a and 6b. See [the design plan](docs/design/PLAN-design-implementation.md#phase-4-overlap).
+
+**Decided 2026-11-10:** the player edits the active task's focus files, starting from the `shopfront` originals, with no per-task template; the seed tasks without focus files are rewritten onto `shopfront`; the diff uses Monaco's diff editor in the browser. Specs: [`docs/tasks/phase-4/`](docs/tasks/phase-4/).
 
 ### Tasks
-- [ ] Monaco Editor integration in frontend (target file pre-loaded, editable)
-- [ ] `GET /api/submissions/template` — returns the file the player needs to edit (with TODOs)
-- [ ] VCS Panel UI: diff view (original vs player's version), commit message field, "Push" button
-- [ ] `POST /api/submissions` — saves player's code submission for the active task
-- [ ] Submission entity: `taskId`, `userId`, `code`, `commitMessage`, `attemptNumber`, `submittedAt`
-- [ ] Transition task status to `SUBMITTED` on push
-- [ ] Basic diff computation (backend or frontend)
+- [x] Rewrite the seed tasks onto `shopfront`, each with focus files (P4-01)
+- [x] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
+- [x] Editor tab: focus files editable in Monaco, drafts kept across tabs (P4-03)
+- [x] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
+- [ ] Integration verification (P4-05)
 
 ### Exit Criteria
-- Player opens Monaco pre-loaded with the template file
-- Player edits, writes a commit message, and clicks Push
+- Player opens the Editor with the task's focus files loaded
+- Player edits, writes a commit message, and pushes
 - Submission is saved, task status transitions to SUBMITTED
 - Diff view shows what changed
 

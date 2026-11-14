@@ -2,6 +2,8 @@
 
 Roadmap: [PLAN-design-implementation.md](PLAN-design-implementation.md)
 
+**Implemented:** [PR #46](https://github.com/Coffeebabe-Homelab/coding-tycoon/pull/46), merged into `dev` on 2026-11-10. Profile edit still offers Mid and Senior; locking them is left for Phase 6 (owner decision, 2026-11-10).
+
 ## Goal
 Bring Login and the onboarding wizard in line with Figma section 1. These are the only screens the current cards ask to compare; other screens need their own cards.
 

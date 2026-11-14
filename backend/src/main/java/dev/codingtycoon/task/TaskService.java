@@ -83,10 +83,9 @@ public class TaskService {
      * <p>Allowed transitions:</p>
      * <ul>
      *   <li>ASSIGNED → IN_PROGRESS</li>
-     *   <li>IN_PROGRESS → SUBMITTED</li>
-     *   <li>CHANGES_REQUESTED → SUBMITTED</li>
      * </ul>
-     * Review verdicts are not player actions: see {@link #applyReviewVerdict}.
+     * Submitting needs a push with code: see {@link #submit}. Review verdicts are not player
+     * actions: see {@link #applyReviewVerdict}.
      *
      * @param sub       the Auth0 subject claim identifying the player
      * @param taskId    the ID of the task to update
@@ -104,6 +103,25 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
 
         changeStatus(task, newStatus, isPlayerTransition(task.status, newStatus));
+        return task;
+    }
+
+    /**
+     * Moves a task the player is working on to SUBMITTED. Called by the submission domain when
+     * a push is stored, so a task can't be submitted without code.
+     *
+     * @param taskId the ID of the task being pushed
+     * @return the updated task
+     * @throws NotFoundException      if no task with the given ID exists
+     * @throws UnprocessableException if the task isn't IN_PROGRESS or CHANGES_REQUESTED
+     */
+    @Transactional
+    public Task submit(Long taskId) {
+        Task task = taskRepository.findTaskById(taskId)
+                .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
+
+        boolean isWorkedOn = task.status == TaskStatus.IN_PROGRESS || task.status == TaskStatus.CHANGES_REQUESTED;
+        changeStatus(task, TaskStatus.SUBMITTED, isWorkedOn);
         return task;
     }
 
@@ -209,8 +227,8 @@ public class TaskService {
     private boolean isPlayerTransition(TaskStatus current, TaskStatus next) {
         return switch (current) {
             case ASSIGNED -> next == TaskStatus.IN_PROGRESS;
-            case IN_PROGRESS, CHANGES_REQUESTED -> next == TaskStatus.SUBMITTED;
-            case SUBMITTED, APPROVED -> false; // waiting for review, or terminal
+            // SUBMITTED only through submit(); verdicts only through applyReviewVerdict().
+            case IN_PROGRESS, CHANGES_REQUESTED, SUBMITTED, APPROVED -> false;
         };
     }
 

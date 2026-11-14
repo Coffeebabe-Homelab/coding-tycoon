@@ -29,7 +29,7 @@ export function useModalDialog(isOpen: boolean): RefObject<HTMLDivElement | null
     if (!isOpen) return
     // Listen on document so Esc and the trap work even if focus slipped to <body>.
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') navigate('/room')
+      if (event.key === 'Escape' && !isHandledElsewhere(event)) navigate('/room')
       if (event.key === 'Tab' && dialogRef.current) trapFocus(event, dialogRef.current)
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -37,4 +37,12 @@ export function useModalDialog(isOpen: boolean): RefObject<HTMLDivElement | null
   }, [isOpen, navigate])
 
   return dialogRef
+}
+
+// Monaco closes its find and suggestion widgets with Escape; other widgets mark theirs with preventDefault.
+function isHandledElsewhere(event: KeyboardEvent): boolean {
+  return (
+    event.defaultPrevented ||
+    (event.target instanceof Element && event.target.closest('.monaco-editor') !== null)
+  )
 }

@@ -1,5 +1,7 @@
 # PLAN — Night Shift design implementation (roadmap)
 
+**Implemented:** every stage is merged into `dev`: Stage 1 (PR #42), Stage 2 (PR #43), Stage 3 parts A and B (PRs #44, #45) and Stage 4 (PR #46), the last on 2026-11-10. The Phase 4 design gate is met.
+
 ## Context
 Coding Tycoon is a game where the player does a developer's job. From a **room** (the hub), the player opens **panels**: tool windows over the room, each with its own URL under `/room`. Figma's design has five panel tabs: Task Board, Codebase, Editor, VCS and Review. Only Task Board and Codebase exist today.
 
@@ -8,7 +10,7 @@ Coding Tycoon is a game where the player does a developer's job. From a **room**
 ## Goal
 Bring the frontend to the Night Shift tokens, fonts, shared `Button` and `Icon`, and the tabbed panel window before Phase 4, so Phase 4 doesn't add UI that has to be redone. The remaining design work ships separately and doesn't hold up Phase 4.
 
-> This file is the plan for the design work. Each stage has its own plan, ships as its own PR and can be reviewed alone. Reviewed against `dev` 25b7bb0, [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) and [`DESIGN_SPEC.md`](DESIGN_SPEC.md) on 2026-11-08. Nothing here is implemented yet.
+> This file is the plan for the design work. Each stage has its own plan, ships as its own PR and can be reviewed alone. Reviewed against `dev` 25b7bb0, [Figma](https://www.figma.com/design/VeKk5wTGNFUar5mVoXHyIb) and [`DESIGN_SPEC.md`](DESIGN_SPEC.md) on 2026-11-08.
 
 **How to read this plan**
 - **Stage** is a step of this plan. **Phase** is a step of `ROADMAP.md`.

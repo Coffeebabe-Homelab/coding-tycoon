@@ -2,6 +2,8 @@ import { Outlet, matchPath, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { AppBar } from '../components/AppBar'
 import { PanelWindow, type PanelTab } from '../components/PanelWindow'
+import { DraftsProvider } from '../hooks/useDrafts'
+import { ToastProvider } from '../hooks/useToast'
 import { useProgress } from '../hooks/useProgress'
 import { useSessionFlow } from '../hooks/useSessionFlow'
 
@@ -39,8 +41,12 @@ export function GameShell({ tabs }: GameShellProps) {
           onLogout={() => logout({ logoutParams: { returnTo: window.location.origin } })}
         />
       </div>
-      <Outlet />
-      <PanelWindow tabs={tabs} />
+      <DraftsProvider>
+        <ToastProvider>
+          <Outlet />
+          <PanelWindow tabs={tabs} />
+        </ToastProvider>
+      </DraftsProvider>
     </div>
   )
 }

@@ -91,6 +91,16 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── CodebaseFileResponse.java    Response: { path, content }
 │   └── CodebaseResource.java        Adapter (HTTP in): GET /api/codebase/files, GET /api/codebase/files/{path}
 │
+├── submission/                      (Phase 4)
+│   ├── Submission.java              Entity: one push (taskId, playerProfileId, attemptNumber, commitMessage, submittedAt UTC, files)
+│   ├── SubmissionFile.java          Entity: one pushed file's full content
+│   ├── SubmissionRepository.java    Port (interface)
+│   ├── JpaSubmissionRepository.java Adapter — Panache
+│   ├── SubmissionService.java       Domain core: validates a push against the task's focus files, stores it, calls TaskService.submit
+│   ├── CreateSubmissionRequest.java Request: { commitMessage, files: [{ path, content }] }
+│   ├── SubmissionResponse.java      Response: { id, taskId, attemptNumber, commitHash, commitMessage, submittedAt, files }
+│   └── SubmissionResource.java      Adapter (HTTP in): POST /api/submissions, GET /api/submissions/latest
+│
 ├── progress/                        (Phase 7)
 │   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt UTC)
 │   ├── XpReason.java                Enum: TASK_APPROVED (FIRST_ATTEMPT_BONUS arrives with Phase 5)
@@ -129,7 +139,7 @@ backend/src/main/java/dev/codingtycoon/
 
 - `level` is a mock: always `"X"` (`ProgressService.MOCK_LEVEL`) until the level model exists. Only this value will change.
 - XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
-- `PATCH /api/tasks/{id}/status` only accepts player transitions on the caller's own tasks: `ASSIGNED → IN_PROGRESS`, `IN_PROGRESS → SUBMITTED`, `CHANGES_REQUESTED → SUBMITTED`. Another player's task returns `404`, and any other transition returns `422`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
+- `PATCH /api/tasks/{id}/status` only accepts the player transition `ASSIGNED → IN_PROGRESS` on the caller's own tasks. Another player's task returns `404`, and any other transition returns `422`. `SUBMITTED` is reached only by a push (`POST /api/submissions`), through `TaskService.submit`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
 - `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
@@ -158,6 +168,17 @@ Read-only. Both endpoints require a Bearer token and resolve the codebase from t
 | GET | `/api/codebase/files/{path: .+}` | `{ "path": "...", "content": "..." }` (UTF-8 text) | 401; 404 path not in `index.txt` (includes `../`, absolute and URL-encoded traversal) |
 
 Codebases live in `src/main/resources/codebases/<key>/` with an `index.txt` listing every file (one relative path per line, sorted). The index is the allow-list: only listed paths are ever read, and `CodebaseIndexTest` keeps it in sync with the files. Task responses (`/api/tasks/*`) include `codebaseKey` and `focusFiles`.
+
+### Submission API (Phase 4)
+
+A push from the VCS panel. Both endpoints require a Bearer token and work on the player's active task. Full file contents are stored, not diffs: the browser shows the diff, and the Phase 5 reviewer needs whole files.
+
+| Method | Path | Response | Errors |
+|---|---|---|---|
+| POST | `/api/submissions` | 201 `{ id, taskId, attemptNumber, commitHash, commitMessage, submittedAt, files: [{ path, content }] }`; the task moves to `SUBMITTED` | 401; 400 malformed JSON; 422 with one message for the first problem (below) |
+| GET | `/api/submissions/latest` | 200 the active task's last push, same shape | 401; 204 no active task or no push yet |
+
+A push is rejected with `422` when: there is no body; there is no active task, or it isn't `IN_PROGRESS` or `CHANGES_REQUESTED`; the commit message is blank or over 72 characters (it is stored trimmed); `files` is empty; a path is not one of the task's focus files (this covers `../` paths) or appears twice; a file has no content, is over 64 KB in UTF-8, or equals the codebase original. `attemptNumber` counts the task's pushes, and a unique `(task_id, attempt_number)` stops two simultaneous pushes from sharing an attempt. `commitHash` is decorative: the first 7 hex characters of MD5(`taskId:playerProfileId:attemptNumber`), computed on read and not stored, so the VCS panel can show a Git-looking id.
 
 ---
 
@@ -202,14 +223,21 @@ Task
   created_at        TIMESTAMP
   -- at most one non-APPROVED task per player_profile_id: partial unique index (V9)
 
-Submission
-  id             BIGINT PK
-  task_id        BIGINT FK → Task
-  user_id        BIGINT FK → User
-  code           TEXT
-  commit_message VARCHAR
-  attempt_number INT
-  submitted_at   TIMESTAMP
+Submission                     -- table submissions (V10)
+  id                BIGINT PK
+  task_id           BIGINT FK → Task
+  player_profile_id BIGINT FK → PlayerProfile
+  attempt_number    INT        -- 1, 2, 3… per task
+  commit_message    VARCHAR(72)
+  submitted_at      TIMESTAMP  -- UTC
+  UNIQUE (task_id, attempt_number)
+
+SubmissionFile                 -- table submission_files (V10)
+  id            BIGINT PK
+  submission_id BIGINT FK → Submission
+  path          VARCHAR(500) -- one of the task's focus files
+  content       TEXT         -- full content after the player's edits
+  UNIQUE (submission_id, path)
 
 Review
   id            BIGINT PK
@@ -358,6 +386,7 @@ Phases worked in parallel reserve their version numbers up front so branches don
 | V7 | `V7__add_task_codebase_scope.sql` | P3-03 | Merged (PR #17) |
 | V8 | `V8__create_xp_event_table.sql` | P7-03 | Added in Phase 7 (PR #16) |
 | V9 | `V9__one_active_task_per_player.sql` | [Trello](https://trello.com/c/3Fdjmel6) | Removes duplicate active tasks, keeping the newest |
+| V10 | `V10__create_submissions.sql` | P4-02 | Submissions and their files |
 
 Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 
