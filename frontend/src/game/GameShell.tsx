@@ -3,6 +3,7 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { AppBar } from '../components/AppBar'
 import { PanelWindow, type PanelTab } from '../components/PanelWindow'
 import { DraftsProvider } from '../hooks/useDrafts'
+import { ToastProvider } from '../hooks/useToast'
 import { useProgress } from '../hooks/useProgress'
 import { useSessionFlow } from '../hooks/useSessionFlow'
 
@@ -41,8 +42,10 @@ export function GameShell({ tabs }: GameShellProps) {
         />
       </div>
       <DraftsProvider>
-        <Outlet />
-        <PanelWindow tabs={tabs} />
+        <ToastProvider>
+          <Outlet />
+          <PanelWindow tabs={tabs} />
+        </ToastProvider>
       </DraftsProvider>
     </div>
   )
