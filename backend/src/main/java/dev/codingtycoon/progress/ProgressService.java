@@ -24,6 +24,9 @@ public class ProgressService {
     /** XP awarded when a task is approved. */
     public static final int XP_PER_APPROVED_TASK = 100;
 
+    /** Extra XP when the first push is approved. Later attempts earn none, but are never capped. */
+    public static final int XP_FIRST_TRY_BONUS = 50;
+
     /** Shown until levels and XP thresholds are defined; only this value changes when they are. */
     static final String MOCK_LEVEL = "X";
 
@@ -39,23 +42,32 @@ public class ProgressService {
     TaskRepository taskRepository;
 
     /**
-     * Records the approval award for a task. Safe to call repeatedly: a task is only paid once.
+     * Records the approval awards for a task: the ticket XP, plus the first-try bonus on attempt 1.
+     * Safe to call repeatedly: each award is paid once per task.
      *
-     * @param task the task that reached APPROVED
+     * @param task          the task that reached APPROVED
+     * @param attemptNumber the attempt that was approved, from 1
      */
     @Transactional
-    public void awardForApproval(Task task) {
-        if (xpEventRepository.exists(task.id, XpReason.TASK_APPROVED)) {
-            LOG.warnf("XP for task %d already awarded, skipping", task.id);
+    public void awardForApproval(Task task, int attemptNumber) {
+        award(task, XpReason.TASK_APPROVED, XP_PER_APPROVED_TASK);
+        if (attemptNumber == 1) {
+            award(task, XpReason.FIRST_TRY_BONUS, XP_FIRST_TRY_BONUS);
+        }
+    }
+
+    private void award(Task task, XpReason reason, int amount) {
+        if (xpEventRepository.exists(task.id, reason)) {
+            LOG.warnf("%s XP for task %d already awarded, skipping", reason, task.id);
             return;
         }
         XpEvent event = new XpEvent();
         event.playerProfileId = task.playerProfileId;
         event.taskId = task.id;
-        event.amount = XP_PER_APPROVED_TASK;
-        event.reason = XpReason.TASK_APPROVED;
+        event.amount = amount;
+        event.reason = reason;
         xpEventRepository.save(event);
-        LOG.infof("Awarded %d XP to profile %d for task %d", event.amount, task.playerProfileId, task.id);
+        LOG.infof("Awarded %d %s XP to profile %d for task %d", amount, reason, task.playerProfileId, task.id);
     }
 
     /**

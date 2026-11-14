@@ -38,10 +38,10 @@ class ProgressServiceTest {
     }
 
     @Test
-    void awardForApprovalRecordsOneTaskApprovedEvent() {
+    void approvalAfterTheFirstAttemptPaysOnlyTheTicket() {
         Task task = testData.createTask(profileId);
 
-        progressService.awardForApproval(task);
+        progressService.awardForApproval(task, 2);
 
         var events = xpEventRepository.listForProfile(profileId);
         assertEquals(1, events.size());
@@ -54,10 +54,25 @@ class ProgressServiceTest {
     void awardForApprovalIsIdempotent() {
         Task task = testData.createTask(profileId);
 
-        progressService.awardForApproval(task);
-        progressService.awardForApproval(task);
+        progressService.awardForApproval(task, 1);
+        progressService.awardForApproval(task, 1);
 
-        assertEquals(1, xpEventRepository.listForProfile(profileId).size());
+        assertEquals(2, xpEventRepository.listForProfile(profileId).size());
+    }
+
+    @Test
+    void approvalOnTheFirstAttemptAlsoPaysTheBonus() {
+        Task task = testData.createTask(profileId);
+
+        progressService.awardForApproval(task, 1);
+
+        var events = xpEventRepository.listForProfile(profileId);
+        assertEquals(2, events.size());
+        assertEquals(ProgressService.XP_PER_APPROVED_TASK + ProgressService.XP_FIRST_TRY_BONUS,
+                events.stream().mapToInt(e -> e.amount).sum());
+        assertEquals(1, events.stream().filter(e -> e.reason == XpReason.FIRST_TRY_BONUS).count());
+        assertEquals(150, progressService.getProgress(TEST_SUB).totalXp());
+        assertEquals(1, progressService.getProgress(TEST_SUB).currentStreak());
     }
 
     @Test
@@ -73,7 +88,7 @@ class ProgressServiceTest {
 
     @Test
     void getProgressSumsTotalAndOnlyTodayForXpToday() {
-        progressService.awardForApproval(testData.createTask(profileId));
+        progressService.awardForApproval(testData.createTask(profileId), 2);
         LocalDateTime yesterday = LocalDateTime.now(ZoneOffset.UTC).minusDays(1);
         testData.createEvent(profileId, testData.createTask(profileId), yesterday);
 

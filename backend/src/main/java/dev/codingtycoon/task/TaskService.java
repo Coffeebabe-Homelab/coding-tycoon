@@ -143,23 +143,24 @@ public class TaskService {
 
     /**
      * Records the reviewer's verdict on a submitted task. Not exposed over HTTP: the review
-     * engine (Phase 5) is the only intended caller. Approval awards the XP.
+     * engine is the only caller. Approval awards the XP, with the first-try bonus on attempt 1.
      *
-     * @param taskId  the ID of the reviewed task
-     * @param verdict APPROVED or CHANGES_REQUESTED
+     * @param taskId        the ID of the reviewed task
+     * @param verdict       APPROVED or CHANGES_REQUESTED
+     * @param attemptNumber the reviewed push's attempt, from 1
      * @return the updated task
      * @throws NotFoundException      if no task with the given ID exists
      * @throws UnprocessableException if the task isn't SUBMITTED or the status isn't a verdict
      */
     @Transactional
-    public Task applyReviewVerdict(Long taskId, TaskStatus verdict) {
+    public Task applyReviewVerdict(Long taskId, TaskStatus verdict, int attemptNumber) {
         Task task = taskRepository.findTaskById(taskId)
                 .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
 
         boolean isVerdict = verdict == TaskStatus.APPROVED || verdict == TaskStatus.CHANGES_REQUESTED;
         changeStatus(task, verdict, task.status == TaskStatus.SUBMITTED && isVerdict);
         if (verdict == TaskStatus.APPROVED) {
-            progressService.awardForApproval(task);
+            progressService.awardForApproval(task, attemptNumber);
         }
         return task;
     }
