@@ -47,6 +47,9 @@ public class SubmissionService {
      */
     @Transactional
     public Submission push(String sub, CreateSubmissionRequest request) {
+        if (request == null) {
+            throw new UnprocessableException("Request body is required");
+        }
         Task task = requirePushableTask(sub);
         String commitMessage = requireCommitMessage(request.commitMessage());
         List<SubmissionFile> files = requireChangedFiles(task, request.files());

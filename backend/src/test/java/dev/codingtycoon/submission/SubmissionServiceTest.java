@@ -76,6 +76,11 @@ class SubmissionServiceTest {
     }
 
     @Test
+    void pushWithoutABodyIsRejected() {
+        assertRejected(null, "body is required");
+    }
+
+    @Test
     void pushWithoutAnActiveTaskIsRejected() {
         Mockito.when(taskService.findActiveTask(SUB)).thenReturn(Optional.empty());
 
