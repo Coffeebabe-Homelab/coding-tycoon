@@ -64,17 +64,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
-        <!-- AI: Ollama via LangChain4j
-             NOTE: Deferred to Phase 3 — quarkus-langchain4j 1.x has a known ChatMemoryProcessor
-             deployment-time regression on Quarkus 3.33+. Add back when a compatible release is
-             available (track: https://github.com/quarkiverse/quarkus-langchain4j/issues).
-             Planned dependency:
-             <dependency>
-                 <groupId>io.quarkiverse.langchain4j</groupId>
-                 <artifactId>quarkus-langchain4j-ollama</artifactId>
-                 <version>TBD-compatible</version>
-             </dependency>
-        -->
+        <!-- AI: Ollama via LangChain4j. 1.13.x targets our Quarkus 3.33.2; 1.14+ needs a newer Quarkus.
+             Only the ai.ollama adapter package may use its types. -->
+        <dependency>
+            <groupId>io.quarkiverse.langchain4j</groupId>
+            <artifactId>quarkus-langchain4j-ollama</artifactId>
+            <version>1.13.4</version>
+        </dependency>
         <!-- Auth: OIDC (Auth0 JWT validation) -->
         <dependency>
             <groupId>io.quarkus</groupId>
