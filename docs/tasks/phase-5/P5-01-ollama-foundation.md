@@ -52,7 +52,7 @@ A real task-generation call works on staging, CI is green without Ollama, an Oll
 
 ## Result
 
-**Local real call (2026-11-14).** Two calls through `TaskAiPort` with `codingtycoon.ai.provider=ollama`, Ollama 0.40-era local server, `deepseek-coder:6.7b-instruct-q4_K_M`, on an Apple M4 with 16 GB. Ollama on macOS uses the GPU (Metal), so this is faster than the CPU-only staging host will be.
+**Local real call (2026-11-14).** Two calls through `TaskAiPort` with `codingtycoon.ai.provider=ollama`, local Ollama 0.21.1 (Homebrew), `deepseek-coder:6.7b-instruct-q4_K_M`, on an Apple M4 with 16 GB. Ollama on macOS uses the GPU (Metal), so this is faster than the CPU-only staging host will be.
 
 | Call | Latency | Result |
 |---|---|---|
