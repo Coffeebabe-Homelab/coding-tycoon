@@ -2,7 +2,7 @@
 
 **Phase:** 5 — AI Review Engine
 **Status:** ⬜ Not started
-**Depends on:** P5-01 through P5-05
+**Depends on:** P5-01 through P5-05 and P5-07
 
 ---
 
@@ -31,6 +31,9 @@ Verify the Phase 5 exit criteria end to end on staging, with the real model, bef
 ### Replaceability
 - [ ] The import check passes: no provider types outside `ai.<provider>`, no JPA in `review.worker`
 - [ ] Every `TaskAiPort`, `ReviewAiPort` and `ReviewQueue` adapter passes its contract test
+
+### Observability
+- [ ] The AI row in Grafana shows the staging calls, queue depth and reviews over target (P5-07)
 
 ### Security
 - [ ] `GET /api/reviews/latest` and `POST /api/reviews/{id}/retry` without a token → `401`

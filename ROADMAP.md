@@ -172,6 +172,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [ ] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry`, tunable target and timeout (P5-03)
 - [ ] Code review guidelines, reviewer prompt, `OllamaReviewAdapter` and hand-run evals (P5-04)
 - [ ] Review tab: polling, verdict card, attempt dots, criteria, threads anchored to code, "Fix in editor" / "Ship it & end the day", offline state (P5-05)
+- [ ] AI observability: our own OTel metrics for AI calls and the review queue, and an AI row in the LGTM dashboard (P5-07; decided 2026-11-14, done before P5-06)
 - [ ] Integration verification (P5-06)
 
 ### Exit Criteria
