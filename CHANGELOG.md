@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Backend: every seed task now targets `shopfront` and names the files the player edits (P4-01). Seven tasks are rewritten, and the three existing ones list only the files they change, including their test files. `shopfront` gains an `order/` area, a shipping calculator, a legacy sales report, four test files and a 400 response for `IllegalArgumentException`.
+- Docs: plan Phase 4 in `docs/tasks/phase-4/` (P4-01 to P4-05) and update its `ROADMAP.md` tasks with the owner's decisions: the player edits the task's focus files, the seed tasks move onto `shopfront`, and the diff uses Monaco's diff editor.
+- Docs: mark Design Stage 4 and the design roadmap as implemented, and record in `ROADMAP.md` that the Phase 4 design gate is met.
 - Fix: closing a panel no longer leaves a large blue rectangle around the room object that opened it. Focus still returns there, but room hotspots now show focus only with their orange glow, because the default outline boxed the whole slanted object.
 - Frontend: Login and the onboarding wizard now match Figma, with the room art on Login and new `StepperStep` and `Chip` components (`Chip` replaces `TopicChip`). `SelectionCard` gains the Figma types. The wizard locks Java, Spring Boot and Junior as the only MVP options and shows Mid and Senior as coming soon. Focus moves to the heading of each new step, so keyboard users don't lose their place.
 - Frontend: the App Bar from Figma replaces the room's top strip, with a breadcrumb, the streak and "LV X" next to the real XP. Profile is now its own page at `/profile`, and `/room/profile` redirects to it. A shared layout around the room and Profile keeps open tabs across a Profile visit. The avatar opens a small menu with the email, Profile and Log out.

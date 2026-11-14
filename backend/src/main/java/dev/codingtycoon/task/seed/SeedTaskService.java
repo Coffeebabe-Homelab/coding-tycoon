@@ -10,11 +10,13 @@ import java.util.stream.Stream;
 /**
  * Provides pre-defined coding tasks used as a fallback when AI generation is unavailable.
  * Tasks cover the five core topics: REST APIs, CRUD, OOP, Clean Code, and Git Workflow.
+ * Every task targets shopfront and names the files the player edits (Phase 4 edits focus files only).
  */
 @ApplicationScoped
 public class SeedTaskService {
 
-    private static final String[] NO_FOCUS_FILES = {};
+    private static final String MAIN = "src/main/java/com/shopfront/";
+    private static final String TEST = "src/test/java/com/shopfront/";
 
     private static final List<SeedTask> SEEDS = List.of(
             new SeedTask(
@@ -23,51 +25,59 @@ public class SeedTaskService {
                             + "to UserController, backed by a new UserService method, that returns a paginated list "
                             + "of all registered users. UserRepository already extends JpaRepository, so paging support "
                             + "is available. Each user object should include id, email, name and createdAt. "
-                            + "The endpoint must accept optional query parameters: page (default 0) and size (default 20, max 100).",
+                            + "The endpoint must accept optional query parameters: page (default 0) and size (default 20, max 100). "
+                            + "Add tests for the new method to UserServiceTest.",
                     "- GET /api/users returns 200 with a JSON array of user objects\n"
                             + "- Each object contains id (Long), email (String), name (String), createdAt (ISO 8601)\n"
                             + "- page and size query params control pagination\n"
-                            + "- size > 100 returns 400 through GlobalExceptionHandler\n"
-                            + "- UserService has unit tests for the new method",
+                            + "- size > 100 throws IllegalArgumentException, which GlobalExceptionHandler turns into a 400\n"
+                            + "- UserServiceTest covers the new method",
                     "Junior",
                     new String[]{"rest-apis", "crud", "java"},
                     Task.DEFAULT_CODEBASE_KEY,
                     new String[]{
-                            "src/main/java/com/shopfront/user/UserController.java",
-                            "src/main/java/com/shopfront/user/UserService.java",
-                            "src/main/java/com/shopfront/user/UserRepository.java"
+                            MAIN + "user/UserController.java",
+                            MAIN + "user/UserService.java",
+                            TEST + "user/UserServiceTest.java"
                     }
             ),
             new SeedTask(
-                    "Implement a CRUD service for a Note entity",
-                    "Design and implement a NoteService that supports creating, reading, updating, and deleting notes. "
-                            + "A note has a title (max 100 chars), body (text), and an ownerId. "
-                            + "Only the owner should be able to update or delete their own notes.",
-                    "- createNote(String ownerId, String title, String body) persists and returns the note\n"
-                            + "- getNote(Long id) returns the note or throws NotFoundException\n"
-                            + "- updateNote(Long id, String requesterId, String newTitle, String newBody) updates and returns the note; throws 403 if requesterId != ownerId\n"
-                            + "- deleteNote(Long id, String requesterId) deletes the note; throws 403 if requesterId != ownerId\n"
-                            + "- All methods have unit tests with ≥ 90% branch coverage",
+                    "Add update and delete to the user API",
+                    "Customers can register and be looked up, but they can't change their name or close their "
+                            + "account. Add both to UserController and UserService, and cover them in UserServiceTest. "
+                            + "User already has a setName method.",
+                    "- PATCH /api/users/{id} with {\"name\": \"...\"} updates the name and returns 200 with the user\n"
+                            + "- A blank name returns 400 (@NotBlank on a request record, with @Valid)\n"
+                            + "- DELETE /api/users/{id} returns 204\n"
+                            + "- An unknown id returns 404 for both, through NotFoundException\n"
+                            + "- UserServiceTest covers rename, delete and the unknown id",
                     "Junior",
                     new String[]{"crud", "java", "oop"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "user/UserController.java",
+                            MAIN + "user/UserService.java",
+                            TEST + "user/UserServiceTest.java"
+                    }
             ),
             new SeedTask(
-                    "Refactor a God Class into focused services",
-                    "You are given a single UserManager class that handles authentication, profile management, "
-                            + "email notifications, and audit logging. Refactor it into separate, focused classes following "
-                            + "the Single Responsibility Principle.",
-                    "- AuthenticationService handles login/logout only\n"
-                            + "- ProfileService handles profile CRUD only\n"
-                            + "- NotificationService handles email sending only\n"
-                            + "- AuditService handles audit log writes only\n"
-                            + "- No class exceeds 150 lines\n"
-                            + "- All existing tests still pass after refactoring",
+                    "Move the checkout rules out of OrderController",
+                    "POST /api/orders does everything inside OrderController: it finds the product, checks stock, "
+                            + "applies the bulk discount, lowers the stock and saves the order. Move these business rules "
+                            + "into OrderService, so the controller only maps HTTP, and test them in OrderServiceTest.",
+                    "- OrderController only maps the request and response, and calls OrderService.placeOrder(...)\n"
+                            + "- OrderService owns the stock check, the discount, the stock decrement and saving the order\n"
+                            + "- Not enough stock throws IllegalArgumentException, which returns 400\n"
+                            + "- POST /api/orders behaves the same as before for valid orders\n"
+                            + "- OrderServiceTest covers a normal order, not enough stock and the bulk discount",
                     "Mid",
                     new String[]{"oop", "clean-code", "java"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "order/OrderController.java",
+                            MAIN + "order/OrderService.java",
+                            TEST + "order/OrderServiceTest.java"
+                    }
             ),
             new SeedTask(
                     "Add input validation to an existing REST API",
@@ -75,110 +85,124 @@ public class SeedTaskService {
                             + "and blank names end up in the catalogue. Add Jakarta Bean Validation annotations to the "
                             + "request records in ProductController so invalid requests are rejected. "
                             + "GlobalExceptionHandler already turns validation failures into a 400 response.",
-                    "- @NotBlank, @NotNull, @PositiveOrZero annotations are applied to CreateProductRequest and UpdatePriceRequest\n"
+                    "- @NotBlank, @NotNull and @PositiveOrZero are applied to CreateProductRequest and UpdatePriceRequest, "
+                            + "including stock\n"
                             + "- Request bodies are annotated with @Valid in ProductController\n"
-                            + "- Invalid request body returns 400 with JSON: {\"error\": \"<field> <reason>\"}\n"
-                            + "- Valid request still returns 201\n"
-                            + "- Tests cover: missing name, negative price, blank category",
+                            + "- An invalid request body returns 400 with JSON: {\"error\": \"<field> <reason>\"}\n"
+                            + "- A valid request still returns 201",
                     "Junior",
                     new String[]{"rest-apis", "java", "clean-code"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    new String[]{
-                            "src/main/java/com/shopfront/product/ProductController.java",
-                            "src/main/java/com/shopfront/common/GlobalExceptionHandler.java"
-                    }
+                    new String[]{MAIN + "product/ProductController.java"}
             ),
             new SeedTask(
                     "Add a low-stock query to the product catalogue",
                     "The shop needs to know which products are about to run out. Add a derived query to "
                             + "ProductRepository, expose it through ProductService, and add a GET /api/products/low-stock "
-                            + "endpoint to ProductController that lists products whose stock is below a threshold.",
+                            + "endpoint to ProductController that lists products whose stock is below a threshold. "
+                            + "Test the new service method in ProductServiceTest.",
                     "- ProductRepository declares findByStockLessThan(int threshold)\n"
                             + "- ProductService.listLowStock(int threshold) delegates to the repository\n"
                             + "- GET /api/products/low-stock?threshold=5 returns 200 with matching products (default threshold 5)\n"
-                            + "- A negative threshold returns 400\n"
-                            + "- ProductService has unit tests for the new method",
+                            + "- A negative threshold throws IllegalArgumentException, which returns 400\n"
+                            + "- ProductServiceTest covers the new method",
                     "Mid",
                     new String[]{"oop", "crud", "java"},
                     Task.DEFAULT_CODEBASE_KEY,
                     new String[]{
-                            "src/main/java/com/shopfront/product/ProductRepository.java",
-                            "src/main/java/com/shopfront/product/ProductService.java",
-                            "src/main/java/com/shopfront/product/ProductController.java"
+                            MAIN + "product/ProductRepository.java",
+                            MAIN + "product/ProductService.java",
+                            MAIN + "product/ProductController.java",
+                            TEST + "product/ProductServiceTest.java"
                     }
             ),
             new SeedTask(
-                    "Write a Git commit message convention linter",
-                    "Implement a GitCommitLinter utility class that validates whether a commit message follows "
-                            + "Conventional Commits format (type(scope): subject). It should return a list of violations "
-                            + "with clear, actionable messages.",
-                    "- validate(String message) returns List<String> of violations (empty = valid)\n"
-                            + "- Detects: missing type, unknown type, missing colon, subject too long (>72 chars), empty subject\n"
-                            + "- Accepted types: feat, fix, chore, docs, refactor, test, style\n"
-                            + "- Unit tests cover each violation type and valid messages",
+                    "Fix case-sensitive category search, in one clean commit",
+                    "GET /api/products?category=books misses products stored as \"Books\", because "
+                            + "ProductRepository matches the category exactly. Fix it through ProductRepository and "
+                            + "ProductService, add a test to ProductServiceTest, and practise a focused commit.",
+                    "- Category search ignores case (findByCategoryIgnoreCase)\n"
+                            + "- ProductServiceTest covers a mixed-case category\n"
+                            + "- The commit message follows Conventional Commits: fix(product): <subject>, "
+                            + "with a subject of at most 72 characters\n"
+                            + "- The commit changes only what the fix needs",
                     "Junior",
                     new String[]{"git-workflow", "clean-code", "java"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "product/ProductRepository.java",
+                            MAIN + "product/ProductService.java",
+                            TEST + "product/ProductServiceTest.java"
+                    }
             ),
             new SeedTask(
-                    "Design an OOP class hierarchy for a game inventory system",
-                    "Model a simple inventory system for a text adventure game using OOP principles. "
-                            + "There are items (weapon, armour, consumable). Each item has a name, weight, and value. "
-                            + "Weapons have an attackBonus; armour has a defenseBonus; consumables have a healAmount.",
-                    "- Abstract Item base class with name, weight, value fields and abstract use() method\n"
-                            + "- Weapon, Armour, Consumable extend Item with their specific fields\n"
-                            + "- Inventory class holds a List<Item> with add, remove, getTotalWeight, findByName methods\n"
-                            + "- Prefer composition for item effects where applicable\n"
-                            + "- Unit tests cover: add, remove, total weight, use() for each item type",
+                    "Design the shipping rules with polymorphism",
+                    "ShippingCalculator.costFor(category, orderTotal) is a switch on category strings that grows "
+                            + "with every new category. Replace it with an enum ShippingCategory, nested in "
+                            + "ShippingCalculator, where each constant implements its own rule. "
+                            + "ShippingCalculatorTest describes today's prices.",
+                    "- No switch or if chain on the category string remains\n"
+                            + "- Each category's rule lives in its own enum constant (BOOKS, ELECTRONICS, FOOD)\n"
+                            + "- An unknown category throws IllegalArgumentException\n"
+                            + "- The existing ShippingCalculatorTest cases still pass, and a test for the unknown category is added",
                     "Junior",
                     new String[]{"oop", "java", "clean-code"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "order/ShippingCalculator.java",
+                            TEST + "order/ShippingCalculatorTest.java"
+                    }
             ),
             new SeedTask(
-                    "Implement optimistic locking for a shared counter",
-                    "A SharedCounter entity is updated concurrently by multiple threads. Add optimistic locking "
-                            + "using JPA @Version to prevent lost updates. Write a test that simulates two concurrent "
-                            + "increments and verifies that one succeeds and the other throws OptimisticLockException.",
-                    "- SharedCounter entity has a @Version field\n"
-                            + "- increment(Long id) reads and increments the counter in a transaction\n"
-                            + "- Concurrent increment test: two threads both read the same version, one update succeeds, "
-                            + "the other throws OptimisticLockException\n"
-                            + "- Counter value after both attempts equals initialValue + 1",
+                    "Stop two orders from overselling the last item",
+                    "Two customers ordering the last item at the same moment can both pass the stock check in "
+                            + "OrderController, leaving stock at -1. Add optimistic locking to Product so one of them "
+                            + "gets a clear conflict, and map that conflict in GlobalExceptionHandler.",
+                    "- Product has a @Version field\n"
+                            + "- A concurrent update fails with ObjectOptimisticLockingFailureException, which "
+                            + "GlobalExceptionHandler maps to 409 with a clear message\n"
+                            + "- Stock never goes below zero\n"
+                            + "- The commit message or a code comment explains why optimistic locking was chosen over a database lock",
                     "Senior",
                     new String[]{"java", "crud", "oop"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "product/Product.java",
+                            MAIN + "order/OrderController.java",
+                            MAIN + "common/GlobalExceptionHandler.java"
+                    }
             ),
             new SeedTask(
                     "Apply Clean Code naming and extraction to a legacy method",
-                    "The method processData(List<Object[]> rows) is a 200-line method with cryptic variable names, "
-                            + "magic numbers, and nested conditionals. Refactor it using Clean Code principles: "
-                            + "meaningful names, extracted helper methods, and no magic numbers.",
-                    "- No variable is named with a single letter or generic name (data, temp, obj)\n"
-                            + "- Magic numbers are replaced with named constants\n"
-                            + "- Each extracted method is ≤ 20 lines and has a single responsibility\n"
-                            + "- The original processData method is ≤ 30 lines after refactoring\n"
-                            + "- All existing unit tests still pass",
+                    "SalesReportService.process(List<Object[]> rows) is a 45-line method with cryptic variable "
+                            + "names, magic numbers and nested conditionals. Refactor it using Clean Code principles: "
+                            + "meaningful names, extracted helper methods and no magic numbers. "
+                            + "SalesReportServiceTest pins what it returns today.",
+                    "- No variable is named with a single letter or a generic name (data, temp, obj)\n"
+                            + "- Magic numbers and strings are replaced with named constants\n"
+                            + "- Each extracted method is at most 20 lines and has a single responsibility\n"
+                            + "- process is at most 30 lines after refactoring\n"
+                            + "- All existing SalesReportServiceTest tests still pass",
                     "Mid",
                     new String[]{"clean-code", "java", "oop"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{
+                            MAIN + "report/SalesReportService.java",
+                            TEST + "report/SalesReportServiceTest.java"
+                    }
             ),
             new SeedTask(
-                    "Set up a feature branch workflow with squash merging",
-                    "Document and implement a Git workflow for a team of 3 developers. Each developer works on "
-                            + "a feature branch, opens a PR, and the branch is squash-merged into main. "
-                            + "Write a shell script that automates the branch creation and initial push.",
-                    "- Written workflow document explains: branch naming, commit messages, PR process, merge strategy\n"
-                            + "- Shell script: new-feature.sh <ticket-id> <description> creates branch feat/<ticket>-<description> and pushes it\n"
-                            + "- Script fails with a clear message if the branch already exists\n"
-                            + "- Script validates that description is non-empty and ticket-id matches pattern [A-Z]+-[0-9]+",
+                    "Document the team's Git workflow",
+                    "New developers keep asking how to contribute to shopfront. Add a \"Contributing\" section to "
+                            + "README.md that explains the team's Git workflow.",
+                    "- Explains branch naming: feat/<ticket>-<short-description>\n"
+                            + "- Explains Conventional Commits, with examples\n"
+                            + "- Explains the pull request steps and squash merging into main, including why squash merging is used\n"
+                            + "- \"Known gaps\" no longer lists anything the README itself now answers",
                     "Junior",
                     new String[]{"git-workflow", "clean-code"},
                     Task.DEFAULT_CODEBASE_KEY,
-                    NO_FOCUS_FILES
+                    new String[]{"README.md"}
             )
     );
 

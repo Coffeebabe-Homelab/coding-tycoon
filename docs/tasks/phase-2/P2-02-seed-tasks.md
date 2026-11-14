@@ -1,7 +1,7 @@
 # P2-02 — Seed Tasks (10 Hand-Crafted Java/Junior Tasks)
 
 **Phase:** 2 — Task Engine  
-**Status:** ✅ Complete  
+**Status:** ✅ Complete. Seven seeds were rewritten onto `shopfront` in Phase 4, so every task has files to edit: see [P4-01](../phase-4/P4-01-shopfront-seed-tasks.md)  
 **Depends on:** P2-01 (Task entity)  
 
 ---

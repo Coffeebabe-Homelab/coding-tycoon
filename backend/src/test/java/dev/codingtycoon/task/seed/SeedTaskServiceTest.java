@@ -40,13 +40,12 @@ class SeedTaskServiceTest {
         seedTaskService.getAll().forEach(seed -> assertEquals("shopfront", seed.codebaseKey()));
     }
 
+    // The player can edit only focus files (Phase 4), so a seed without them can't be played.
     @Test
-    void atLeastThreeSeedsHaveFocusFiles() {
-        long withFocus = seedTaskService.getAll().stream()
-                .filter(seed -> seed.focusFiles().length > 0)
-                .count();
-
-        assertTrue(withFocus >= 3, "expected >= 3 seeds with focus files, got " + withFocus);
+    void everySeedHasFocusFiles() {
+        for (SeedTask seed : seedTaskService.getAll()) {
+            assertTrue(seed.focusFiles().length > 0, seed.title() + " has no focus files");
+        }
     }
 
     @Test
