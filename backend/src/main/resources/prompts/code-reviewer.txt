@@ -28,4 +28,8 @@ Answer with one JSON object and nothing else, no markdown fences:
     {"position": <criterion position>, "met": true or false}
   ]
 }
-Give one "criteria" entry for every criterion position above. Comment only on pushed files and lines that exist.
+Rules for the answer:
+- "criteria" has exactly {{criteriaCount}} entries, positions {{positions}}, one per criterion. Check each criterion against the pushed code before deciding the verdict.
+- If any criterion is not met, or any comment is MUST_FIX, the verdict is CHANGES_REQUESTED. APPROVED means every criterion is met.
+- "path" is copied exactly from this list, nothing else: {{paths}}
+- "line" is a line number shown in that pushed file.

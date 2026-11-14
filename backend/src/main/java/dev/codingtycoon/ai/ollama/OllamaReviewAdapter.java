@@ -107,16 +107,20 @@ public class OllamaReviewAdapter implements ReviewAiPort {
 
     /** One pass over the template, so text in the player's code is never taken as a placeholder. */
     String prompt(ReviewRequest request) {
-        Map<String, String> values = Map.of(
-                "guidelines", request.guidelines(),
-                "title", request.taskTitle(),
-                "description", request.taskDescription(),
-                "criteria", IntStream.range(0, request.criteria().size())
+        Map<String, String> values = Map.ofEntries(
+                Map.entry("guidelines", request.guidelines()),
+                Map.entry("title", request.taskTitle()),
+                Map.entry("description", request.taskDescription()),
+                Map.entry("criteria", IntStream.range(0, request.criteria().size())
                         .mapToObj(i -> i + ": " + request.criteria().get(i))
-                        .collect(Collectors.joining("\n")),
-                "originals", files(request.originals(), false),
-                "attempt", String.valueOf(request.attemptNumber()),
-                "pushed", files(request.pushed(), true));
+                        .collect(Collectors.joining("\n"))),
+                Map.entry("originals", files(request.originals(), false)),
+                Map.entry("attempt", String.valueOf(request.attemptNumber())),
+                Map.entry("pushed", files(request.pushed(), true)),
+                Map.entry("criteriaCount", String.valueOf(request.criteria().size())),
+                Map.entry("positions", IntStream.range(0, request.criteria().size()).mapToObj(String::valueOf)
+                        .collect(Collectors.joining(", "))),
+                Map.entry("paths", request.pushed().stream().map(ReviewFile::path).collect(Collectors.joining(", "))));
         Matcher matcher = PLACEHOLDER.matcher(TEMPLATE);
         StringBuilder prompt = new StringBuilder();
         while (matcher.find()) {

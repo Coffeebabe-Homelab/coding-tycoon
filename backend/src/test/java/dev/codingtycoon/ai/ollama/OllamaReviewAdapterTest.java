@@ -94,6 +94,8 @@ class OllamaReviewAdapterTest {
         assertTrue(prompt.contains("attempt 2"));
         assertTrue(prompt.contains("BEGIN FILE " + PATH + "\n1 | class UserController {\n2 |   List<User> list()"));
         assertTrue(prompt.contains("Be specific."));
+        assertTrue(prompt.contains("exactly 2 entries, positions 0, 1"));
+        assertTrue(prompt.contains("nothing else: " + PATH));
         assertFalse(prompt.contains("{{"), "every placeholder is filled");
     }
 
