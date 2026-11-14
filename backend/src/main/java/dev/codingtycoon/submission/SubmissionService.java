@@ -84,6 +84,19 @@ public class SubmissionService {
                 .flatMap(task -> submissionRepository.findLatestForTask(task.id));
     }
 
+    /**
+     * Returns the latest push for the player's newest task, active or just approved, so its review
+     * stays visible after the approval.
+     *
+     * @param sub the Auth0 subject claim identifying the player
+     * @return the latest submission, or empty if the newest task has no push yet
+     */
+    @Transactional
+    public Optional<Submission> findLatestOfNewestTask(String sub) {
+        return taskService.findNewestTask(sub)
+                .flatMap(task -> submissionRepository.findLatestForTask(task.id));
+    }
+
     private Task requirePushableTask(String sub) {
         Task task = taskService.findActiveTask(sub)
                 .orElseThrow(() -> new UnprocessableException("No active task to push to"));

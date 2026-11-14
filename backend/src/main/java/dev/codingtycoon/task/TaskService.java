@@ -83,6 +83,18 @@ public class TaskService {
     }
 
     /**
+     * Returns the player's newest task, including one approved a moment ago.
+     *
+     * @param sub the Auth0 subject claim identifying the player
+     * @return the newest task, or empty if the player has none
+     * @throws NotFoundException if no user or profile is found for the given sub
+     */
+    @Transactional
+    public Optional<Task> findNewestTask(String sub) {
+        return taskRepository.findNewestForProfile(requireProfile(sub).id);
+    }
+
+    /**
      * Applies a player's status change to one of their own tasks.
      * <p>Allowed transitions:</p>
      * <ul>
