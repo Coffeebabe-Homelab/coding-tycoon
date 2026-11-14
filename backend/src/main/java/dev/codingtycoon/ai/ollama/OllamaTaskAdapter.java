@@ -101,7 +101,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
         return json.path(field).asText("").strip();
     }
 
-    private static String stripCodeFence(String answer) {
+    static String stripCodeFence(String answer) {
         String trimmed = answer.strip();
         if (!trimmed.startsWith("```")) {
             return trimmed;
@@ -111,7 +111,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
         return end > start ? trimmed.substring(start, end) : trimmed;
     }
 
-    private static boolean isUnreachable(Throwable error) {
+    static boolean isUnreachable(Throwable error) {
         for (Throwable cause = error; cause != null; cause = cause.getCause()) {
             if (cause instanceof ConnectException || cause instanceof UnknownHostException) {
                 return true;
@@ -120,7 +120,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
         return false;
     }
 
-    private static String readPrompt(String resource) {
+    static String readPrompt(String resource) {
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
             if (in == null) {
                 throw new IllegalStateException("Missing prompt " + resource);
