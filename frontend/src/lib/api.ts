@@ -42,3 +42,8 @@ export const fetchWithAuth = async <T>(
   if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
 }
+
+/** Encodes each segment of a codebase path but keeps the slashes the backend route expects. */
+export function encodePath(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/')
+}

@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { fetchWithAuth } from '../lib/api'
+import { encodePath, fetchWithAuth } from '../lib/api'
 import type { CodebaseFile, CodebaseFiles } from '../types/codebase'
-
-/** Encodes each segment but keeps the slashes the backend route expects. */
-function encodePath(path: string): string {
-  return path.split('/').map(encodeURIComponent).join('/')
-}
 
 /**
  * Loads the active task's codebase file list and opens files on demand.
