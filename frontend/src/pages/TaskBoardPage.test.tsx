@@ -102,7 +102,7 @@ describe('TaskBoardPage', () => {
     expect(await screen.findByText("Failed to load today's task")).toBeInTheDocument()
   })
 
-  it('starts an ASSIGNED task and switches to Continue', async () => {
+  it('starts an ASSIGNED task and switches to Continue, a link to the editor', async () => {
     stubApi({
       'GET /api/tasks/today': TASK,
       'PATCH /api/tasks/7/status': { ...TASK, status: 'IN_PROGRESS' },
@@ -111,7 +111,10 @@ describe('TaskBoardPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Start task' }))
 
-    expect(await screen.findByRole('button', { name: 'Continue' })).toBeDisabled()
+    expect(await screen.findByRole('link', { name: 'Continue' })).toHaveAttribute(
+      'href',
+      '/room/editor',
+    )
     expect(screen.queryByRole('button', { name: 'Start task' })).not.toBeInTheDocument()
   })
 
@@ -122,6 +125,6 @@ describe('TaskBoardPage', () => {
 
     await screen.findByRole('heading', { name: 'Add endpoint' })
     expect(screen.queryByRole('button', { name: 'Start task' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Continue' })).not.toBeInTheDocument()
   })
 })

@@ -17,7 +17,7 @@ const ROOM_ROUTES = {
     seniority: 'Mid',
     topics: [],
   },
-  'GET /api/tasks/today': { status: 'IN_PROGRESS' },
+  'GET /api/tasks/today': { status: 'IN_PROGRESS', focusFiles: [] },
   'GET /api/progress': {
     totalXp: 0,
     xpToday: 0,
@@ -82,6 +82,20 @@ describe('App routing', () => {
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent(
       'Room / Profile',
     )
+  })
+
+  it('opens the Editor as a panel tab between Codebase and the rest', async () => {
+    stubApi(ROOM_ROUTES)
+    vi.mocked(useAuth0).mockReturnValue(authState())
+
+    renderAt('/room/editor')
+
+    expect(await screen.findByText('This task has no files to edit.')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent(
+      'Room / Editor',
+    )
+    const tabs = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(tabs.indexOf('Editor')).toBe(tabs.indexOf('Codebase') + 1)
   })
 
   it('redirects the old /room/profile URL to the Profile page', async () => {

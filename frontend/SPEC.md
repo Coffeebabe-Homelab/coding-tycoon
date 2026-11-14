@@ -68,7 +68,7 @@ frontend/src/
   /room             → GameRoomPage — main hub: room scene + panel outlet
     /room/task       → TaskBoardPage (tab)
     /room/codebase   → CodebaseExplorerPage (tab)
-    /room/editor     → EditorPage (tab, Phase 4)
+    /room/editor     → EditorPage (tab)
     /room/vcs        → VCS panel (tab, Phase 4; no route yet)
     /room/review     → ReviewPage (tab, Phase 5)
     /room/end-of-day → EndOfDayPage in Overlay (Phase 7)
@@ -76,13 +76,13 @@ frontend/src/
   /profile          → ProfilePage (standalone)
 ```
 
-`GameShell` is wrapped in `<ProtectedRoute />`, so the room, its panels and Profile all inherit the protection. It holds the App Bar, `PanelWindow`, the progress fetch and `useSessionFlow`, so moving between the room and Profile keeps kept tabs and doesn't repeat those. Tools are tabs in `PanelWindow`, listed in `PANEL_TABS` in `App.tsx`; add one only once it has a route, whose element stays empty because the window renders the tab. Other panels render through `GameRoomPage`'s outlet and wrap their content in `<Overlay>`, which is for full-screen moments only. While a panel is open the room and the App Bar are `inert`, based on the URL. Closing (Esc, "Back to room", or × and a backdrop click on an `Overlay`) navigates to `/room`. Tab links use `replace`, so the browser back button closes the panel instead of walking through tabs.
+`GameShell` is wrapped in `<ProtectedRoute />`, so the room, its panels and Profile all inherit the protection. It holds the App Bar, `PanelWindow`, the progress fetch and `useSessionFlow`, so moving between the room and Profile keeps kept tabs and doesn't repeat those. Tools are tabs in `PanelWindow`, listed in `PANEL_TABS` in `App.tsx`; add one only once it has a route, whose element stays empty because the window renders the tab. Other panels render through `GameRoomPage`'s outlet and wrap their content in `<Overlay>`, which is for full-screen moments only. While a panel is open the room and the App Bar are `inert`, based on the URL. Closing (Esc, "Back to room", or × and a backdrop click on an `Overlay`) navigates to `/room`. Esc is left alone when it comes from inside `.monaco-editor` (Monaco closes its own widgets with it) or was already handled (`defaultPrevented`), for example by a `Modal`. Tab links use `replace`, so the browser back button closes the panel instead of walking through tabs.
 
 Visited tabs stay mounted in React's `<Activity>` until the player refreshes or logs out, so they start from where they were left. A hidden tab's effects are cleaned up and run again when it comes back, so its data refreshes. Hooks must keep showing current data during that refresh instead of going back to a loading state.
 
 ### Session flow (`hooks/useSessionFlow.ts`)
 
-On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. Editor and Review are not linked until they exist.
+On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. The Task Board's Continue links to the Editor once the task is `IN_PROGRESS`; Review is not linked until it exists.
 
 ## Game Shell Components (Phase 7)
 
@@ -96,7 +96,7 @@ On entering the room: no profile (`404`) → `/onboarding`. If the player landed
 | `components/AvatarMenu.tsx` | Figma 117:347: the avatar opens a disclosure with the email, Profile and Log out. Esc returns focus to the avatar; a click outside or tabbing away closes it. |
 | `components/PanelWindow.tsx` | The one window for all tools (Figma 46:25): tab bar, "Back to room", visited tabs kept in `<Activity>`. |
 | `components/Overlay.tsx` | Full-screen moment on a scrim, with a labelled heading and × close. |
-| `hooks/useModalDialog.ts` | Dialog behaviour for both: `role="dialog"` focus handling, focus trap (`lib/focusTrap.ts`), Esc, restores focus to the opener on every open. |
+| `hooks/useModalDialog.ts` | Dialog behaviour for both: `role="dialog"` focus handling, focus trap (`lib/focusTrap.ts`), Esc (except from inside Monaco or when already handled), restores focus to the opener on every open. |
 | `pages/EndOfDayPage.tsx` | Outcome (approved / in progress / not started), XP today, total XP, current and longest streak; actions Back to room, Log out. Skill delta hidden until Phase 6. |
 | `hooks/useProgress.ts` | `GET /api/progress`; optional `refreshKey` refetches (the room refetches when a panel opens or closes). |
 
@@ -111,6 +111,7 @@ Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor �
 | Task, review, profile data | React hook + `useState` (or React Query) | Server-owned, stale-able |
 | Which panel is open over the room | URL (nested routes under `/room`) | Back button closes it; refresh and deep links keep it |
 | Form values, toggles, local UI | `useState` | No cross-component sharing needed |
+| Edits to the task's focus files | `DraftsProvider` context in `GameShell` (`hooks/useDrafts.tsx`) | Shared by the Editor and VCS tabs and kept across tab switches and Profile visits; lost on refresh (Phase 4 scope) |
 
 Don't add a global store unless state truly can't live in the URL or a hook. Never duplicate server data client-side.
 
@@ -232,6 +233,9 @@ One Figma component set is one React component, and its variants are props. Prop
 | `Icon` | 7:217 | `<Icon name="x" />`. 16px, inherits the text colour, hidden from screen readers by default. `flame` and the `branch` node keep their Figma colours |
 | `Difficulty` | 8:106 | `<Difficulty level={task.difficulty} />`. Matches any case, and unknown values are neutral |
 | `StatusBadge` | 8:96 | `<StatusBadge status={task.status} />`. Always a dot and a word |
+| `EditorTab` | 8:166 | One open file in a `role="tablist"`; only the active tab is in the Tab order. Trailing lock for a read-only file; no × because focus files can't be closed |
+| `CriteriaItem` | 9:273 | `<CriteriaItem text done? />` inside a `<ul>`. The box is decorative, not a checkbox: nothing decides yet when a criterion is met |
+| `Modal` | — | `<Modal title confirmLabel onConfirm onCancel>`: `role="alertdialog"`, starts on Cancel, traps Tab, Esc cancels without closing the panel. Only before consequential actions |
 
 ### Common component patterns
 
@@ -271,7 +275,7 @@ import { languageForPath } from '../lib/language'
 />
 ```
 
-Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else. That file holds all Monaco wiring:
+Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language`, `readOnly`, `onChange?`, `path?`, `onCursorChange?`, `ariaLabel`). Never import `@monaco-editor/react` anywhere else. That file holds all Monaco wiring:
 
 - `loader.config({ monaco })` so the editor comes from the bundle, not jsDelivr
 - `self.MonacoEnvironment.getWorker` with Vite `?worker` imports (editor worker, JSON worker)
@@ -283,7 +287,7 @@ Monaco is wrapped once in `components/CodeEditor.tsx` (props: `value`, `language
 Pages render `LazyCodeEditor` (`React.lazy` + `Suspense` with a "Loading editor…" message), which keeps Monaco in its own build chunks.
 
 For the **Codebase Explorer** (Phase 3, read-only): `readOnly` sets `readOnly: true` and `domReadOnly: true`.
-For the **Editor panel** (Phase 4): allow edits, bind value to component state, surface changes via `onChange`.
+For the **Editor panel** (Phase 4): `readOnly={false}`, and a `path` per file (`draft/<path>`) so each file has its own Monaco model and undo history. Named models are kept when a hidden tab replaces the editor; unnamed ones are dropped so they don't leak.
 Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tailscale-only staging and offline (P3-04).
 
 ### Codebase Explorer (Phase 3)
@@ -296,6 +300,15 @@ Monaco is **bundled locally**, never loaded from a CDN, so it works on the Tails
 - `components/FileTree.tsx`: collapsible folders built from native buttons (Tab/Enter/Space), text glyphs per file type, focus files in `text-warning`, folders leading to focus files start expanded.
 - 404 on the file list shows "no task yet" with a link to the Task Board. The Task Board lists the task's `focusFiles` as explorer deep links plus an "Explore codebase" link.
 - `components/TextLink.tsx`: the shared inline accent link.
+
+### Editor (Phase 4)
+
+`pages/EditorPage.tsx` at `/room/editor`, a tab in `PanelWindow` (Figma Screen 5, 30:418).
+
+- Left: the ticket (title, `Difficulty`, `StatusBadge`, description, criteria as `CriteriaItem`s). Right: one `EditorTab` per focus file (arrows, Home and End move between them), the path as a breadcrumb, "Reset file" (asks in a `Modal`, then focuses the file's tab) and "Review changes" (a link to `/room/vcs`, disabled until something changed), the editor, and a status bar (mode, language, the Tab-focus shortcut, changed-file count, `Ln, Col`).
+- Drafts come from `useDrafts()`. `loadDrafts(task)` fetches the focus files and `GET /api/submissions/latest` once per task; each file starts from its latest pushed version, else the original.
+- `IN_PROGRESS` and `CHANGES_REQUESTED` are editable. Otherwise the files are read-only with a lock on each tab; `SUBMITTED` adds "waiting for review". `ASSIGNED` asks to start the task first; a task without focus files points to the Codebase Explorer.
+- Tab inside Monaco indents. Monaco's own toggle makes Tab move focus instead: Ctrl+M, or Ctrl+Shift+M on a Mac (Cmd+M would minimise the window). The status bar names it.
 
 ---
 

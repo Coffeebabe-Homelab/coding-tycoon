@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link, MemoryRouter, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -194,6 +194,31 @@ describe('PanelWindow', () => {
       await user.keyboard('{Escape}')
 
       expect(location()).toHaveTextContent(/^\/room$/)
+    })
+
+    it('leaves Escape inside the code editor to the editor', () => {
+      renderWindow()
+      // Monaco uses Escape to close its own widgets (find, suggestions).
+      const editor = document.createElement('div')
+      editor.className = 'monaco-editor'
+      const textarea = editor.appendChild(document.createElement('textarea'))
+      screen.getByRole('dialog').append(editor)
+
+      fireEvent.keyDown(textarea, { key: 'Escape' })
+
+      expect(location()).toHaveTextContent(/^\/room\/task$/)
+    })
+
+    it('ignores an Escape another handler already used', () => {
+      renderWindow()
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+      event.preventDefault()
+
+      act(() => {
+        screen.getByRole('dialog').dispatchEvent(event)
+      })
+
+      expect(location()).toHaveTextContent(/^\/room\/task$/)
     })
 
     it('closes to the room from Back to room', async () => {
