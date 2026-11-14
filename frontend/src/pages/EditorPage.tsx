@@ -7,7 +7,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useDrafts } from '../hooks/useDrafts'
 import { useTask } from '../hooks/useTask'
 import { splitCriteria } from '../lib/criteria'
@@ -59,7 +59,11 @@ function Message({ children }: { children: ReactNode }) {
 
 function Workspace({ task }: { task: Task }) {
   const { files, changedPaths, isLoading, error, loadDrafts, setDraft, resetFile } = useDrafts()
-  const [selectedPath, setSelectedPath] = useState(task.focusFiles[0])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const fileParam = searchParams.get('file')
+  // The tab link has no ?file=, so remember the last file to reopen it, as the Explorer does.
+  const [lastFile, setLastFile] = useState<string | null>(null)
+  if (fileParam && fileParam !== lastFile) setLastFile(fileParam)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [cursor, setCursor] = useState({ line: 1, column: 1 })
   const tabRefs = useRef(new Map<string, HTMLButtonElement>())
@@ -72,7 +76,7 @@ function Workspace({ task }: { task: Task }) {
     setCursor({ line, column })
   }, [])
 
-  const file = files.find((candidate) => candidate.path === selectedPath) ?? files[0]
+  const file = files.find((candidate) => candidate.path === (fileParam ?? lastFile)) ?? files[0]
   if (isLoading || !file) {
     return <Message>{error ?? 'Loading files…'}</Message>
   }
@@ -80,7 +84,7 @@ function Workspace({ task }: { task: Task }) {
   const isChanged = changedPaths.includes(file.path)
 
   const selectFile = (path: string) => {
-    setSelectedPath(path)
+    setSearchParams({ file: path }, { replace: true })
     tabRefs.current.get(path)?.focus()
   }
 
@@ -175,6 +179,7 @@ function Workspace({ task }: { task: Task }) {
 
         <div
           role="status"
+          aria-label="Editor status"
           className="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-text-muted"
         >
           <span className="rounded-sm bg-accent-subtle px-2 py-0.5 font-semibold uppercase text-accent-on-subtle">
