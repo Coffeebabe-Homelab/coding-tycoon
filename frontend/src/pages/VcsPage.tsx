@@ -179,7 +179,7 @@ function SourceControl({ task }: { task: Task }) {
           <span className="font-mono text-xs text-danger">−{lineCounts.removed}</span>
           <span className="flex-1" />
           {isPushed && latest && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-success-subtle px-2 py-0.5 text-xs text-success">
+            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md bg-success-subtle px-2 py-0.5 text-xs text-success">
               <Icon name="check" />
               Pushed · {latest.commitHash}
             </span>
