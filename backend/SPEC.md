@@ -98,7 +98,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── JpaSubmissionRepository.java Adapter — Panache
 │   ├── SubmissionService.java       Domain core: validates a push against the task's focus files, stores it, calls TaskService.submit
 │   ├── CreateSubmissionRequest.java Request: { commitMessage, files: [{ path, content }] }
-│   ├── SubmissionResponse.java      Response: { id, taskId, attemptNumber, commitMessage, submittedAt, files }
+│   ├── SubmissionResponse.java      Response: { id, taskId, attemptNumber, commitHash, commitMessage, submittedAt, files }
 │   └── SubmissionResource.java      Adapter (HTTP in): POST /api/submissions, GET /api/submissions/latest
 │
 ├── progress/                        (Phase 7)
@@ -175,10 +175,10 @@ A push from the VCS panel. Both endpoints require a Bearer token and work on the
 
 | Method | Path | Response | Errors |
 |---|---|---|---|
-| POST | `/api/submissions` | 201 `{ id, taskId, attemptNumber, commitMessage, submittedAt, files: [{ path, content }] }`; the task moves to `SUBMITTED` | 401; 400 malformed JSON; 422 with one message for the first problem (below) |
+| POST | `/api/submissions` | 201 `{ id, taskId, attemptNumber, commitHash, commitMessage, submittedAt, files: [{ path, content }] }`; the task moves to `SUBMITTED` | 401; 400 malformed JSON; 422 with one message for the first problem (below) |
 | GET | `/api/submissions/latest` | 200 the active task's last push, same shape | 401; 204 no active task or no push yet |
 
-A push is rejected with `422` when: there is no body; there is no active task, or it isn't `IN_PROGRESS` or `CHANGES_REQUESTED`; the commit message is blank or over 72 characters (it is stored trimmed); `files` is empty; a path is not one of the task's focus files (this covers `../` paths) or appears twice; a file has no content, is over 64 KB in UTF-8, or equals the codebase original. `attemptNumber` counts the task's pushes, and a unique `(task_id, attempt_number)` stops two simultaneous pushes from sharing an attempt.
+A push is rejected with `422` when: there is no body; there is no active task, or it isn't `IN_PROGRESS` or `CHANGES_REQUESTED`; the commit message is blank or over 72 characters (it is stored trimmed); `files` is empty; a path is not one of the task's focus files (this covers `../` paths) or appears twice; a file has no content, is over 64 KB in UTF-8, or equals the codebase original. `attemptNumber` counts the task's pushes, and a unique `(task_id, attempt_number)` stops two simultaneous pushes from sharing an attempt. `commitHash` is decorative: the first 7 hex characters of MD5(`taskId:playerProfileId:attemptNumber`), computed on read and not stored, so the VCS panel can show a Git-looking id.
 
 ---
 
