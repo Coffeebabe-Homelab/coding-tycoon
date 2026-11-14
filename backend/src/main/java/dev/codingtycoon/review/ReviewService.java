@@ -1,6 +1,8 @@
 package dev.codingtycoon.review;
 
 import dev.codingtycoon.codebase.CodebaseRepository;
+import dev.codingtycoon.exception.UnprocessableException;
+import dev.codingtycoon.profile.ProfileService;
 import dev.codingtycoon.submission.Submission;
 import dev.codingtycoon.submission.SubmissionPushed;
 import dev.codingtycoon.submission.SubmissionRepository;
@@ -13,6 +15,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.time.Duration;
@@ -52,6 +55,9 @@ public class ReviewService {
 
     @Inject
     ReviewSettings settings;
+
+    @Inject
+    ProfileService profileService;
 
     /**
      * Queues the review of a new push. Runs inside the push's transaction: if it fails, the push
@@ -147,6 +153,34 @@ public class ReviewService {
         Duration delay = settings.retryBackoff().multipliedBy(1L << (review.failureCount - 1));
         reviewQueue.retryLater(review.id, delay);
         LOG.warnf("Review %d failed (%s), retry %d in %s", review.id, reason, review.failureCount, delay);
+    }
+
+    /**
+     * Puts the caller's FAILED review back in the queue with its failures reset. Starts no model
+     * call: the worker picks it up, so this can't be used to run the model on demand.
+     *
+     * @param sub      the Auth0 subject claim identifying the player
+     * @param reviewId the review to retry
+     * @return the PENDING review with its attempt number
+     * @throws NotFoundException      if the review doesn't exist or belongs to another player
+     * @throws UnprocessableException if the review isn't FAILED
+     */
+    @Transactional
+    public LatestReview retry(String sub, Long reviewId) {
+        Long profileId = profileService.getProfile(sub).id;
+        // 404 rather than 403, so the response doesn't reveal which review IDs exist.
+        Review review = reviewRepository.findReviewById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review not found: " + reviewId));
+        Submission push = submissionRepository.findSubmissionById(review.submissionId)
+                .filter(s -> profileId.equals(s.playerProfileId))
+                .orElseThrow(() -> new NotFoundException("Review not found: " + reviewId));
+        if (review.status != ReviewStatus.FAILED) {
+            throw new UnprocessableException("Review is " + review.status + ": only a FAILED review can be retried");
+        }
+        review.failureCount = 0;
+        reviewQueue.enqueue(review.id);
+        LOG.infof("Review %d retried by its player", review.id);
+        return new LatestReview(review, push.attemptNumber);
     }
 
     private Review requireReview(ClaimedReview claimed) {
