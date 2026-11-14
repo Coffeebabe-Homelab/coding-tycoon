@@ -1,7 +1,7 @@
 # P4-01 — Rewrite the Seed Tasks onto Shopfront
 
 **Phase:** 4 — Code Editor & VCS Panel  
-**Status:** 🟡 In progress  
+**Status:** ✅ Complete (2026-11-14)  
 **Depends on:** none  
 
 ---
@@ -20,13 +20,13 @@ Phase 4 lets the player edit only the active task's focus files (owner decision,
 
 ## Acceptance Criteria
 
-- [ ] The 7 seed tasks without focus files are rewritten as `shopfront` tasks, each with 1–3 focus files that exist in `codebases/shopfront/index.txt`
-- [ ] Each rewritten task keeps its learning goal (its tags) and is doable by editing only its focus files. No task needs a new file
-- [ ] Any file a rewritten task needs, such as a class to refactor, is added to `shopfront` and listed in `index.txt`. `shopfront` stays a small app that would compile
-- [ ] Description and acceptance criteria name the files and what to change, in the style of the 3 existing tasks
-- [ ] A test asserts that every seed task has at least one focus file, and that every focus file is in the codebase index
-- [ ] Tasks already stored without focus files keep working: the editor shows its empty state (P4-03). No data migration
-- [ ] `docs/tasks/phase-2/P2-02-seed-tasks.md` notes the rewrite
+- [x] The 7 seed tasks without focus files are rewritten as `shopfront` tasks, each with 1–3 focus files that exist in `codebases/shopfront/index.txt`
+- [x] Each rewritten task keeps its learning goal (its tags) and is doable by editing only its focus files. No task needs a new file
+- [x] Any file a rewritten task needs, such as a class to refactor, is added to `shopfront` and listed in `index.txt`. `shopfront` stays a small app that would compile
+- [x] Description and acceptance criteria name the files and what to change, in the style of the 3 existing tasks
+- [x] A test asserts that every seed task has at least one focus file, and that every focus file is in the codebase index
+- [x] Tasks already stored without focus files keep working: the editor shows its empty state (P4-03). No data migration
+- [x] `docs/tasks/phase-2/P2-02-seed-tasks.md` notes the rewrite
 
 ---
 
@@ -72,11 +72,11 @@ Each task is played against the original `shopfront`, not against the player's e
 | `GlobalExceptionHandler`: map `IllegalArgumentException` to 400 | Fixes problem 2, and the duplicate email returns 400 |
 | New `order/` domain: `Order`, `OrderRepository`, `OrderService` (thin: only `listForUser`) and `OrderController`, whose `POST /api/orders` holds the whole checkout (find product, check stock, bulk discount with magic numbers, decrement stock, save) | Gives the shop a realistic fat controller for task 3 and a race for task 8 |
 | New `order/ShippingCalculator` with a `switch` on the category string | Material for the OOP task |
-| New `report/SalesReportService` with one cryptic, about 60-line `process(List<Object[]> rows)` method | Material for the Clean Code task |
+| New `report/SalesReportService` with one cryptic, 45-line `process(List<Object[]> rows)` method | Material for the Clean Code task |
 | New tests: `ProductServiceTest`, `OrderServiceTest`, `ShippingCalculatorTest`, `SalesReportServiceTest`, each with 2–4 passing tests | Fixes problem 1. The last two pin today's behaviour, so a refactor can prove it changed nothing |
 | `README.md`: add orders and reports to the overview and update "Known gaps" | Keeps the codebase's own docs true |
 
-That adds 11 files to `shopfront`, making 26. All of them go in `index.txt`.
+That adds 10 files to `shopfront`, making 25, all listed in `index.txt`. A scratch Maven build of `shopfront` compiles, and its 18 tests pass.
 
 ### The 10 tasks
 
