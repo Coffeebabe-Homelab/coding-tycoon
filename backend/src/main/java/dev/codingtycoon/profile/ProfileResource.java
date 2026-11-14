@@ -23,6 +23,12 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ProfileResource {
 
+    /**
+     * Auth0 puts {@code email} only in the ID token, so a Post-Login Action copies it into the
+     * access token under this namespaced claim (see docs/STAGING_DEPLOY.md).
+     */
+    static final String EMAIL_CLAIM = "https://codingtycoon.dev/email";
+
     @Inject
     ProfileService profileService;
 
@@ -40,7 +46,7 @@ public class ProfileResource {
     @POST
     public Response createProfile(@Valid CreateProfileRequest request) {
         String sub = jwt.getSubject();
-        String email = jwt.getClaim("email");
+        String email = jwt.getClaim(EMAIL_CLAIM);
         PlayerProfile profile = profileService.createProfile(sub, email, request);
         return Response.status(Response.Status.CREATED).entity(ProfileResponse.from(profile)).build();
     }

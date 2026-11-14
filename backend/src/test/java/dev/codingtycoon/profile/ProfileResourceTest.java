@@ -2,6 +2,7 @@ package dev.codingtycoon.profile;
 
 import dev.codingtycoon.progress.ProgressTestData;
 import dev.codingtycoon.topic.JpaTopicRepository;
+import dev.codingtycoon.user.JpaUserRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
@@ -18,6 +19,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Integration tests for the /api/profile endpoints.
@@ -27,12 +29,18 @@ import static org.hamcrest.Matchers.hasSize;
 class ProfileResourceTest {
 
     private static final String TEST_SUB = "auth0|profile-test-user";
+    private static final String TEST_EMAIL = "test@example.com";
+    /** The Auth0 Post-Login Action adds this claim; access tokens carry no plain email claim. */
+    private static final String EMAIL_CLAIM = "https://codingtycoon.dev/email";
 
     @Inject
     JpaTopicRepository topicRepository;
 
     @Inject
     ProgressTestData testData;
+
+    @Inject
+    JpaUserRepository userRepository;
 
     /** Seed topic IDs, looked up in setUp so tests don't depend on generated values. */
     private Long topicId1;
@@ -50,7 +58,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void createProfileReturns201WithBody() {
         given()
@@ -70,7 +78,24 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
+    })
+    void createProfileStoresTheEmailFromTheAccessTokenClaim() {
+        given()
+                .contentType(ContentType.JSON)
+                .body(buildRequest("Java", "Spring Boot", "Junior", List.of(topicId1)))
+                .when().post("/api/profile")
+                .then()
+                .statusCode(201);
+
+        assertEquals(TEST_EMAIL, userRepository.findBySub(TEST_SUB).orElseThrow().email);
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB),
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void getProfileReturns200AfterCreate() {
         // First create
@@ -96,7 +121,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void updateProfileReturns200WithUpdatedData() {
         // Create first
@@ -125,7 +150,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void duplicateCreateReturns409() {
         String body = buildRequest("Java", "Spring Boot", "Junior", List.of(topicId1));
@@ -169,7 +194,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void missingFieldsReturns422() {
         // Empty body — all fields are @NotBlank/@NotNull
@@ -185,7 +210,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void emptyTopicListReturns422() {
         // topicIds must have min=1
@@ -201,7 +226,7 @@ class ProfileResourceTest {
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {
             @Claim(key = "sub", value = TEST_SUB),
-            @Claim(key = "email", value = "test@example.com")
+            @Claim(key = EMAIL_CLAIM, value = TEST_EMAIL)
     })
     void getProfileReturns404WhenNoProfileExists() {
         given()
