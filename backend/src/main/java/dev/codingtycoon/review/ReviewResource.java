@@ -7,10 +7,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-
-import java.time.Duration;
 
 /**
  * REST resource for the Review tab. Reviews are created by pushes only, so it just reads them.
@@ -27,8 +24,8 @@ public class ReviewResource {
     @Inject
     JsonWebToken jwt;
 
-    @ConfigProperty(name = "codingtycoon.review.target-duration")
-    Duration targetDuration;
+    @Inject
+    ReviewSettings settings;
 
     /**
      * Returns the review of the latest push for the player's newest task. The Review tab polls it
@@ -40,7 +37,7 @@ public class ReviewResource {
     @Path("/latest")
     public Response latest() {
         return reviewService.findLatest(jwt.getSubject())
-                .map(latest -> Response.ok(ReviewResponse.from(latest, targetDuration.toSeconds())).build())
+                .map(latest -> Response.ok(ReviewResponse.from(latest, settings.targetDuration().toSeconds())).build())
                 .orElseGet(() -> Response.noContent().build());
     }
 }
