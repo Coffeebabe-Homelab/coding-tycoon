@@ -3,10 +3,23 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 /** Non-2xx API response; `status` lets callers react to specific codes (e.g. 404 → onboarding). */
 export class ApiError extends Error {
   readonly status: number
+  /** The backend's `message` from its `{ error, message, status }` body, or null for other bodies. */
+  readonly serverMessage: string | null
 
   constructor(status: number, body: string) {
     super(`API error ${status}: ${body}`)
     this.status = status
+    this.serverMessage = parseServerMessage(body)
+  }
+}
+
+function parseServerMessage(body: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(body)
+    const message = (parsed as { message?: unknown } | null)?.message
+    return typeof message === 'string' ? message : null
+  } catch {
+    return null
   }
 }
 
