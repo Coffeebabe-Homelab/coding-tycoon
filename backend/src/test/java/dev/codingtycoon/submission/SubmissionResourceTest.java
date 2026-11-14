@@ -1,6 +1,9 @@
 package dev.codingtycoon.submission;
 
 import dev.codingtycoon.progress.ProgressTestData;
+import dev.codingtycoon.review.JpaReviewRepository;
+import dev.codingtycoon.review.Review;
+import dev.codingtycoon.review.ReviewStatus;
 import dev.codingtycoon.task.JpaTaskRepository;
 import dev.codingtycoon.task.Task;
 import dev.codingtycoon.task.TaskStatus;
@@ -41,6 +44,9 @@ class SubmissionResourceTest {
 
     @Inject
     JpaSubmissionRepository submissionRepository;
+
+    @Inject
+    JpaReviewRepository reviewRepository;
 
     private Long taskId;
 
@@ -87,6 +93,17 @@ class SubmissionResourceTest {
     @Test
     @TestSecurity(user = TEST_SUB, roles = {})
     @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
+    void pushQueuesAPendingReview() {
+        int id = post(body("feat: x", FOCUS_FILE, "changed")).statusCode(201).extract().path("id");
+
+        Review review = reviewRepository.findBySubmissionId((long) id).orElseThrow();
+        assertEquals(ReviewStatus.PENDING, review.status);
+        assertEquals(0, review.failureCount);
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = TEST_SUB)})
     void latestIsEmptyBeforeAPushAndReturnsItAfterwards() {
         given().when().get("/api/submissions/latest").then().statusCode(204);
 
@@ -108,6 +125,7 @@ class SubmissionResourceTest {
                 .body("message", containsString("not a file of this task"));
 
         assertEquals(0, submissionRepository.count());
+        assertEquals(0, reviewRepository.count());
         assertEquals(TaskStatus.IN_PROGRESS, taskRepository.findById(taskId).status);
     }
 

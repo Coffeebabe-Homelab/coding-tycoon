@@ -76,6 +76,19 @@ public class Task extends PanacheEntityBase {
         return splitCsv(focusFiles);
     }
 
+    /**
+     * Returns the acceptance criteria, one per non-blank line. Same rule as the frontend's
+     * {@code splitCriteria}, so a criterion's position means the same on both sides.
+     *
+     * @return trimmed criteria in order, empty if there are none
+     */
+    public List<String> criteriaList() {
+        return acceptanceCriteria == null ? List.of() : acceptanceCriteria.lines()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .toList();
+    }
+
     static List<String> splitCsv(String csv) {
         return Arrays.stream(csv.split(","))
                 .map(String::trim)

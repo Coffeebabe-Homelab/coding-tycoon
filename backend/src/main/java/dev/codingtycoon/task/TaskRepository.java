@@ -18,6 +18,14 @@ public interface TaskRepository {
     Optional<Task> findTodayForProfile(Long profileId);
 
     /**
+     * Returns the player's newest task, whatever its status, so a just-approved task still counts.
+     *
+     * @param profileId the player profile ID
+     * @return the most recently created task, or empty if the player has none
+     */
+    Optional<Task> findNewestForProfile(Long profileId);
+
+    /**
      * Finds a task by its primary key.
      *
      * @param id the task ID

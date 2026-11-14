@@ -25,6 +25,14 @@ public interface SubmissionRepository {
     Optional<Submission> findLatestForTask(Long taskId);
 
     /**
+     * Returns a push by ID, with its files.
+     *
+     * @param id the submission ID
+     * @return the submission, or empty if none exists
+     */
+    Optional<Submission> findSubmissionById(Long id);
+
+    /**
      * Persists a new submission and its files.
      *
      * @param submission the submission to save

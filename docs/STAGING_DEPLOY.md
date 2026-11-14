@@ -34,6 +34,8 @@ Optional: `DB_NAME` (default `codingtycoon`), `FRONTEND_PORT` (default `5173`), 
 
 AI (optional): `AI_PROVIDER` (`stub` by default: no AI, seed tasks; `ollama` to use the model), `OLLAMA_MODEL` (default `deepseek-coder:6.7b-instruct-q4_K_M`) and `AI_TASK_TIMEOUT_SECONDS` (default `50`; keep it under nginx's 60 s `/api/` proxy timeout). See [AI model (Ollama)](#ai-model-ollama).
 
+Reviews (optional): the `CODINGTYCOON_REVIEW_*` timing settings. See [Review timing](#review-timing).
+
 Don't set these in `.env`:
 
 - `DATABASE_JDBC_URL` and `QUARKUS_PROFILE`: Compose sets them for the backend.
@@ -78,6 +80,21 @@ docker compose exec ollama ollama pull deepseek-coder:6.7b-instruct-q4_K_M
 **Turn the AI on:** set `AI_PROVIDER=ollama` in the env-file credential and redeploy. To turn it off, set `stub`. No rebuild is needed either way.
 
 **Check a real call:** `POST /api/tasks/generate`, as a player with no active task, generates a task with the model. The backend log shows `AI task generation failed, using a seed task` when it falls back. With CPU only, the first call after idle also loads the model, so it is the slowest.
+
+## Review timing
+
+A push queues a review, and a background worker in the backend runs it, one at a time. All of these go in the env-file credential and take effect on redeploy, with no rebuild. The backend refuses to start with a clear message if the timeout is shorter than the target, or stuck-after isn't longer than the timeout.
+
+| Env var | Default | What it does |
+|---|---|---|
+| `CODINGTYCOON_REVIEW_TARGET_DURATION` | `30s` | How long a review should take. Not a limit: past it the Review tab says "taking longer than usual" and the log shows `over the … target` |
+| `CODINGTYCOON_REVIEW_TIMEOUT` | `5m` | Hard limit on one reviewer call; past it the call counts as a failure |
+| `CODINGTYCOON_REVIEW_MAX_FAILURES` | `3` | Failures on our side (timeout, outage, unusable answer) before the review is `FAILED`. Never costs the player an attempt; they can press Retry |
+| `CODINGTYCOON_REVIEW_RETRY_BACKOFF` | `30s` | Wait before the first retry, doubled after each further failure |
+| `CODINGTYCOON_REVIEW_STUCK_AFTER` | `10m` | A review `RUNNING` this long (the backend stopped mid-review) is put back in the queue |
+| `CODINGTYCOON_REVIEW_POLL_INTERVAL` | `5s` | How often the worker looks for due reviews. `off` stops the worker |
+
+**Tuning:** the log has `Review N done in X ms` for each review. Set the target near the usual duration, and the timeout well above the slowest one, so a slow but working model isn't counted as failing.
 
 ## Jenkins Assumptions
 

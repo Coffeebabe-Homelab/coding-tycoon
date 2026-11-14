@@ -48,14 +48,23 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── TaskService.java             Domain core: business logic, orchestration
 │   └── TaskResource.java            Adapter (HTTP in): POST /api/tasks/generate, GET /api/tasks/today
 │
-├── review/
-│   ├── Review.java                  Entity: submissionId, verdict, comments (JSON), reviewedAt
+├── review/                          (Phase 5)
+│   ├── Review.java                  Entity: one review per push (status, verdict, summary, comments, criteria, queue columns)
+│   ├── ReviewComment.java           Entity: path, 1-based line in the pushed file, severity, body
+│   ├── ReviewCriterion.java         Entity: position in the task's criteria list, met
+│   ├── ReviewStatus / ReviewVerdict / Severity  Enums
 │   ├── ReviewRepository.java        Port (interface)
 │   ├── JpaReviewRepository.java     Adapter — Panache
-│   ├── ReviewAiPort.java            Port (interface) — AI boundary (key isolation point)
-│   ├── (OllamaReviewAdapter lives in ai/ollama, Phase 5)
-│   ├── ReviewService.java           Domain core
-│   └── ReviewResource.java          Adapter (HTTP in): POST /api/reviews/trigger, GET /api/reviews/{id}
+│   ├── ReviewQueue.java             Port: enqueue, claimNext, complete, retryLater, releaseStuck (our types only)
+│   ├── queue/db/DbReviewQueue.java  Adapter: the reviews table is the queue (FOR UPDATE SKIP LOCKED)
+│   ├── ReviewAiPort.java            Port (interface) — AI boundary: ReviewRequest → Optional<ReviewResult>
+│   ├── ReviewService.java           Domain core: queues on SubmissionPushed (same transaction), prepare/succeed/fail for the worker, retry, latest
+│   ├── ReviewResultValidator.java   Checks a reviewer answer against the push (paths, lines, criteria count) before it is stored
+│   ├── ReviewSettings.java          Config mapping codingtycoon.review.* (target, timeout, max failures, backoff, stuck-after, poll interval)
+│   ├── ReviewSettingsCheck.java     Fails startup on settings that can't work together
+│   ├── worker/ReviewWorker.java     Scheduled: releases stuck reviews, claims one, calls the reviewer outside any transaction. Ports only
+│   ├── ReviewResponse.java          Response: { id, submissionId, attemptNumber, status, verdict, summary, comments, criteria, createdAt, reviewedAt, targetSeconds }
+│   └── ReviewResource.java          Adapter (HTTP in): GET /api/reviews/latest, POST /api/reviews/{id}/retry
 │
 ├── profile/
 │   ├── PlayerProfile.java           Entity: userId (Auth0 sub), onboarding settings
@@ -74,13 +83,6 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── UserService.java             Domain core
 │   └── UserResource.java            Adapter (HTTP in): GET /api/me
 │
-├── vcs/
-│   ├── Submission.java              Entity: taskId, userId, code, commitMessage, attemptNumber, submittedAt
-│   ├── SubmissionRepository.java    Port (interface)
-│   ├── JpaSubmissionRepository.java Adapter — Panache
-│   ├── VcsService.java              Domain core
-│   └── VcsResource.java             Adapter (HTTP in): POST /api/submissions, GET /api/submissions/template
-│
 ├── codebase/                        (Phase 3)
 │   ├── CodebaseRepository.java      Port (interface): list files / read file for a codebase key
 │   ├── ClasspathCodebaseRepository.java  Adapter: static files under resources/codebases/<key>/
@@ -95,13 +97,14 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── SubmissionRepository.java    Port (interface)
 │   ├── JpaSubmissionRepository.java Adapter — Panache
 │   ├── SubmissionService.java       Domain core: validates a push against the task's focus files, stores it, calls TaskService.submit
+│   ├── SubmissionPushed.java        CDI event fired inside the push transaction; the review domain observes it
 │   ├── CreateSubmissionRequest.java Request: { commitMessage, files: [{ path, content }] }
 │   ├── SubmissionResponse.java      Response: { id, taskId, attemptNumber, commitHash, commitMessage, submittedAt, files }
 │   └── SubmissionResource.java      Adapter (HTTP in): POST /api/submissions, GET /api/submissions/latest
 │
 ├── progress/                        (Phase 7)
 │   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt UTC)
-│   ├── XpReason.java                Enum: TASK_APPROVED (FIRST_ATTEMPT_BONUS arrives with Phase 5)
+│   ├── XpReason.java                Enum: TASK_APPROVED, FIRST_TRY_BONUS
 │   ├── XpEventRepository.java       Port (interface)
 │   ├── JpaXpEventRepository.java    Adapter — Panache
 │   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
@@ -118,6 +121,7 @@ backend/src/main/java/dev/codingtycoon/
     ├── AiProvider.java              Enum: STUB, OLLAMA
     ├── AiProviders.java             Produces each AI port from `codingtycoon.ai.provider` (runtime)
     ├── stub/StubTaskAdapter.java    No AI: returns empty, so players get seed tasks
+    ├── stub/StubReviewAdapter.java  No AI: attempt 1 → CHANGES_REQUESTED (one comment per severity), later → APPROVED
     └── ollama/
         ├── OllamaTaskAdapter.java   LangChain4j ChatModel + prompts/task-generator.txt, JSON mode, fault tolerance
         └── AiUnavailableException.java  Server unreachable: the only failure that is retried
@@ -145,7 +149,7 @@ backend/src/main/java/dev/codingtycoon/
 ```
 
 - `level` is a mock: always `"X"` (`ProgressService.MOCK_LEVEL`) until the level model exists. Only this value will change.
-- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. Approval on attempt 1 also pays `50` (`XP_FIRST_TRY_BONUS`, reason `FIRST_TRY_BONUS`); later attempts earn no bonus and are never capped. Both count in `GET /api/progress` totals; the streak counts `TASK_APPROVED` days only.
 - `PATCH /api/tasks/{id}/status` only accepts the player transition `ASSIGNED → IN_PROGRESS` on the caller's own tasks. Another player's task returns `404`, and any other transition returns `422`. `SUBMITTED` is reached only by a push (`POST /api/submissions`), through `TaskService.submit`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
@@ -186,6 +190,19 @@ A push from the VCS panel. Both endpoints require a Bearer token and work on the
 | GET | `/api/submissions/latest` | 200 the active task's last push, same shape | 401; 204 no active task or no push yet |
 
 A push is rejected with `422` when: there is no body; there is no active task, or it isn't `IN_PROGRESS` or `CHANGES_REQUESTED`; the commit message is blank or over 72 characters (it is stored trimmed); `files` is empty; a path is not one of the task's focus files (this covers `../` paths) or appears twice; a file has no content, is over 64 KB in UTF-8, or equals the codebase original. `attemptNumber` counts the task's pushes, and a unique `(task_id, attempt_number)` stops two simultaneous pushes from sharing an attempt. `commitHash` is decorative: the first 7 hex characters of MD5(`taskId:playerProfileId:attemptNumber`), computed on read and not stored, so the VCS panel can show a Git-looking id.
+
+### Review API (Phase 5)
+
+Reviews are created only by a push: `POST /api/submissions` saves a `PENDING` review and enqueues it in the same transaction, so a push never exists without its review. There is no endpoint that starts a review.
+
+| Method | Path | Response | Errors |
+|---|---|---|---|
+| GET | `/api/reviews/latest` | 200 `{ id, submissionId, attemptNumber, status, verdict, summary, comments: [{ path, line, severity, body }], criteria: [{ position, met }], createdAt, reviewedAt, targetSeconds }` | 401; 204 the newest task has no push yet |
+| POST | `/api/reviews/{id}/retry` | 200 the review, now `PENDING` with its failures reset (Screen 11b's Retry). Starts no model call | 401; 404 unknown or another player's review; 422 not `FAILED` |
+
+The review is the one of the latest push for the player's newest task, active or just approved, so it stays visible after approval. Only the caller's own pushes are read. Comments are sorted Must fix → Suggestion → Praise, then by path and line. A `FAILED` review is returned with its status and no verdict. `targetSeconds` is `codingtycoon.review.target-duration` (env `CODINGTYCOON_REVIEW_TARGET_DURATION`, default `30s`): the UI says a review is taking longer than usual past it. It is not a timeout. The Review tab polls this endpoint every 3 s while the status is `PENDING` or `RUNNING`.
+
+**Statuses and the worker.** `PENDING` (queued, or waiting for a retry) → `RUNNING` (claimed by a worker) → `DONE` (verdict stored and applied to the task in one transaction, XP paid on approval) or, after `max-failures` failures on our side, `FAILED`. A failure (timeout, outage, an answer that fails `ReviewResultValidator`) goes back to `PENDING` with a doubling backoff; the task stays `SUBMITTED` and the attempt number doesn't change. A review `RUNNING` longer than `stuck-after` (backend restarted mid-call) is put back to `PENDING`. One review at a time per instance; more instances scale out, and `FOR UPDATE SKIP LOCKED` keeps them from sharing a review. Settings: `codingtycoon.review.*`, see `docs/STAGING_DEPLOY.md` "Review timing". `WorkerBoundaryTest` keeps JPA, HTTP and providers out of `review.worker`.
 
 ---
 
@@ -246,12 +263,31 @@ SubmissionFile                 -- table submission_files (V10)
   content       TEXT         -- full content after the player's edits
   UNIQUE (submission_id, path)
 
-Review
-  id            BIGINT PK
-  submission_id BIGINT FK → Submission
-  verdict       VARCHAR   -- APPROVED | CHANGES_REQUESTED
-  comments      JSONB     -- [{ file, line, message }]
-  reviewed_at   TIMESTAMP
+Review                         -- table reviews (V11); also the DB review queue
+  id              BIGINT PK
+  submission_id   BIGINT FK → Submission  UNIQUE, ON DELETE CASCADE  -- one review per push
+  status          VARCHAR(20) -- PENDING | RUNNING | DONE | FAILED
+  verdict         VARCHAR     -- APPROVED | CHANGES_REQUESTED, null until DONE
+  summary         VARCHAR(500)
+  failure_count   INT         -- default 0
+  next_attempt_at TIMESTAMP   -- UTC; not claimable before this
+  created_at, started_at, reviewed_at  TIMESTAMP  -- UTC
+  INDEX (status, next_attempt_at)
+
+ReviewComment                  -- table review_comments (V11)
+  id        BIGINT PK
+  review_id BIGINT FK → Review  ON DELETE CASCADE
+  path      VARCHAR
+  line      INT        -- 1-based, in the pushed file
+  severity  VARCHAR    -- MUST_FIX | SUGGESTION | PRAISE
+  body      TEXT
+
+ReviewCriterion                -- table review_criteria (V11)
+  id        BIGINT PK
+  review_id BIGINT FK → Review  ON DELETE CASCADE
+  position  INT        -- index in the task's criteria list
+  met       BOOLEAN
+  UNIQUE (review_id, position)
 
 XpEvent                        -- table xp_event; ledger, one row per award
   id                BIGINT PK
@@ -279,10 +315,11 @@ Database migrations: Flyway scripts in `src/main/resources/db/migration/` named 
 
 The AI is replaceable: the domain never knows which provider runs (owner requirement, Phase 5).
 
-- **Ports in the domain.** Each domain package defines its AI port with our own types only (`task.TaskAiPort`; `review.ReviewAiPort` in Phase 5). A port returns `Optional.empty()` instead of throwing, so the caller always has a fallback (seed tasks).
+- **Ports in the domain.** Each domain package defines its AI port with our own types only (`task.TaskAiPort`, `review.ReviewAiPort`). A port returns `Optional.empty()` instead of throwing, so the caller always has a fallback (seed tasks).
 - **Adapters in `ai.<provider>`.** `ai.stub` and `ai.ollama`. Adapters are `@Typed` to their own class, so they are not port beans themselves.
 - **One switch.** `AiProviders` produces every port from `codingtycoon.ai.provider` (env `AI_PROVIDER`, default `stub`). One image runs everywhere; an unknown value fails at startup. A new provider is a package, an `AiProvider` value, a `case` in `AiProviders` and passing the contract test.
-- **Guards.** `AiBoundaryTest` fails the build if LangChain4j types appear outside `ai/ollama`. `TaskAiPortContract` is the behaviour every `TaskAiPort` adapter must pass (a complete task or empty, never an exception).
+- **Guards.** `AiBoundaryTest` fails the build if LangChain4j types appear outside `ai/ollama`. `TaskAiPortContract` and `ReviewAiPortContract` are the behaviour every adapter must pass (a complete result that fits the request, or empty, never an exception). `ReviewQueueContract` does the same for `ReviewQueue` adapters.
+- **Reviewer.** `ReviewAiPort` uses the stub for both providers until `OllamaReviewAdapter` lands with its prompt (P5-04).
 - **Slow calls stay outside transactions.** `TaskService.generateTask` reads and saves in two short transactions (`shared.Transactions`) with the model call between them.
 - **Fault tolerance in the adapter.** `OllamaTaskAdapter.generate` has a timeout (`AI_TASK_TIMEOUT_SECONDS`, default 50, under nginx's 60 s), retries only `AiUnavailableException`, a circuit breaker and a fallback to empty. Override any of them with the MicroProfile keys, e.g. `dev.codingtycoon.ai.ollama.OllamaTaskAdapter/generate/Timeout/value`.
 - **Ollama config.** `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_CLIENT_TIMEOUT` (HTTP client, 10 min), JSON output mode, request/response logging in `%dev` only, Dev Services off.
@@ -295,7 +332,7 @@ Prompt templates live in `src/main/resources/prompts/` as `.txt` files, provider
 @InjectMock
 ReviewAiPort reviewAiPort;
 
-when(reviewAiPort.review(any(), any(), any())).thenReturn(mockResult);
+when(reviewAiPort.review(any())).thenReturn(Optional.of(mockResult));
 ```
 
 **Mocking convention:** use Mockito (`quarkus-junit5-mockito`, version from the Quarkus BOM), not hand-written fakes. In a `@QuarkusTest`, use `@InjectMock` to replace a bean. In a plain unit test, use `Mockito.mock(...)`.
@@ -352,6 +389,7 @@ Phases worked in parallel reserve their version numbers up front so branches don
 | V8 | `V8__create_xp_event_table.sql` | P7-03 | Added in Phase 7 (PR #16) |
 | V9 | `V9__one_active_task_per_player.sql` | [Trello](https://trello.com/c/3Fdjmel6) | Removes duplicate active tasks, keeping the newest |
 | V10 | `V10__create_submissions.sql` | P4-02 | Submissions and their files |
+| V11 | `V11__create_reviews.sql` | P5-02 | Reviews (also the review queue), their comments and criteria |
 
 Flyway rejects out-of-order versions by default. **V7 must be merged to `dev` before V8.** If P7-03 is ready first, merge P3-03's migration on its own first. Don't create placeholder files: once Flyway applies a migration, editing it fails checksum validation on the next startup.
 

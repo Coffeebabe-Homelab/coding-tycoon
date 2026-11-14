@@ -83,6 +83,18 @@ public class TaskService {
     }
 
     /**
+     * Returns the player's newest task, including one approved a moment ago.
+     *
+     * @param sub the Auth0 subject claim identifying the player
+     * @return the newest task, or empty if the player has none
+     * @throws NotFoundException if no user or profile is found for the given sub
+     */
+    @Transactional
+    public Optional<Task> findNewestTask(String sub) {
+        return taskRepository.findNewestForProfile(requireProfile(sub).id);
+    }
+
+    /**
      * Applies a player's status change to one of their own tasks.
      * <p>Allowed transitions:</p>
      * <ul>
@@ -131,23 +143,24 @@ public class TaskService {
 
     /**
      * Records the reviewer's verdict on a submitted task. Not exposed over HTTP: the review
-     * engine (Phase 5) is the only intended caller. Approval awards the XP.
+     * engine is the only caller. Approval awards the XP, with the first-try bonus on attempt 1.
      *
-     * @param taskId  the ID of the reviewed task
-     * @param verdict APPROVED or CHANGES_REQUESTED
+     * @param taskId        the ID of the reviewed task
+     * @param verdict       APPROVED or CHANGES_REQUESTED
+     * @param attemptNumber the reviewed push's attempt, from 1
      * @return the updated task
      * @throws NotFoundException      if no task with the given ID exists
      * @throws UnprocessableException if the task isn't SUBMITTED or the status isn't a verdict
      */
     @Transactional
-    public Task applyReviewVerdict(Long taskId, TaskStatus verdict) {
+    public Task applyReviewVerdict(Long taskId, TaskStatus verdict, int attemptNumber) {
         Task task = taskRepository.findTaskById(taskId)
                 .orElseThrow(() -> new NotFoundException("Task not found: " + taskId));
 
         boolean isVerdict = verdict == TaskStatus.APPROVED || verdict == TaskStatus.CHANGES_REQUESTED;
         changeStatus(task, verdict, task.status == TaskStatus.SUBMITTED && isVerdict);
         if (verdict == TaskStatus.APPROVED) {
-            progressService.awardForApproval(task);
+            progressService.awardForApproval(task, attemptNumber);
         }
         return task;
     }
