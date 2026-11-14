@@ -169,7 +169,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 ### Tasks
 - [ ] Ollama foundation: first real AI call through `TaskAiPort`, adapter chosen by config, fault tolerance, Ollama in Compose (P5-01). Replaces the deferred P0-03
 - [x] Review domain: `reviews`, comments (file + line + severity) and criteria results (V11); a push queues a `PENDING` review through a `ReviewQueue` port; stub reviewer; `GET /api/reviews/latest` (P5-02). Replaces the planned `POST /api/reviews/trigger`
-- [ ] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry`, tunable target and timeout (P5-03)
+- [x] Review worker: background reviews, retries that never cost an attempt, verdict applied to the task, XP with first-try bonus, `POST /api/reviews/{id}/retry`, tunable target and timeout (P5-03)
 - [ ] Code review guidelines, reviewer prompt, `OllamaReviewAdapter` and hand-run evals (P5-04)
 - [ ] Review tab: polling, verdict card, attempt dots, criteria, threads anchored to code, "Fix in editor" / "Ship it & end the day", offline state (P5-05)
 - [ ] AI observability: our own OTel metrics for AI calls and the review queue, and an AI row in the LGTM dashboard (P5-07; decided 2026-11-14, done before P5-06)
