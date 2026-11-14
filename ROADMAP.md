@@ -149,7 +149,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Rewrite the seed tasks onto `shopfront`, each with focus files (P4-01)
 - [x] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
 - [x] Editor tab: focus files editable in Monaco, drafts kept across tabs (P4-03)
-- [ ] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
+- [x] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
 - [ ] Integration verification (P4-05)
 
 ### Exit Criteria

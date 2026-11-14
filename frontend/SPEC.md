@@ -68,8 +68,8 @@ frontend/src/
   /room             → GameRoomPage — main hub: room scene + panel outlet
     /room/task       → TaskBoardPage (tab)
     /room/codebase   → CodebaseExplorerPage (tab)
-    /room/editor     → EditorPage (tab)
-    /room/vcs        → VCS panel (tab, Phase 4; no route yet)
+    /room/editor     → EditorPage (tab); ?file=<path> opens that file
+    /room/vcs        → VcsPage (tab)
     /room/review     → ReviewPage (tab, Phase 5)
     /room/end-of-day → EndOfDayPage in Overlay (Phase 7)
     /room/profile    → redirect to /profile
@@ -112,6 +112,8 @@ Hotspots: kanban board → `/room/task`, door → `/room/end-of-day`, monitor �
 | Which panel is open over the room | URL (nested routes under `/room`) | Back button closes it; refresh and deep links keep it |
 | Form values, toggles, local UI | `useState` | No cross-component sharing needed |
 | Edits to the task's focus files | `DraftsProvider` context in `GameShell` (`hooks/useDrafts.tsx`) | Shared by the Editor and VCS tabs and kept across tab switches and Profile visits; lost on refresh (Phase 4 scope) |
+| The toast on screen | `ToastProvider` context in `GameShell` (`hooks/useToast.tsx`) | One at a time, kept across tab switches; success closes after 6 s, error waits for Dismiss |
+| The last push | `useSubmission` (`GET /api/submissions/latest`, `POST /api/submissions`) | Server-owned; `push` returns whether it worked and keeps the server's error message |
 
 Don't add a global store unless state truly can't live in the URL or a hook. Never duplicate server data client-side.
 
@@ -235,7 +237,11 @@ One Figma component set is one React component, and its variants are props. Prop
 | `StatusBadge` | 8:96 | `<StatusBadge status={task.status} />`. Always a dot and a word |
 | `EditorTab` | 8:166 | One open file in a `role="tablist"`; only the active tab is in the Tab order. Trailing lock for a read-only file; no × because focus files can't be closed |
 | `CriteriaItem` | 9:273 | `<CriteriaItem text done? />` inside a `<ul>`. The box is decorative, not a checkbox: nothing decides yet when a criterion is met |
-| `Modal` | — | `<Modal title confirmLabel onConfirm onCancel>`: `role="alertdialog"`, starts on Cancel, traps Tab, Esc cancels without closing the panel. Only before consequential actions |
+| `Modal` | — | `<Modal title confirmLabel confirmVariant? onConfirm onCancel>`: `role="alertdialog"`, starts on Cancel, traps Tab, Esc cancels without closing the panel. The confirm button is `danger` unless `confirmVariant` says otherwise. Only before consequential actions |
+| `Input` | — | `<Input label value onChange helper? maxLength? disabled? rows? />`: a labelled multi-line text field; the helper is its accessible description |
+| `Toast` | — | `<Toast tone="success\|error" title message onDismiss />`. Show it through `useToast().showToast`, not directly |
+| `DiffView` | — | Lazy `CodeDiff`: Monaco's read-only diff editor, one model pair per file path, `split` for side by side, `onLineCounts` for +/− |
+| `TaskFilesGate` | — | `<TaskFilesGate action>{(task) => …}</TaskFilesGate>`: loads today's task and covers loading, error, no files and `ASSIGNED` for the Editor and VCS tabs |
 
 ### Common component patterns
 
