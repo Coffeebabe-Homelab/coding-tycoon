@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { splitCriteria } from '../lib/criteria'
 import { useTask } from '../hooks/useTask'
 import { TextLink } from '../components/TextLink'
 import type { Task } from '../types/task'
 import { Button } from '../components/Button'
+import { buttonClasses } from '../components/buttonClasses'
 import { Chip } from '../components/Chip'
 import { Difficulty } from '../components/Difficulty'
 import { StatusBadge } from '../components/StatusBadge'
@@ -25,10 +28,7 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
     }
   }
 
-  const criteriaLines = task.acceptanceCriteria
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
+  const criteriaLines = splitCriteria(task.acceptanceCriteria)
 
   return (
     <article>
@@ -108,9 +108,9 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
       )}
 
       {task.status === 'IN_PROGRESS' && (
-        <Button variant="secondary" disabled>
+        <Link to="/room/editor" className={buttonClasses('secondary')}>
           Continue
-        </Button>
+        </Link>
       )}
     </article>
   )

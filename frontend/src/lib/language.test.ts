@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { languageForPath } from './language'
+import { languageForPath, languageLabel } from './language'
 
 describe('languageForPath', () => {
   it.each([
@@ -19,4 +19,16 @@ describe('languageForPath', () => {
       expect(languageForPath(path)).toBe('plaintext')
     },
   )
+})
+
+describe('languageLabel', () => {
+  it.each([
+    ['src/App.java', 'Java'],
+    ['pom.xml', 'XML'],
+    ['application.properties', 'Properties'],
+    ['README.md', 'Markdown'],
+    ['notes.txt', 'Plain text'],
+  ])('names %s as %s', (path, label) => {
+    expect(languageLabel(path)).toBe(label)
+  })
 })

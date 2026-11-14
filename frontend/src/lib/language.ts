@@ -20,3 +20,18 @@ export function languageForPath(path: string): string {
   if (dot <= 0) return 'plaintext'
   return LANGUAGE_BY_EXTENSION[fileName.slice(dot + 1).toLowerCase()] ?? 'plaintext'
 }
+
+const LABEL_BY_LANGUAGE: Record<string, string> = {
+  java: 'Java',
+  xml: 'XML',
+  ini: 'Properties',
+  markdown: 'Markdown',
+  json: 'JSON',
+  sql: 'SQL',
+  plaintext: 'Plain text',
+}
+
+/** Human name of a file's language, for status bars. */
+export function languageLabel(path: string): string {
+  return LABEL_BY_LANGUAGE[languageForPath(path)]
+}
