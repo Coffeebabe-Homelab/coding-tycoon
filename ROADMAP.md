@@ -146,8 +146,8 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 **Decided 2026-11-10:** the player edits the active task's focus files, starting from the `shopfront` originals, with no per-task template; the seed tasks without focus files are rewritten onto `shopfront`; the diff uses Monaco's diff editor in the browser. Specs: [`docs/tasks/phase-4/`](docs/tasks/phase-4/).
 
 ### Tasks
-- [ ] Rewrite the seed tasks onto `shopfront`, each with focus files (P4-01)
-- [ ] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
+- [x] Rewrite the seed tasks onto `shopfront`, each with focus files (P4-01)
+- [x] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
 - [ ] Editor tab: focus files editable in Monaco, drafts kept across tabs (P4-03)
 - [ ] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
 - [ ] Integration verification (P4-05)

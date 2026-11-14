@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Backend: players push their work with `POST /api/submissions`: the changed focus files and a commit message, stored as the task's next attempt (V10). The push moves the task to `SUBMITTED`, and `PATCH /api/tasks/{id}/status` no longer can. `GET /api/submissions/latest` returns the active task's last push (P4-02).
 - Backend: every seed task now targets `shopfront` and names the files the player edits (P4-01). Seven tasks are rewritten, and the three existing ones list only the files they change, including their test files. `shopfront` gains an `order/` area, a shipping calculator, a legacy sales report, four test files and a 400 response for `IllegalArgumentException`.
 - Docs: plan Phase 4 in `docs/tasks/phase-4/` (P4-01 to P4-05) and update its `ROADMAP.md` tasks with the owner's decisions: the player edits the task's focus files, the seed tasks move onto `shopfront`, and the diff uses Monaco's diff editor.
 - Docs: mark Design Stage 4 and the design roadmap as implemented, and record in `ROADMAP.md` that the Phase 4 design gate is met.
