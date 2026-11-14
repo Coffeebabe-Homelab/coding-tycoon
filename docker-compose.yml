@@ -38,6 +38,8 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-deepseek-coder:6.7b-instruct-q4_K_M}
       AI_TASK_TIMEOUT_SECONDS: ${AI_TASK_TIMEOUT_SECONDS:-50}
+      OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-8192}
+      OLLAMA_NUM_PREDICT: ${OLLAMA_NUM_PREDICT:-1024}
       # Review timing, tuned on staging (see docs/STAGING_DEPLOY.md). Defaults match application.properties.
       CODINGTYCOON_REVIEW_TARGET_DURATION: ${CODINGTYCOON_REVIEW_TARGET_DURATION:-30s}
       CODINGTYCOON_REVIEW_TIMEOUT: ${CODINGTYCOON_REVIEW_TIMEOUT:-5m}
