@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -147,5 +149,66 @@ class ReviewResourceTest {
         progressTestData.createProfile(OTHER_SUB);
 
         given().when().get("/api/reviews/latest").then().statusCode(204);
+    }
+
+    private Review failedReview() {
+        Review review = pushWithReview(TaskStatus.SUBMITTED, 1);
+        QuarkusTransaction.requiringNew().run(() -> {
+            Review stored = reviewRepository.findById(review.id);
+            stored.status = ReviewStatus.FAILED;
+            stored.failureCount = 3;
+        });
+        return review;
+    }
+
+    @Test
+    void retryWithoutATokenIs401() {
+        given().when().post("/api/reviews/1/retry").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = SUB, roles = {})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = SUB)})
+    void retryPutsAFailedReviewBackInTheQueue() {
+        Review review = failedReview();
+
+        given().when().post("/api/reviews/" + review.id + "/retry")
+                .then().statusCode(200)
+                .body("id", is(review.id.intValue()))
+                .body("status", is("PENDING"))
+                .body("attemptNumber", is(1));
+
+        Review stored = testData.find(review.id);
+        assertEquals(ReviewStatus.PENDING, stored.status);
+        assertEquals(0, stored.failureCount);
+    }
+
+    @Test
+    @TestSecurity(user = SUB, roles = {})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = SUB)})
+    void onlyAFailedReviewCanBeRetried() {
+        Review review = pushWithReview(TaskStatus.SUBMITTED, 1);
+
+        given().when().post("/api/reviews/" + review.id + "/retry")
+                .then().statusCode(422).body("message", containsString("PENDING"));
+    }
+
+    @Test
+    @TestSecurity(user = SUB, roles = {})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = SUB)})
+    void retryOfAnUnknownReviewIs404() {
+        given().when().post("/api/reviews/999999/retry").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = OTHER_SUB, roles = {})
+    @OidcSecurity(claims = {@Claim(key = "sub", value = OTHER_SUB)})
+    void retryOfAnotherPlayersReviewIs404AndChangesNothing() {
+        Review review = failedReview();
+        progressTestData.createProfile(OTHER_SUB);
+
+        given().when().post("/api/reviews/" + review.id + "/retry").then().statusCode(404);
+
+        assertEquals(ReviewStatus.FAILED, testData.find(review.id).status);
     }
 }

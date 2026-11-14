@@ -205,18 +205,18 @@ class TaskServiceTest {
     void approvalVerdictAwardsXp() {
         Task task = storedTask(TaskStatus.SUBMITTED);
 
-        assertSame(task, taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
+        assertSame(task, taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED, 1));
 
         assertEquals(TaskStatus.APPROVED, task.status);
         Mockito.verify(taskRepository).save(task);
-        Mockito.verify(progressService).awardForApproval(task);
+        Mockito.verify(progressService).awardForApproval(task, 1);
     }
 
     @Test
     void changesRequestedVerdictAwardsNoXp() {
         Task task = storedTask(TaskStatus.SUBMITTED);
 
-        taskService.applyReviewVerdict(TASK_ID, TaskStatus.CHANGES_REQUESTED);
+        taskService.applyReviewVerdict(TASK_ID, TaskStatus.CHANGES_REQUESTED, 1);
 
         assertEquals(TaskStatus.CHANGES_REQUESTED, task.status);
         Mockito.verifyNoInteractions(progressService);
@@ -227,7 +227,7 @@ class TaskServiceTest {
     void verdictOnATaskThatIsNotSubmittedIsRejected(TaskStatus from) {
         Task task = storedTask(from);
 
-        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
+        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED, 1));
 
         assertEquals(from, task.status);
         Mockito.verifyNoInteractions(progressService);
@@ -238,14 +238,14 @@ class TaskServiceTest {
     void statusThatIsNotAVerdictIsRejected(TaskStatus status) {
         Task task = storedTask(TaskStatus.SUBMITTED);
 
-        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, status));
+        assertThrows(UnprocessableException.class, () -> taskService.applyReviewVerdict(TASK_ID, status, 1));
 
         assertEquals(TaskStatus.SUBMITTED, task.status);
     }
 
     @Test
     void verdictOnUnknownTaskIsNotFound() {
-        assertThrows(NotFoundException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED));
+        assertThrows(NotFoundException.class, () -> taskService.applyReviewVerdict(TASK_ID, TaskStatus.APPROVED, 1));
     }
 
     @Test

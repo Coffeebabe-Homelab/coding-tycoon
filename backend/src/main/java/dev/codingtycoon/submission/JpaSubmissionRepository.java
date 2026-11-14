@@ -24,6 +24,11 @@ public class JpaSubmissionRepository implements SubmissionRepository, PanacheRep
     }
 
     @Override
+    public Optional<Submission> findSubmissionById(Long id) {
+        return findByIdOptional(id);
+    }
+
+    @Override
     public Submission save(Submission submission) {
         persistAndFlush(submission);
         return submission;

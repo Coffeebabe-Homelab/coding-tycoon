@@ -58,9 +58,13 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── ReviewQueue.java             Port: enqueue, claimNext, complete, retryLater, releaseStuck (our types only)
 │   ├── queue/db/DbReviewQueue.java  Adapter: the reviews table is the queue (FOR UPDATE SKIP LOCKED)
 │   ├── ReviewAiPort.java            Port (interface) — AI boundary: ReviewRequest → Optional<ReviewResult>
-│   ├── ReviewService.java           Domain core: queues a review on SubmissionPushed (same transaction), finds the latest
+│   ├── ReviewService.java           Domain core: queues on SubmissionPushed (same transaction), prepare/succeed/fail for the worker, retry, latest
+│   ├── ReviewResultValidator.java   Checks a reviewer answer against the push (paths, lines, criteria count) before it is stored
+│   ├── ReviewSettings.java          Config mapping codingtycoon.review.* (target, timeout, max failures, backoff, stuck-after, poll interval)
+│   ├── ReviewSettingsCheck.java     Fails startup on settings that can't work together
+│   ├── worker/ReviewWorker.java     Scheduled: releases stuck reviews, claims one, calls the reviewer outside any transaction. Ports only
 │   ├── ReviewResponse.java          Response: { id, submissionId, attemptNumber, status, verdict, summary, comments, criteria, createdAt, reviewedAt, targetSeconds }
-│   └── ReviewResource.java          Adapter (HTTP in): GET /api/reviews/latest
+│   └── ReviewResource.java          Adapter (HTTP in): GET /api/reviews/latest, POST /api/reviews/{id}/retry
 │
 ├── profile/
 │   ├── PlayerProfile.java           Entity: userId (Auth0 sub), onboarding settings
@@ -100,7 +104,7 @@ backend/src/main/java/dev/codingtycoon/
 │
 ├── progress/                        (Phase 7)
 │   ├── XpEvent.java                 Entity: ledger row (playerProfileId, taskId, amount, reason, createdAt UTC)
-│   ├── XpReason.java                Enum: TASK_APPROVED (FIRST_ATTEMPT_BONUS arrives with Phase 5)
+│   ├── XpReason.java                Enum: TASK_APPROVED, FIRST_TRY_BONUS
 │   ├── XpEventRepository.java       Port (interface)
 │   ├── JpaXpEventRepository.java    Adapter — Panache
 │   ├── StreakCalculator.java        Pure date logic: current/longest run of active days, `today` passed in
@@ -145,7 +149,7 @@ backend/src/main/java/dev/codingtycoon/
 ```
 
 - `level` is a mock: always `"X"` (`ProgressService.MOCK_LEVEL`) until the level model exists. Only this value will change.
-- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. The first-attempt bonus (`+50`) is added in Phase 5.
+- XP: `100` per approved task (`ProgressService.XP_PER_APPROVED_TASK`), awarded once per task when `TaskService.applyReviewVerdict` moves it to `APPROVED`. Approval on attempt 1 also pays `50` (`XP_FIRST_TRY_BONUS`, reason `FIRST_TRY_BONUS`); later attempts earn no bonus and are never capped. Both count in `GET /api/progress` totals; the streak counts `TASK_APPROVED` days only.
 - `PATCH /api/tasks/{id}/status` only accepts the player transition `ASSIGNED → IN_PROGRESS` on the caller's own tasks. Another player's task returns `404`, and any other transition returns `422`. `SUBMITTED` is reached only by a push (`POST /api/submissions`), through `TaskService.submit`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
@@ -194,8 +198,11 @@ Reviews are created only by a push: `POST /api/submissions` saves a `PENDING` re
 | Method | Path | Response | Errors |
 |---|---|---|---|
 | GET | `/api/reviews/latest` | 200 `{ id, submissionId, attemptNumber, status, verdict, summary, comments: [{ path, line, severity, body }], criteria: [{ position, met }], createdAt, reviewedAt, targetSeconds }` | 401; 204 the newest task has no push yet |
+| POST | `/api/reviews/{id}/retry` | 200 the review, now `PENDING` with its failures reset (Screen 11b's Retry). Starts no model call | 401; 404 unknown or another player's review; 422 not `FAILED` |
 
 The review is the one of the latest push for the player's newest task, active or just approved, so it stays visible after approval. Only the caller's own pushes are read. Comments are sorted Must fix → Suggestion → Praise, then by path and line. A `FAILED` review is returned with its status and no verdict. `targetSeconds` is `codingtycoon.review.target-duration` (env `CODINGTYCOON_REVIEW_TARGET_DURATION`, default `30s`): the UI says a review is taking longer than usual past it. It is not a timeout. The Review tab polls this endpoint every 3 s while the status is `PENDING` or `RUNNING`.
+
+**Statuses and the worker.** `PENDING` (queued, or waiting for a retry) → `RUNNING` (claimed by a worker) → `DONE` (verdict stored and applied to the task in one transaction, XP paid on approval) or, after `max-failures` failures on our side, `FAILED`. A failure (timeout, outage, an answer that fails `ReviewResultValidator`) goes back to `PENDING` with a doubling backoff; the task stays `SUBMITTED` and the attempt number doesn't change. A review `RUNNING` longer than `stuck-after` (backend restarted mid-call) is put back to `PENDING`. One review at a time per instance; more instances scale out, and `FOR UPDATE SKIP LOCKED` keeps them from sharing a review. Settings: `codingtycoon.review.*`, see `docs/STAGING_DEPLOY.md` "Review timing". `WorkerBoundaryTest` keeps JPA, HTTP and providers out of `review.worker`.
 
 ---
 

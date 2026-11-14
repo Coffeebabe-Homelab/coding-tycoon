@@ -221,9 +221,9 @@ class TaskResourceTest {
         Integer taskId = createSubmittedTask();
         assertEquals(0, xpEventRepository.count(), "no XP before approval");
 
-        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED, 2);
         assertThrows(UnprocessableException.class,
-                () -> taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED));
+                () -> taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED, 2));
 
         assertEquals(1, xpEventRepository.count());
     }
@@ -235,13 +235,13 @@ class TaskResourceTest {
     })
     void changesRequestedRoundTripAwardsXpOnlyOnApproval() {
         Integer taskId = createSubmittedTask();
-        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.CHANGES_REQUESTED);
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.CHANGES_REQUESTED, 1);
         taskService.submit(taskId.longValue());
         assertEquals(0, xpEventRepository.count());
 
-        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED);
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED, 2);
 
-        assertEquals(1, xpEventRepository.count());
+        assertEquals(1, xpEventRepository.count(), "no first-try bonus on attempt 2");
     }
 
     @Test
