@@ -128,7 +128,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Codebase scoped per task: tasks carry a codebase key and focus files that the description references (P3-03)
 - [x] Monaco integration: shared `CodeEditor` component in read-only mode, reused as the editor in Phase 4 (P3-04)
 - [x] File tree UI component (collapsible, file icons by type) and the Codebase Explorer page (P3-05)
-- [ ] Integration verification (P3-06) — staging verified except deep-link refresh after login (fix pending) and focus-file links (retest)
+- [ ] Integration verification (P3-06) — staging verified except deep-link refresh after login and focus-file links. **Tech debt (owner, 2026-11-14):** not blocking Phase 5; tracked on Trello
 
 ### Exit Criteria
 - Player can open the file tree and browse the synthetic codebase
@@ -150,7 +150,7 @@ This phase is intentionally infrastructure-only. It does not add gameplay featur
 - [x] Submission entity and files (`taskId`, `playerProfileId`, files, `commitMessage`, `attemptNumber`, `submittedAt`); `POST /api/submissions` moves the task to `SUBMITTED`, and is the only way there; `GET /api/submissions/latest` (P4-02). Replaces the planned `GET /api/submissions/template`: originals come from the codebase API
 - [x] Editor tab: focus files editable in Monaco, drafts kept across tabs (P4-03)
 - [x] VCS tab: Monaco diff (Unified/Split), commit message, confirm and push (P4-04)
-- [ ] Integration verification (P4-05)
+- [x] Integration verification (P4-05) — staging verified 2026-11-14
 
 ### Exit Criteria
 - Player opens the Editor with the task's focus files loaded
@@ -286,4 +286,4 @@ Phase 8 (Polish) ← starts after all phases complete
 
 ---
 
-*Last updated: 2026-11-06 | Status: Phases 0–2.1 and Phase 7 (Game Shell) complete. Phase 3 (Codebase Explorer) is delivered; P3-06 verification is still open (deep-link refresh fix, focus-file retest).*
+*Last updated: 2026-11-14 | Status: Phases 0–2.1, 4 and 7 complete. Phase 3 (Codebase Explorer) is delivered; the rest of P3-06 (deep-link refresh, focus-file retest) is tech debt. Next: Phase 5 (AI Review Engine).*

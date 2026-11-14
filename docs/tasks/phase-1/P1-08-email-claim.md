@@ -1,7 +1,7 @@
 # P1-08 — Store the user's email from an Auth0 claim
 
 **Phase:** 1 — Auth & Player Profile (fix)
-**Status:** 🔄 In review (needs the Auth0 Action on staging)
+**Status:** ✅ Complete (2026-11-14)
 **Depends on:** P1-03
 
 ---
@@ -48,3 +48,7 @@ exports.onExecutePostLogin = async (event, api) => {
 
 - A new user on staging has their email in `users.email` after onboarding.
 - `./mvnw verify` passes with coverage at least 80%.
+
+## Result
+
+Merged in PR #52. The owner added the Post-Login Action, reset staging and onboarded again on 2026-11-14: the email is stored on registration.
