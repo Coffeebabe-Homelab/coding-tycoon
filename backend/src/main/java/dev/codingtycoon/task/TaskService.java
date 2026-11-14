@@ -5,6 +5,7 @@ import dev.codingtycoon.exception.UnprocessableException;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.profile.ProfileRepository;
 import dev.codingtycoon.progress.ProgressService;
+import dev.codingtycoon.shared.Transactions;
 import dev.codingtycoon.task.seed.SeedTask;
 import dev.codingtycoon.task.seed.SeedTaskService;
 import dev.codingtycoon.user.UserRepository;
@@ -41,6 +42,9 @@ public class TaskService {
 
     @Inject
     ProgressService progressService;
+
+    @Inject
+    Transactions transactions;
 
     /**
      * Returns the player's current active task, or creates a new one from a seed task if none exists.
@@ -157,36 +161,42 @@ public class TaskService {
      * @throws NotFoundException  if no user or profile is found for the given sub
      * @throws ConflictException  if an active task already exists for this player
      */
-    @Transactional
     public Task generateTask(String sub) {
-        PlayerProfile profile = requireLockedProfile(sub);
+        // The model call can take minutes on CPU, so it runs between two short transactions.
+        // Topics are lazy, so the input is read while the first transaction is open.
+        GenerationInput input = transactions.inNewTransaction(() -> {
+            PlayerProfile profile = requireProfile(sub);
+            requireNoActiveTask(profile.id);
+            return new GenerationInput(profile.id, profile.language, profile.seniority,
+                    profile.topics.stream().map(t -> t.slug).toList());
+        });
 
-        if (taskRepository.findTodayForProfile(profile.id).isPresent()) {
-            throw new ConflictException("An active task already exists for this player");
-        }
+        // Falls back to a seed task when the AI is off, down or returns nothing usable.
+        var generated = taskAiPort.generate(input.language(), input.seniority(), input.topics());
 
-        List<String> topicSlugs = profile.topics.stream()
-                .map(t -> t.slug)
-                .toList();
-
-        // Attempt AI generation; fall back to seed if unavailable (stub always returns empty).
-        var generated = taskAiPort.generate(profile.language, profile.seniority, topicSlugs);
-
-        Task task;
-        if (generated.isPresent()) {
-            var g = generated.get();
-            task = buildTask(profile.id, g.title(), g.description(), g.acceptanceCriteria(), g.difficulty(), g.tags());
-        } else {
-            task = buildTaskFromSeed(profile.id, seedTaskService.getForTopics(topicSlugs));
-        }
-
-        taskRepository.save(task);
-        return task;
+        return transactions.inNewTransaction(() -> {
+            // Checked again under the lock: another request may have created a task meanwhile.
+            requireNoActiveTask(requireLockedProfile(sub).id);
+            Task task = generated
+                    .map(g -> buildTask(input.profileId(), g.title(), g.description(), g.acceptanceCriteria(),
+                            g.difficulty(), g.tags()))
+                    .orElseGet(() -> buildTaskFromSeed(input.profileId(), seedTaskService.getForTopics(input.topics())));
+            taskRepository.save(task);
+            return task;
+        });
     }
 
     // ---------------------------------------------------------------------------
     // Private helpers
     // ---------------------------------------------------------------------------
+
+    private record GenerationInput(Long profileId, String language, String seniority, List<String> topics) {}
+
+    private void requireNoActiveTask(Long profileId) {
+        if (taskRepository.findTodayForProfile(profileId).isPresent()) {
+            throw new ConflictException("An active task already exists for this player");
+        }
+    }
 
     private PlayerProfile requireProfile(String sub) {
         var user = userRepository.findBySub(sub)

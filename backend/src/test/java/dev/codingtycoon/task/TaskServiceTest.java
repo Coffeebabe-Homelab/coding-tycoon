@@ -1,5 +1,6 @@
 package dev.codingtycoon.task;
 
+import dev.codingtycoon.exception.ConflictException;
 import dev.codingtycoon.exception.UnprocessableException;
 import dev.codingtycoon.profile.PlayerProfile;
 import dev.codingtycoon.profile.ProfileRepository;
@@ -73,6 +74,7 @@ class TaskServiceTest {
         taskService.seedTaskService = new SeedTaskService();
         taskService.taskAiPort = taskAiPort;
         taskService.progressService = progressService;
+        taskService.transactions = java.util.function.Supplier::get;
     }
 
     @Test
@@ -86,6 +88,17 @@ class TaskServiceTest {
         assertEquals("shopfront", task.codebaseKey);
         assertEquals("", task.focusFiles);
         Mockito.verify(taskRepository).save(task);
+    }
+
+    @Test
+    void aTaskCreatedWhileTheAiRunsIsAConflictAndNothingIsSaved() {
+        Mockito.when(taskRepository.findTodayForProfile(PROFILE_ID))
+                .thenReturn(Optional.empty(), Optional.of(new Task()));
+
+        assertThrows(ConflictException.class, () -> taskService.generateTask(SUB));
+
+        Mockito.verify(taskAiPort).generate(any(), any(), any());
+        Mockito.verify(taskRepository, Mockito.never()).save(any());
     }
 
     @Test
