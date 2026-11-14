@@ -14,7 +14,7 @@
 | API style | JAX-RS (RESTEasy Reactive) + Jackson |
 | ORM | Hibernate ORM with Panache (Active Record) |
 | Database | PostgreSQL 16 |
-| AI | Quarkus LangChain4j + Ollama with DeepSeek-Coder 6.7B Q4_K_M (planned; currently `StubTaskAdapter` with seed fallback, see ROADMAP P0-03) |
+| AI | Quarkus LangChain4j 1.13.4 + Ollama with DeepSeek-Coder 6.7B Q4_K_M, behind ports; `codingtycoon.ai.provider` picks `stub` (default, seed tasks) or `ollama` |
 | Observability | Quarkus OpenTelemetry: OTLP logs, traces and metrics to LGTM (`observability/README.md`) |
 | Auth | Auth0 OIDC (JWT validation via `quarkus-oidc`) |
 | Validation | Hibernate Validator (`@Valid`, `@NotNull`, etc.) |
@@ -44,9 +44,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── Task.java                    Entity: title, description, acceptanceCriteria, difficulty, tags, status
 │   ├── TaskRepository.java          Port (interface) — persistence boundary
 │   ├── JpaTaskRepository.java       Adapter — Panache implementation
-│   ├── TaskAiPort.java              Port (interface) — AI boundary
-│   ├── StubTaskAdapter.java         Adapter (current): returns empty, so TaskService uses seed tasks
-│   ├── OllamaTaskAdapter.java       Adapter (planned): LangChain4j implementation
+│   ├── TaskAiPort.java              Port (interface) — AI boundary; adapters live in ai/<provider>
 │   ├── TaskService.java             Domain core: business logic, orchestration
 │   └── TaskResource.java            Adapter (HTTP in): POST /api/tasks/generate, GET /api/tasks/today
 │
@@ -55,7 +53,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── ReviewRepository.java        Port (interface)
 │   ├── JpaReviewRepository.java     Adapter — Panache
 │   ├── ReviewAiPort.java            Port (interface) — AI boundary (key isolation point)
-│   ├── OllamaReviewAdapter.java     Adapter — LangChain4j
+│   ├── (OllamaReviewAdapter lives in ai/ollama, Phase 5)
 │   ├── ReviewService.java           Domain core
 │   └── ReviewResource.java          Adapter (HTTP in): POST /api/reviews/trigger, GET /api/reviews/{id}
 │
@@ -65,7 +63,7 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── ProfileRepository.java       Port (interface)
 │   ├── JpaProfileRepository.java    Adapter — Panache
 │   ├── SkillAiPort.java             Port (interface) — AI boundary
-│   ├── OllamaSkillAdapter.java      Adapter — LangChain4j
+│   ├── (OllamaSkillAdapter lives in ai/ollama, Phase 6)
 │   ├── ProfileService.java          Domain core
 │   └── ProfileResource.java         Adapter (HTTP in): POST /api/profile, GET /api/profile, GET /api/profile/skill
 │
@@ -112,8 +110,17 @@ backend/src/main/java/dev/codingtycoon/
 │   ├── ProgressResponse.java        JSON: level (mock), totalXp, xpToday, currentStreak, longestStreak, approvedTodayTaskTitle
 │   └── ProgressResource.java        Adapter (HTTP in): GET /api/progress
 │
-└── ai/
-    └── (shared prompt string constants — no business logic)
+├── shared/
+│   ├── Transactions.java            Port: run work in its own transaction (keeps slow AI calls outside one)
+│   └── QuarkusTransactions.java     Adapter — QuarkusTransaction.requiringNew()
+│
+└── ai/                              AI providers. Only this tree knows a provider exists.
+    ├── AiProvider.java              Enum: STUB, OLLAMA
+    ├── AiProviders.java             Produces each AI port from `codingtycoon.ai.provider` (runtime)
+    ├── stub/StubTaskAdapter.java    No AI: returns empty, so players get seed tasks
+    └── ollama/
+        ├── OllamaTaskAdapter.java   LangChain4j ChatModel + prompts/task-generator.txt, JSON mode, fault tolerance
+        └── AiUnavailableException.java  Server unreachable: the only failure that is retried
 ```
 
 ---
@@ -270,60 +277,17 @@ Database migrations: Flyway scripts in `src/main/resources/db/migration/` named 
 
 ## AI Integration Pattern
 
-AI services are accessed through **port interfaces** defined in each domain package. This decouples the service from LangChain4j so you can mock the AI in tests and swap providers (e.g. Ollama → OpenAI) without touching business logic.
+The AI is replaceable: the domain never knows which provider runs (owner requirement, Phase 5).
 
-### Port (defined in the domain package)
+- **Ports in the domain.** Each domain package defines its AI port with our own types only (`task.TaskAiPort`; `review.ReviewAiPort` in Phase 5). A port returns `Optional.empty()` instead of throwing, so the caller always has a fallback (seed tasks).
+- **Adapters in `ai.<provider>`.** `ai.stub` and `ai.ollama`. Adapters are `@Typed` to their own class, so they are not port beans themselves.
+- **One switch.** `AiProviders` produces every port from `codingtycoon.ai.provider` (env `AI_PROVIDER`, default `stub`). One image runs everywhere; an unknown value fails at startup. A new provider is a package, an `AiProvider` value, a `case` in `AiProviders` and passing the contract test.
+- **Guards.** `AiBoundaryTest` fails the build if LangChain4j types appear outside `ai/ollama`. `TaskAiPortContract` is the behaviour every `TaskAiPort` adapter must pass (a complete task or empty, never an exception).
+- **Slow calls stay outside transactions.** `TaskService.generateTask` reads and saves in two short transactions (`shared.Transactions`) with the model call between them.
+- **Fault tolerance in the adapter.** `OllamaTaskAdapter.generate` has a timeout (`AI_TASK_TIMEOUT_SECONDS`, default 50, under nginx's 60 s), retries only `AiUnavailableException`, a circuit breaker and a fallback to empty. Override any of them with the MicroProfile keys, e.g. `dev.codingtycoon.ai.ollama.OllamaTaskAdapter/generate/Timeout/value`.
+- **Ollama config.** `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OLLAMA_CLIENT_TIMEOUT` (HTTP client, 10 min), JSON output mode, request/response logging in `%dev` only, Dev Services off.
 
-```java
-// review/ReviewAiPort.java
-public interface ReviewAiPort {
-    /**
-     * Reviews a player's code submission against the task spec and guidelines.
-     */
-    ReviewResult review(String taskSpec, String submission, String guidelines);
-}
-```
-
-### Adapter (LangChain4j implementation)
-
-```java
-// review/OllamaReviewAdapter.java
-@ApplicationScoped
-public class OllamaReviewAdapter implements ReviewAiPort {
-
-    @RegisterAiService
-    interface OllamaProxy {
-        @SystemMessage("You are a senior Java developer reviewing a junior's code...")
-        @UserMessage("Task: {{taskSpec}}\n\nCode:\n{{submission}}\n\nGuidelines:\n{{guidelines}}")
-        String review(String taskSpec, String submission, String guidelines);
-    }
-
-    @Inject OllamaProxy proxy;
-
-    @Override
-    public ReviewResult review(String taskSpec, String submission, String guidelines) {
-        String raw = proxy.review(taskSpec, submission, guidelines);
-        return ReviewResult.parse(raw);
-    }
-}
-```
-
-### Service (depends only on the port)
-
-```java
-// review/ReviewService.java
-@ApplicationScoped
-public class ReviewService {
-    @Inject ReviewAiPort aiPort;       // port — not the adapter directly
-    @Inject ReviewRepository repository;
-
-    public Review triggerReview(Long submissionId) {
-        // ... uses aiPort.review(...) — no LangChain4j imports here
-    }
-}
-```
-
-Prompt templates live in `src/main/resources/prompts/` as `.txt` files.
+Prompt templates live in `src/main/resources/prompts/` as `.txt` files, provider-agnostic.
 
 **Testing AI services:** Inject a mock of the port interface — never call real Ollama in tests.
 

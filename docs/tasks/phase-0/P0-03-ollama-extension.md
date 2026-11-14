@@ -1,10 +1,12 @@
 # P0-03 — Add Quarkus LangChain4j Ollama Extension
 
 **Phase:** 0 — Foundation  
-**Status:** ⏸ Deferred — revisit with the first real AI adapter (Phase 5 at the latest)  
+**Status:** ✅ Superseded by [P5-01](../phase-5/P5-01-ollama-foundation.md) (2026-11-14)  
 **Depends on:** P0-02  
 
 ---
+
+> **Closed.** P5-01 added the extension (`1.13.4`, pinned) and proves the call through `TaskAiPort` instead of the `GET /api/ai/ping` endpoint described below, so no public endpoint can start model calls. The snippets below (`LATEST` version, ping endpoint) are out of date.
 
 ## Goal
 
