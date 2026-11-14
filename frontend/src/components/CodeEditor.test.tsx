@@ -12,6 +12,8 @@ const stubEditor = vi.hoisted(() => ({
   restoreViewState: vi.fn(),
   getPosition: vi.fn(),
   onDidChangeCursorPosition: vi.fn(),
+  getValue: vi.fn(),
+  setValue: vi.fn(),
 }))
 const editorIds = vi.hoisted(() => ({ next: 0 }))
 
@@ -59,6 +61,7 @@ function StubEditor({
 const stubDiffEditor = vi.hoisted(() => ({
   onDidUpdateDiff: vi.fn(),
   getLineChanges: vi.fn(),
+  getModel: vi.fn(),
 }))
 
 function StubDiffEditor({
@@ -167,6 +170,21 @@ describe('CodeEditor', () => {
     const [listener] = stubEditor.onDidChangeCursorPosition.mock.lastCall!
     listener({ position: { lineNumber: 3, column: 7 } })
     expect(onCursorChange).toHaveBeenLastCalledWith(3, 7)
+  })
+
+  it('brings a kept model up to date when a new editor reuses it', async () => {
+    stubEditor.getValue.mockReturnValue('stale')
+    const user = userEvent.setup()
+    render(<CodeEditor {...PROPS} readOnly={false} path="draft/src/A.java" />)
+
+    await user.click(screen.getByRole('button', { name: 'mount' }))
+    expect(stubEditor.setValue).toHaveBeenCalledWith('class A {}')
+
+    // A current model is left alone, so its undo history survives.
+    stubEditor.setValue.mockClear()
+    stubEditor.getValue.mockReturnValue('class A {}')
+    await user.click(screen.getByRole('button', { name: 'mount' }))
+    expect(stubEditor.setValue).not.toHaveBeenCalled()
   })
 
   it('tolerates edits with no change handler', async () => {
@@ -364,6 +382,18 @@ describe('CodeDiff', () => {
     stubDiffEditor.onDidUpdateDiff.mock.lastCall![0]()
 
     expect(onLineCounts).toHaveBeenLastCalledWith(0, 0)
+  })
+
+  it('brings kept models up to date when a new diff editor reuses them', async () => {
+    const model = (value: string) => ({ getValue: () => value, setValue: vi.fn() })
+    const kept = { original: model('old'), modified: model('older draft') }
+    stubDiffEditor.getModel.mockReturnValue(kept)
+    render(<CodeDiff {...DIFF} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'mount diff' }))
+
+    expect(kept.original.setValue).not.toHaveBeenCalled()
+    expect(kept.modified.setValue).toHaveBeenCalledWith('new')
   })
 
   it('starts a new diff editor when its tab comes back', async () => {

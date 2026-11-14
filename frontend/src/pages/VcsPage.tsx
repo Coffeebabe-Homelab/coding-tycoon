@@ -208,7 +208,7 @@ function SourceControl({ task }: { task: Task }) {
               pathname: '/room/editor',
               search: `?${new URLSearchParams({ file: selected.path })}`,
             }}
-            className={buttonClasses('secondary')}
+            className={`${buttonClasses('secondary')} shrink-0 whitespace-nowrap`}
           >
             Open in editor
           </Link>

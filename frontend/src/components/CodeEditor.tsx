@@ -79,6 +79,14 @@ function useEditorKeyAcrossHide(onHide?: () => void): number {
   return editorKey
 }
 
+/**
+ * A new editor reuses a kept model as it is: the wrapper only applies `value` on later changes.
+ * Setting it only when stale keeps the model's undo history.
+ */
+function syncModel(model: { getValue(): string; setValue(value: string): void }, value: string) {
+  if (model.getValue() !== value) model.setValue(value)
+}
+
 /** Monaco caches glyph widths: measured with a fallback font, the selection drifts from the text. */
 function remeasureOnceFontLoads(): void {
   void document.fonts
@@ -121,6 +129,7 @@ export function CodeEditor({
 
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor
+    syncModel(editor, value)
     if (savedView.current) editor.restoreViewState(savedView.current)
     const position = editor.getPosition()
     if (position) onCursorChange?.(position.lineNumber, position.column)
@@ -206,6 +215,11 @@ export function CodeDiff({
   const editorKey = useEditorKeyAcrossHide()
 
   const handleMount: DiffOnMount = (editor) => {
+    const models = editor.getModel()
+    if (models) {
+      syncModel(models.original, original)
+      syncModel(models.modified, modified)
+    }
     editor.onDidUpdateDiff(() => {
       const { added, removed } = countLines(editor.getLineChanges() ?? [])
       onLineCounts?.(added, removed)
