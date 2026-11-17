@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -79,7 +80,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
             JsonNode json = objectMapper.readTree(stripCodeFence(answer));
             String title = text(json, "title");
             String description = text(json, "description");
-            String criteria = text(json, "acceptanceCriteria");
+            String criteria = criteria(json.path("acceptanceCriteria"));
             String difficulty = text(json, "difficulty");
             JsonNode tags = json.path("tags");
             if (title.isBlank() || description.isBlank() || criteria.isBlank() || difficulty.isBlank()
@@ -95,6 +96,17 @@ public class OllamaTaskAdapter implements TaskAiPort {
             LOG.warnf("AI task is not valid JSON, using a seed task: %s", e.getMessage());
             return Optional.empty();
         }
+    }
+
+    // Some models answer the criteria as a list instead of one string; both mean one per line.
+    private static String criteria(JsonNode node) {
+        if (!node.isArray()) {
+            return node.asText("").strip();
+        }
+        return StreamSupport.stream(node.spliterator(), false)
+                .map(item -> item.asText("").strip())
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.joining("\n"));
     }
 
     private static String text(JsonNode json, String field) {
