@@ -82,7 +82,7 @@ The owner chose to try it first. The staging host has 16 GB in total.
   - Approvals come with no comments, so there is no Praise either.
 - Prompts were 1.8k–3.3k tokens, well inside the context.
 
-**Next (owner, 2026-11-14):** an external vendor API (OpenAI was named) as a new provider in `ai.<provider>`. It needs a decision on sending player code to a third party, and it costs per call. Until then, qwen2.5-coder:7b is the better local model.
+**Next (owner, 2026-11-14):** an external vendor API (OpenAI was named) as a new provider in `ai.<provider>`. It needs a decision on sending player code to a third party, and it costs per call. qwen2.5-coder:7b is the default model since 2026-11-17 (owner). A second run with the default config also got 3 of 6, in 26–63 s (timings vary between runs). Task generation with it takes 21–36 s warm on the GPU, under the 50 s task timeout. It answers `acceptanceCriteria` as a list, which the adapter now accepts.
 
 **Earlier options, kept for reference:** what to do about review quality before P5-06. The options are a better model (config only, e.g. a newer or larger coder model), a lower temperature, a code-side verdict rule (CHANGES_REQUESTED when any criterion is unmet or any comment is MUST_FIX), or accepting it for the MVP. Record the staging eval table here too.
 

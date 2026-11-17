@@ -14,7 +14,7 @@
 | API style | JAX-RS (RESTEasy Reactive) + Jackson |
 | ORM | Hibernate ORM with Panache (Active Record) |
 | Database | PostgreSQL 16 |
-| AI | Quarkus LangChain4j 1.13.4 + Ollama with DeepSeek-Coder 6.7B Q4_K_M, behind ports; `codingtycoon.ai.provider` picks `stub` (default, seed tasks) or `ollama` |
+| AI | Quarkus LangChain4j 1.13.4 + Ollama with Qwen2.5-Coder 7B (`qwen2.5-coder:7b`, about 4.7 GB), behind ports; `codingtycoon.ai.provider` picks `stub` (default, seed tasks) or `ollama` |
 | Observability | Quarkus OpenTelemetry: OTLP logs, traces and metrics to LGTM (`observability/README.md`) |
 | Auth | Auth0 OIDC (JWT validation via `quarkus-oidc`) |
 | Validation | Hibernate Validator (`@Valid`, `@NotNull`, etc.) |

@@ -36,7 +36,7 @@ services:
       # No depends_on ollama: with Ollama down the backend still starts and serves seed tasks.
       AI_PROVIDER: ${AI_PROVIDER:-stub}
       OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-deepseek-coder:6.7b-instruct-q4_K_M}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b}
       AI_TASK_TIMEOUT_SECONDS: ${AI_TASK_TIMEOUT_SECONDS:-50}
       OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-8192}
       OLLAMA_NUM_PREDICT: ${OLLAMA_NUM_PREDICT:-1024}
