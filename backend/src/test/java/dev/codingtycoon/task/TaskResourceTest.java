@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -355,6 +357,62 @@ class TaskResourceTest {
                 .statusCode(201);
 
         // Second generate — should conflict
+        given()
+                .contentType(ContentType.JSON)
+                .when().post("/api/tasks/generate")
+                .then()
+                .statusCode(409);
+    }
+
+    // ---------------------------------------------------------------------------
+    // One task per UTC day
+    // ---------------------------------------------------------------------------
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void getTodayTaskAfterTodaysApprovalReturnsTheApprovedTask() {
+        Integer taskId = createSubmittedTask();
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED, 1);
+
+        given()
+                .when().get("/api/tasks/today")
+                .then()
+                .statusCode(200)
+                .body("id", is(taskId))
+                .body("status", is("APPROVED"));
+        assertEquals(1, taskRepository.count(), "no second task on the same UTC day");
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void getTodayTaskAfterYesterdaysApprovalCreatesANewTask() {
+        Long profileId = profileRepository.find("userId",
+                userRepository.find("sub", TEST_SUB).firstResult().id).firstResult().id;
+        Task yesterdays = testData.createTask(profileId, "Yesterday's task", TaskStatus.APPROVED);
+        testData.createEvent(profileId, yesterdays, LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
+
+        given()
+                .when().get("/api/tasks/today")
+                .then()
+                .statusCode(201)
+                .body("status", is("ASSIGNED"));
+    }
+
+    @Test
+    @TestSecurity(user = TEST_SUB, roles = {})
+    @OidcSecurity(claims = {
+            @Claim(key = "sub", value = TEST_SUB)
+    })
+    void generateTaskAfterTodaysApprovalReturns409() {
+        Integer taskId = createSubmittedTask();
+        taskService.applyReviewVerdict(taskId.longValue(), TaskStatus.APPROVED, 1);
+
         given()
                 .contentType(ContentType.JSON)
                 .when().post("/api/tasks/generate")

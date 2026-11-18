@@ -154,7 +154,8 @@ backend/src/main/java/dev/codingtycoon/
 - `PATCH /api/tasks/{id}/status` only accepts the player transition `ASSIGNED → IN_PROGRESS` on the caller's own tasks. Another player's task returns `404`, and any other transition returns `422`. `SUBMITTED` is reached only by a push (`POST /api/submissions`), through `TaskService.submit`. `APPROVED` and `CHANGES_REQUESTED` are set only through `TaskService.applyReviewVerdict`, which has no HTTP endpoint.
 - A "day" is a UTC calendar day. `xpToday` sums today's events.
 - Streak: consecutive days with at least one `TASK_APPROVED` event. `currentStreak` counts a run ending today or yesterday (so it isn't lost before today's work), otherwise `0`.
-- `approvedTodayTaskTitle`: the latest task approved today, or `null`. `GET /api/tasks/today` only returns non-approved tasks, so the End of Day screen reads it from here.
+- `approvedTodayTaskTitle`: the latest task approved today, or `null`. The End of Day screen reads it from here.
+- One task per UTC day: once a task is approved today, `GET /api/tasks/today` returns that `APPROVED` task (200) instead of creating one, and `POST /api/tasks/generate` answers 409. A new task is assigned the next UTC day.
 - `401` without a token, `404` if the player has no profile.
 
 ### HTTP Status Codes

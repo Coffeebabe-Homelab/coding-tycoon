@@ -127,4 +127,14 @@ describe('TaskBoardPage', () => {
     expect(screen.queryByRole('button', { name: 'Start task' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Continue' })).not.toBeInTheDocument()
   })
+
+  it('says the day is done and links to End of Day once the task is approved', async () => {
+    stubApi({ 'GET /api/tasks/today': { ...TASK, status: 'APPROVED' } })
+
+    renderBoard()
+
+    expect(await screen.findByText(/done for today/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'End the day' })).toHaveAttribute('href', '/room/end-of-day')
+    expect(screen.queryByRole('button', { name: 'Start task' })).not.toBeInTheDocument()
+  })
 })
