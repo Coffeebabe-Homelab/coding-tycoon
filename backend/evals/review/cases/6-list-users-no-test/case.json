@@ -1,0 +1,5 @@
+{
+  "task": "Build a REST endpoint to list all users",
+  "expected": "CHANGES_REQUESTED",
+  "why": "Missing criterion: UserServiceTest is not changed, so the new method has no test."
+}

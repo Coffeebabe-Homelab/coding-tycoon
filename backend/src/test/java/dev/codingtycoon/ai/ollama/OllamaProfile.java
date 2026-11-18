@@ -16,6 +16,10 @@ public class OllamaProfile implements QuarkusTestProfile {
                 GENERATE + "/Timeout/value", "1",
                 GENERATE + "/Retry/delay", "0",
                 // Keep the breaker closed, so one test's failures can't change another's result.
-                GENERATE + "/CircuitBreaker/enabled", "false");
+                GENERATE + "/CircuitBreaker/enabled", "false",
+                // The reviewer's timeout is the review timeout, which can't be under the target.
+                "codingtycoon.review.target-duration", "1s",
+                "codingtycoon.review.timeout", "1s",
+                "codingtycoon.review.stuck-after", "2s");
     }
 }

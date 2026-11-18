@@ -145,7 +145,7 @@ The player sees this as a clean **progress dashboard**, not raw AI output:
 | Skill Profiler | After each review, extracts strengths, weak points, and improvement signals; persists to the read-only Developer Skill Profile |
 
 AI provider: **Local Ollama** (MVP — self-hosted, zero API cost, via Quarkus Langchain4j Ollama extension; revisit for production scale)  
-AI model: **DeepSeek-Coder 6.7B Q4_K_M** (`deepseek-coder:6.7b-instruct-q4_K_M`)
+AI model: **Qwen2.5-Coder 7B** (`qwen2.5-coder:7b`). Replaced DeepSeek-Coder 6.7B on 2026-11-17 after the P5-04 review evals
 
 ---
 
@@ -198,7 +198,7 @@ AI model: **DeepSeek-Coder 6.7B Q4_K_M** (`deepseek-coder:6.7b-instruct-q4_K_M`)
 | 1 | Frontend styling | ✅ **Tailwind CSS** |
 | 2 | Auth provider | ✅ **Auth0** (managed, MVP — revisit for production) |
 | 3 | AI provider | ✅ **Local Ollama** (MVP — revisit for production scale) |
-| 3a | AI model | ✅ **DeepSeek-Coder 6.7B Q4_K_M** (`deepseek-coder:6.7b-instruct-q4_K_M`) |
+| 3a | AI model | ✅ **Qwen2.5-Coder 7B** (`qwen2.5-coder:7b`), since 2026-11-17: better review evals, faster, less RAM than DeepSeek-Coder 6.7B. An external vendor API is the next step if review quality stays too low |
 | 4 | Soft skills tasks (standups, estimation, PR descriptions) | 🚫 **Not for MVP** — post-launch |
 | 5 | Codebase evolution across tasks | 🚫 **Not for MVP** — static codebase per task |
 | 6 | Multiplayer / team simulation | 🚫 **Not for MVP** — post-launch |

@@ -1,0 +1,5 @@
+{
+  "task": "Add input validation to an existing REST API",
+  "expected": "CHANGES_REQUESTED",
+  "why": "Missing validation: stock is unvalidated and updatePrice has no @Valid, so a negative price still gets in."
+}

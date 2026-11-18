@@ -1,0 +1,5 @@
+{
+  "task": "Build a REST endpoint to list all users",
+  "expected": "CHANGES_REQUESTED",
+  "why": "A bug: the cap check is size > 1000, so size 101 to 1000 is accepted; the test of size 101 would fail."
+}

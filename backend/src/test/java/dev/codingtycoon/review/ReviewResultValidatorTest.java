@@ -43,6 +43,12 @@ class ReviewResultValidatorTest {
     }
 
     @Test
+    void aSummaryLongerThanItsColumnIsInvalid() {
+        assertEquals(Optional.of("summary over 500 characters"),
+                check(result(ReviewVerdict.APPROVED, "x".repeat(501), List.of(), List.of(true, true))));
+    }
+
+    @Test
     void aCommentOnAFileThatWasNotPushedIsInvalid() {
         assertEquals(Optional.of("comment on a file not pushed: src/B.java"), check(result(ReviewVerdict.APPROVED,
                 "Good.", List.of(new Comment("src/B.java", 1, Severity.PRAISE, "x")), List.of(true, true))));

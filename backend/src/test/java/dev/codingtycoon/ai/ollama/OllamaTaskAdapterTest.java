@@ -49,6 +49,19 @@ class OllamaTaskAdapterTest {
     }
 
     @Test
+    void criteriaGivenAsAListAreJoinedOnePerLine() {
+        // qwen2.5-coder answers the criteria as a JSON array, though the prompt asks for a string.
+        Mockito.when(chatModel.chat(anyString())).thenReturn("""
+                {"title":"List users","description":"Add an endpoint.",
+                 "acceptanceCriteria":["- returns 200", " - has a test "],
+                 "difficulty":"Junior","tags":["rest-apis"]}""");
+
+        GeneratedTask task = adapter.generate("Java", "Junior", List.of("rest-apis")).orElseThrow();
+
+        assertEquals("- returns 200\n- has a test", task.acceptanceCriteria());
+    }
+
+    @Test
     void thePromptCarriesThePlayersProfile() {
         Mockito.when(chatModel.chat(anyString())).thenReturn(VALID);
 

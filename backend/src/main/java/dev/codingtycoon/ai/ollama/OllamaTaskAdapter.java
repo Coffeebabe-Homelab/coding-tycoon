@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -79,7 +80,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
             JsonNode json = objectMapper.readTree(stripCodeFence(answer));
             String title = text(json, "title");
             String description = text(json, "description");
-            String criteria = text(json, "acceptanceCriteria");
+            String criteria = criteria(json.path("acceptanceCriteria"));
             String difficulty = text(json, "difficulty");
             JsonNode tags = json.path("tags");
             if (title.isBlank() || description.isBlank() || criteria.isBlank() || difficulty.isBlank()
@@ -97,11 +98,22 @@ public class OllamaTaskAdapter implements TaskAiPort {
         }
     }
 
+    // Some models answer the criteria as a list instead of one string; both mean one per line.
+    private static String criteria(JsonNode node) {
+        if (!node.isArray()) {
+            return node.asText("").strip();
+        }
+        return StreamSupport.stream(node.spliterator(), false)
+                .map(item -> item.asText("").strip())
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.joining("\n"));
+    }
+
     private static String text(JsonNode json, String field) {
         return json.path(field).asText("").strip();
     }
 
-    private static String stripCodeFence(String answer) {
+    static String stripCodeFence(String answer) {
         String trimmed = answer.strip();
         if (!trimmed.startsWith("```")) {
             return trimmed;
@@ -111,7 +123,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
         return end > start ? trimmed.substring(start, end) : trimmed;
     }
 
-    private static boolean isUnreachable(Throwable error) {
+    static boolean isUnreachable(Throwable error) {
         for (Throwable cause = error; cause != null; cause = cause.getCause()) {
             if (cause instanceof ConnectException || cause instanceof UnknownHostException) {
                 return true;
@@ -120,7 +132,7 @@ public class OllamaTaskAdapter implements TaskAiPort {
         return false;
     }
 
-    private static String readPrompt(String resource) {
+    static String readPrompt(String resource) {
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
             if (in == null) {
                 throw new IllegalStateException("Missing prompt " + resource);

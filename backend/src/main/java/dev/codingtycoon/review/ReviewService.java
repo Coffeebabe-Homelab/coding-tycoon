@@ -18,6 +18,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +35,9 @@ import java.util.stream.IntStream;
 public class ReviewService {
 
     private static final Logger LOG = Logger.getLogger(ReviewService.class);
+
+    /** What every review checks. Domain content, so every provider gets the same rules. */
+    static final String GUIDELINES = readResource("review/code-review-guidelines.md");
 
     @Inject
     ReviewRepository reviewRepository;
@@ -103,9 +110,8 @@ public class ReviewService {
                         .map(content -> new ReviewFile(path, content)).stream())
                 .toList();
         List<ReviewFile> pushed = push.files.stream().map(file -> new ReviewFile(file.path, file.content)).toList();
-        // The guidelines arrive with the reviewer prompt (P5-04).
         return new ReviewRequest(push.attemptNumber, task.title, task.description, task.criteriaList(),
-                originals, pushed, "");
+                originals, pushed, GUIDELINES);
     }
 
     /**
@@ -196,5 +202,16 @@ public class ReviewService {
     private Task requireTask(Submission push) {
         return taskRepository.findTaskById(push.taskId)
                 .orElseThrow(() -> new IllegalStateException("No task " + push.taskId));
+    }
+
+    private static String readResource(String resource) {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing resource " + resource);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
