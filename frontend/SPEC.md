@@ -82,7 +82,7 @@ Visited tabs stay mounted in React's `<Activity>` until the player refreshes or 
 
 ### Session flow (`hooks/useSessionFlow.ts`)
 
-On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. The Task Board's Continue links to the Editor once the task is `IN_PROGRESS`; Review is not linked until it exists.
+On entering the room: no profile (`404`) → `/onboarding`. If the player landed on `/room` itself and today's task is `ASSIGNED`, the Task Board opens once per browser session (flag in `sessionStorage`). Deep links to a panel are never redirected. The Task Board's Continue links to the Editor once the task is `IN_PROGRESS`. Once it is `APPROVED`, the board says the player is done for today and links to End of Day (one task per UTC day); Review is not linked until it exists.
 
 ## Game Shell Components (Phase 7)
 
