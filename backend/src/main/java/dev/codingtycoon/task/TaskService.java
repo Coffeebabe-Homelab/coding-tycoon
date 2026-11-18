@@ -48,7 +48,8 @@ public class TaskService {
 
     /**
      * Returns the player's current active task, or creates a new one from a seed task if none exists.
-     * "Active" means any status that is not APPROVED.
+     * "Active" means any status that is not APPROVED. Once a task is approved today (UTC), that task
+     * is returned instead, so the player gets one task per day.
      *
      * @param sub the Auth0 subject claim identifying the player
      * @return a Pair where first=task and second=true if the task was just created, false if it already existed
@@ -59,6 +60,7 @@ public class TaskService {
         PlayerProfile profile = requireLockedProfile(sub);
 
         return taskRepository.findTodayForProfile(profile.id)
+                .or(() -> progressService.findApprovedToday(profile.id))
                 .map(task -> new Pair<>(task, false))
                 .orElseGet(() -> {
                     List<String> topicSlugs = profile.topics.stream()
@@ -167,12 +169,12 @@ public class TaskService {
 
     /**
      * Generates a new task for the player using the AI port, falling back to seed tasks if AI is unavailable.
-     * Throws ConflictException if the player already has an active (non-APPROVED) task.
+     * Throws ConflictException if the player already has an active (non-APPROVED) task or had one approved today.
      *
      * @param sub the Auth0 subject claim identifying the player
      * @return the newly created task
      * @throws NotFoundException  if no user or profile is found for the given sub
-     * @throws ConflictException  if an active task already exists for this player
+     * @throws ConflictException  if an active task exists or today's task is already approved
      */
     public Task generateTask(String sub) {
         // The model call can take minutes on CPU, so it runs between two short transactions.
@@ -208,6 +210,9 @@ public class TaskService {
     private void requireNoActiveTask(Long profileId) {
         if (taskRepository.findTodayForProfile(profileId).isPresent()) {
             throw new ConflictException("An active task already exists for this player");
+        }
+        if (progressService.findApprovedToday(profileId).isPresent()) {
+            throw new ConflictException("Today's task is already approved; the next one comes tomorrow (UTC)");
         }
     }
 

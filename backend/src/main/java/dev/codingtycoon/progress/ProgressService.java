@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Domain service for player progression: awards XP into the ledger and derives totals from it.
@@ -93,16 +94,27 @@ public class ProgressService {
                 .toList();
         Streak streak = StreakCalculator.calculate(approvalDays, today);
         return new ProgressResponse(MOCK_LEVEL, totalXp, xpToday, streak.current(), streak.longest(),
-                approvedTodayTaskTitle(todayEvents));
+                approvedToday(todayEvents).map(task -> task.title).orElse(null));
     }
 
-    // The active-task endpoint skips APPROVED tasks, so End of Day reads today's approved task from here.
-    private String approvedTodayTaskTitle(List<XpEvent> todayEvents) {
+    /**
+     * Returns the task the player got approved today (UTC), if any. One task per day: once it is
+     * approved, no new task is assigned until the next UTC day.
+     *
+     * @param profileId the player profile ID
+     * @return today's approved task, or empty if none was approved today
+     */
+    public Optional<Task> findApprovedToday(Long profileId) {
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        return approvedToday(xpEventRepository.listForProfile(profileId).stream()
+                .filter(e -> e.createdAt.toLocalDate().equals(today))
+                .toList());
+    }
+
+    private Optional<Task> approvedToday(List<XpEvent> todayEvents) {
         return todayEvents.stream()
                 .filter(e -> e.reason == XpReason.TASK_APPROVED)
                 .max(Comparator.comparing(e -> e.createdAt))
-                .flatMap(e -> taskRepository.findTaskById(e.taskId))
-                .map(task -> task.title)
-                .orElse(null);
+                .flatMap(e -> taskRepository.findTaskById(e.taskId));
     }
 }
