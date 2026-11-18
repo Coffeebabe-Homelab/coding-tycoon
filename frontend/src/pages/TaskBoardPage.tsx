@@ -112,6 +112,18 @@ function TaskDetail({ task, onStartTask }: TaskDetailProps) {
           Continue
         </Link>
       )}
+
+      {/* One task per UTC day: the next one is assigned tomorrow. */}
+      {task.status === 'APPROVED' && (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-text-primary">
+            You're done for today. Your next task arrives tomorrow (UTC).
+          </p>
+          <Link to="/room/end-of-day" className={buttonClasses('secondary')}>
+            End the day
+          </Link>
+        </div>
+      )}
     </article>
   )
 }
