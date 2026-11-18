@@ -1,0 +1,5 @@
+{
+  "task": "Add input validation to an existing REST API",
+  "expected": "CHANGES_REQUESTED",
+  "why": "A no-op: only a comment changed, no criterion is met."
+}

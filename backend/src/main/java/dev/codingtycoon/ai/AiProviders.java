@@ -1,5 +1,6 @@
 package dev.codingtycoon.ai;
 
+import dev.codingtycoon.ai.ollama.OllamaReviewAdapter;
 import dev.codingtycoon.ai.ollama.OllamaTaskAdapter;
 import dev.codingtycoon.ai.stub.StubReviewAdapter;
 import dev.codingtycoon.ai.stub.StubTaskAdapter;
@@ -33,10 +34,10 @@ public class AiProviders {
 
     @Produces
     @ApplicationScoped
-    ReviewAiPort reviewAiPort(StubReviewAdapter stub) {
+    ReviewAiPort reviewAiPort(StubReviewAdapter stub, Instance<OllamaReviewAdapter> ollama) {
         return switch (provider) {
-            // The Ollama reviewer comes with its prompt in P5-04; until then reviews use the stub.
-            case STUB, OLLAMA -> stub;
+            case STUB -> stub;
+            case OLLAMA -> ollama.get();
         };
     }
 }

@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
  */
 public final class ReviewResultValidator {
 
+    /** The {@code reviews.summary} column size. */
+    static final int MAX_SUMMARY = 500;
+
     private ReviewResultValidator() {
     }
 
@@ -25,6 +28,9 @@ public final class ReviewResultValidator {
         }
         if (result.summary() == null || result.summary().isBlank()) {
             return Optional.of("no summary");
+        }
+        if (result.summary().length() > MAX_SUMMARY) {
+            return Optional.of("summary over " + MAX_SUMMARY + " characters");
         }
         if (result.comments() == null || result.criteriaMet() == null) {
             return Optional.of("no comments or criteria list");

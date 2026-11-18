@@ -1,0 +1,5 @@
+{
+  "task": "Build a REST endpoint to list all users",
+  "expected": "APPROVED",
+  "why": "Endpoint, paging, the 100 cap and tests are all there."
+}

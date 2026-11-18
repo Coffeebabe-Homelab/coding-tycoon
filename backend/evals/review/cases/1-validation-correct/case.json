@@ -1,0 +1,5 @@
+{
+  "task": "Add input validation to an existing REST API",
+  "expected": "APPROVED",
+  "why": "Every record field is validated and both bodies use @Valid."
+}
